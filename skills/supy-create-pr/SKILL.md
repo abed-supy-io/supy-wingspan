@@ -147,7 +147,8 @@ Use the values recorded in Step 3 to choose the execution path.
 Push the current branch and open a PR:
 
 ```bash
-git push -u origin ${CURRENT_BRANCH}
+REMOTE=$(git remote | head -1)
+git push -u "${REMOTE}" ${CURRENT_BRANCH}
 gh pr create \
   --title "<PR title from Step 4>" \
   --body "$(cat <<'EOF'

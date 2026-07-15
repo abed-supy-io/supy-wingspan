@@ -64,7 +64,7 @@ echo "$REPO_NAME"
 ### `bounded_context`
 
 1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → `boundedContext` field.
-2. Fallback: infer from the directory name under `libs/` that contains the most source files (`ls libs/ | head -1`). If unclear, use `"<bounded-context>"`.
+2. Fallback: use the first directory under `libs/` as a rough proxy (`ls libs/ | head -1`). If unclear, use `"<bounded-context>"`.
 
 ### `database`
 

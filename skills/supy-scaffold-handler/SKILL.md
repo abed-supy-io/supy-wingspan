@@ -256,7 +256,10 @@ export class <DomainPascal>NatsController {
 }
 ```
 
-Replace placeholder names (`<PayloadClass>`, `<ReplyClass>`, `<DomainPascal>`, `<MethodName>`, `<interactorName>`, `<listenerName>`) using the pattern and Cortex data resolved in Step 5. Derive PascalCase names from the NATS pattern by converting each kebab segment.
+Replace placeholder names (`<PayloadClass>`, `<ReplyClass>`, `<DomainPascal>`, `<MethodName>`, `<interactorName>`, `<listenerName>`, `<ControllerClass>`, `<type>`) using the pattern and Cortex data resolved in Step 5. Derive PascalCase names from the NATS pattern by converting each kebab segment. Specifically:
+
+- `<ControllerClass>` → the controller class name: `<DomainPascal>RpcController` for a request handler; `<DomainPascal>NatsController` for an event handler.
+- `<type>` → `rpc` for a request handler; `nats` for an event handler (mirrors the controller file suffix `.rpc.controller.ts` / `.nats.controller.ts`).
 
 ### DTO file
 

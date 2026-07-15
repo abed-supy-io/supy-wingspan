@@ -9,7 +9,7 @@ if [ -f "$root/pubspec.yaml" ]; then stack="flutter"; fi
 [ -z "$stack" ] && exit 0   # unknown/mixed: stay silent
 msg="supy-wingspan: detected $stack repo."
 if [ ! -f "$root/CLAUDE.md" ]; then
-  msg="$msg No CLAUDE.md found — run /supy-baseline to generate one."
+  msg="$msg No CLAUDE.md found — run the supy-baseline skill to generate one."
 fi
 echo "$msg"
 exit 0
