@@ -1,0 +1,29 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import type { Observable } from 'rxjs';
+
+import { BaseHttpService, type BaseRequestMetadata, type IQueryResponse } from '@supy/common';
+
+import { {{screaming feature}}_URI } from '../config/{{kebab feature}}.config';
+import type { Create{{pascal entity}}Request, {{pascal entity}}, {{pascal entity}}Filters } from '../models/{{kebab feature}}.model';
+
+@Injectable({ providedIn: 'root' })
+export class {{pascal feature}}Service extends BaseHttpService {
+  protected readonly http = inject(HttpClient);
+
+  constructor() {
+    super(inject({{screaming feature}}_URI));
+  }
+
+  getMany(filters: {{pascal entity}}Filters, meta: BaseRequestMetadata): Observable<IQueryResponse<{{pascal entity}}>> {
+    return this.get<IQueryResponse<{{pascal entity}}>>('', this.buildParams(filters, meta));
+  }
+
+  getDetailed(id: string): Observable<{{pascal entity}}> {
+    return this.get<{{pascal entity}}>(`/${id}`);
+  }
+
+  create(payload: Create{{pascal entity}}Request): Observable<{{pascal entity}}> {
+    return this.post<Create{{pascal entity}}Request, {{pascal entity}}>('', payload);
+  }
+}

@@ -1,0 +1,20 @@
+import type { IdType, LocalizedData, SkeletonObjectType } from '@supy/common';
+
+export interface {{pascal entity}}Response extends IdType {
+  readonly status: string;
+  readonly supplier: SkeletonObjectType;
+  readonly name: LocalizedData;
+  readonly createdAt: string;
+}
+
+export interface Create{{pascal entity}}Request {
+  readonly supplierId: string;
+  readonly deliveryDate: string;
+}
+
+// Convenience alias used across the feature.
+export type {{pascal entity}} = {{pascal entity}}Response;
+
+export interface {{pascal entity}}Filters {
+  readonly status?: string;
+}

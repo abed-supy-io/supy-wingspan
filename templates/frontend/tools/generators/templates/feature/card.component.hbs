@@ -1,0 +1,19 @@
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+
+import type { {{pascal entity}} } from '../../models/{{kebab feature}}.model';
+
+@Component({
+  selector: 'app-{{kebab entity}}-card',
+  templateUrl: './{{kebab entity}}-card.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+})
+export class {{pascal entity}}CardComponent {
+  readonly item = input.required<{{pascal entity}}>();
+  readonly selected = input(false);
+  readonly clicked = output<{{pascal entity}}>();
+
+  onClick(): void {
+    this.clicked.emit(this.item());
+  }
+}

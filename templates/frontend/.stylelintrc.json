@@ -1,0 +1,17 @@
+{
+  "//": "Enforces the styling rules from CLAUDE.md §9. Requires: stylelint, stylelint-config-standard-scss.",
+  "extends": ["stylelint-config-standard-scss"],
+  "rules": {
+    "color-no-hex": [true, { "message": "Use a PrimeNG design token (var(--p-...)) instead of a hex color." }],
+    "selector-disallowed-list": [
+      ["/::ng-deep/", "/\\/deep\\//", "/>>>/"],
+      { "message": "::ng-deep is deprecated. Style via PrimeNG design tokens on :host instead." }
+    ],
+    "declaration-property-unit-disallowed-list": [
+      { "/^(padding|margin|gap|top|right|bottom|left)/": ["px"] },
+      { "message": "Use spacing tokens (var(--p-spacing-*)) instead of raw px for layout spacing." }
+    ],
+    "scss/dollar-variable-pattern": null,
+    "custom-property-empty-line-before": null
+  }
+}

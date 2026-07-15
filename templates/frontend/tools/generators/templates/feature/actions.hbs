@@ -1,0 +1,20 @@
+import type { Create{{pascal entity}}Request } from '../../models/{{kebab feature}}.model';
+
+export class {{pascal feature}}GetMany {
+  static readonly type = '[{{pascal feature}}] GetMany';
+}
+
+export class {{pascal feature}}GetDetailed {
+  static readonly type = '[{{pascal feature}}] GetDetailed';
+  constructor(readonly payload: { id: string; fromCache?: boolean }) {}
+}
+
+export class {{pascal feature}}Create {
+  static readonly type = '[{{pascal feature}}] Create';
+  constructor(readonly payload: Create{{pascal entity}}Request) {}
+}
+
+export class {{pascal feature}}SetPage {
+  static readonly type = '[{{pascal feature}}] SetPage';
+  constructor(readonly payload: { page: number }) {}
+}

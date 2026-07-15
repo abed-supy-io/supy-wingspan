@@ -1,0 +1,7 @@
+import { InjectionToken, inject } from '@angular/core';
+
+import { API_BASE_URL } from '@supy/core';
+
+export const {{screaming feature}}_URI = new InjectionToken<string>('{{pascal feature}} URI', {
+  factory: () => inject(API_BASE_URL) + '/{{kebab feature}}',
+});

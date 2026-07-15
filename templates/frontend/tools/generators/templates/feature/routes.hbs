@@ -1,0 +1,27 @@
+import { inject } from '@angular/core';
+import type { Routes } from '@angular/router';
+import { provideStates } from '@ngxs/store';
+
+import { AuthenticationGuard } from '@supy/authentication';
+
+import { {{pascal entity}}ListComponent } from './components/{{kebab entity}}-list/{{kebab entity}}-list.component';
+import { {{pascal feature}}Resolver } from './resolvers/{{kebab feature}}.resolver';
+import { {{pascal feature}}Service } from './services/{{kebab feature}}.service';
+import { {{pascal feature}}State } from './store/state/{{kebab feature}}.state';
+
+export const {{screaming feature}}_ROUTES: Routes = [
+  {
+    path: '',
+    component: {{pascal entity}}ListComponent,
+    canMatch: [() => inject(AuthenticationGuard).canActivate()],
+    resolve: { {{camel feature}}: {{pascal feature}}Resolver },
+    providers: [provideStates([{{pascal feature}}State]), {{pascal feature}}Service],
+    children: [
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./components/{{kebab entity}}-card/{{kebab entity}}-card.component').then(m => m.{{pascal entity}}CardComponent),
+      },
+    ],
+  },
+];

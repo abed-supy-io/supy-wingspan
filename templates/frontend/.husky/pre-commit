@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Local guardrail mirroring CI — catch issues before the commit exists.
+
+# 1. Lint + format only staged files (fast).
+npx lint-staged
+
+# 2. Module boundaries + Angular rules on affected projects.
+npx nx affected -t lint --uncommitted

@@ -1,0 +1,33 @@
+import { ChangeDetectionStrategy, Component, type OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { Store } from '@ngxs/store';
+
+import type { {{pascal entity}} } from '../../models/{{kebab feature}}.model';
+import { {{pascal feature}}GetMany, {{pascal feature}}SetPage } from '../../store/actions/{{kebab feature}}.actions';
+import { {{pascal feature}}State } from '../../store/state/{{kebab feature}}.state';
+
+@Component({
+  selector: 'app-{{kebab entity}}-list',
+  templateUrl: './{{kebab entity}}-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+})
+export class {{pascal entity}}ListComponent implements OnInit {
+  readonly #store = inject(Store);
+  readonly #router = inject(Router);
+
+  protected readonly items = this.#store.selectSignal({{pascal feature}}State.items);
+  protected readonly metadata = this.#store.selectSignal({{pascal feature}}State.responseMetadata);
+
+  ngOnInit(): void {
+    this.#store.dispatch(new {{pascal feature}}GetMany());
+  }
+
+  onPageChange(page: number): void {
+    this.#store.dispatch(new {{pascal feature}}SetPage({ page }));
+  }
+
+  onRowClick(item: {{pascal entity}}): void {
+    this.#router.navigate(['/{{kebab feature}}', item.id]);
+  }
+}

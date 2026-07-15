@@ -1,0 +1,98 @@
+# {{repo_name}}
+
+{{one_line_purpose}}
+
+> **Note:** This is an initial analysis. More detailed conventions, patterns, and domain knowledge will be added over time. Treat contents as directional guidance, not exhaustive documentation.
+
+## Cortex MCP — Live Architecture Reference
+
+If the Cortex MCP is connected, **always use it for up-to-date architecture data** rather than relying solely on this file:
+
+- `get_repo_guide('{{repo_name}}')` — feature list, app shells, shared libs, and dependencies for this repo
+- `search_entities('<concept>')` — find any component, NGXS state, service, or model across the platform
+- `search_relationships('<query>')` — understand how libraries and features connect
+- `get_perspective('project-dependency-graph')` — bird's-eye view of the Nx project graph
+
+The static information in this file is **directional guidance and onboarding context**. Cortex is the live source of truth for the feature inventory, dependency graph, and shared-lib surface — these change as features are added. If Cortex is not available (not all team members may have it connected), fall back to the information in this file.
+
+## Product Context
+
+{{one_line_purpose}}
+
+**App shells**: {{apps}} | **Feature libraries**: {{feature_libs}}
+
+## Role in the Platform
+
+- Key user flows: {{key_flows}}
+
+## Stack
+
+{{stack_versions}}
+
+Angular 21 + Nx + NGXS (+ Immer) + PrimeNG 21 + AG Grid + Jest + SCSS design tokens.
+
+## Architecture — Nx Libraries by Type & Scope
+
+```text
+apps/                → application shells (retailer, admin, supplier)
+libs/[domain]/       → a feature library — smart components + NGXS state/actions/services/models
+  src/lib/
+    components/      → smart (container) + dumb (presentational) components
+    store/
+      state/         → one @State class per feature (extends EntityListState<T> where it fits)
+      actions/       → action classes, type '[Feature] ActionName'
+    services/        → domain services (extend BaseHttpService, URI InjectionToken)
+    resolvers/       → functional inject() resolvers
+    models/          → *.model.ts (DTOs) + *.entity.ts (rich domain entities)
+    config/          → URI InjectionToken + feature config
+    [domain].routes.ts → lazy route with provideStates([...])
+libs/components/     → shared presentational UI (type:ui, scope:shared)
+libs/common, core/   → framework-light utilities, base classes, tokens (type:util, scope:shared)
+```
+
+### Tags & Boundary Rules (ENFORCED by `@nx/enforce-module-boundaries`)
+
+- **Every library is tagged** in `project.json` with exactly one `type:` tag (`app` | `feature` | `ui` | `data-access` | `util`) and one `scope:` tag (`<domain>` | `shared`). An untagged lib escapes enforcement — treat it as a defect.
+- **Dependency direction:** outer layers depend inward only. `ui` never depends on `data-access`; `util` depends on `util` only; `feature`/`app` may depend on `feature`, `ui`, `data-access`, `util`.
+- **Domain isolation:** each `scope:<domain>` depends only on itself and `scope:shared` — **never** another domain's internals. Cross-domain access goes through a `scope:shared` lib.
+- **Adding a feature `foo`:** generator writes a tagged `project.json` → add the `@supy/foo` alias to `tsconfig.base.json` → append the scope constraint to `eslint.config.mjs`.
+
+## Component Rules
+
+- `ChangeDetectionStrategy.OnPush` on **every** component — no exceptions.
+- Inject with `inject()` into a `#private` field — never constructor injection: `readonly #store = inject(Store);`.
+- New inputs/outputs use signals: `input()`, `input.required()`, `output()` — never `@Input()` / `@Output()`.
+- Consume NGXS state via `store.selectSignal(...)` — never the `@Select()` decorator.
+- Tear down subscriptions with `takeUntilDestroyed()` (preferred) or the `Destroyable` base class.
+- **Split smart from dumb.** Smart (container) injects `Store`, dispatches, selects. Dumb (presentational) has signal I/O only, zero injected domain state.
+
+## State Rules (NGXS)
+
+- **Never mutate state directly.** Deep updates use Immer `produce()`; shallow updates use `ctx.patchState()`. Direct mutation silently breaks OnPush and selectors.
+- One `@State` class per feature, extending `EntityListState<T>` where it fits. State model and all model/DTO properties are `readonly`.
+- List-loading actions use `{ cancelUncompleted: true }` to drop superseded requests.
+- Selectors are `static` methods decorated with `@Selector([TOKEN])`.
+- Action type format `[Feature] ActionName`; one action class per operation; payload via a single `readonly` constructor parameter.
+
+## Service Rules
+
+- Domain services **extend `BaseHttpService`** and inject a **URI `InjectionToken`** — never a hardcoded URL string.
+- `@Injectable({ providedIn: 'root' })` for singletons. Return typed `Observable<IQueryResponse<T>>` / `Observable<T>` — never `any`.
+
+## Routing & Forms
+
+- Feature routes lazy-load their state with `provideStates([...])` in route `providers` — never eagerly register a feature state at root.
+- Guards/resolvers use functional `inject()` style inside `canMatch` / `resolve`.
+- Forms are reactive and strongly typed via `FormBuilder`. Reusable inputs implement `ControlValueAccessor`. Guard submit on `form.invalid`; read values with `getRawValue()`.
+
+## Import Conventions
+
+- Always use `@supy/<lib>` aliases from `tsconfig.base.json` — never a relative path across a library boundary.
+- Import order (auto-fixed by `simple-import-sort`): side-effect imports → third-party (`@angular/*`, `@ngxs/store`, …) → `@supy/*` scoped → relative (`./…`).
+
+## Style Rules
+
+- Use PrimeNG CSS design tokens (`--p-*`) for color, spacing, and radius. **No `::ng-deep`**, **no hardcoded hex colors**, **no raw `px` for spacing** — use token scales (`var(--p-spacing-md)`).
+- `strict: true`. No `any` without a justification comment — prefer generics or `unknown` + narrowing.
+- `verbatimModuleSyntax` on — use `import type` for type-only imports. Prefix unused params with `_`.
+- Curly braces required on all control-flow blocks; templates use Angular control flow (`@if` / `@for`).

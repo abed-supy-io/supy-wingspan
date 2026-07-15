@@ -1,0 +1,46 @@
+---
+description: Angular 21 + Nx + NGXS + PrimeNG rules for this frontend monorepo
+globs:
+  - "apps/**/*.ts"
+  - "libs/**/*.ts"
+  - "**/*.html"
+  - "**/*.scss"
+alwaysApply: true
+---
+
+# Frontend architecture rules (editor-enforced)
+
+Full rationale lives in `CLAUDE.md`. These are the constraints to apply while editing.
+
+## Components
+- `ChangeDetectionStrategy.OnPush` on EVERY component — no exceptions.
+- Inject via `inject()`, held in `#private` fields — never constructor injection.
+- New components: `input()` / `input.required()` / `output()` — never `@Input()` / `@Output()`.
+- Consume state with `store.selectSignal(...)` — never the `@Select()` decorator.
+- Tear down subscriptions with `takeUntilDestroyed()` (or `takeUntil(this.destroyed$)`).
+- Split smart (container, injects Store) from dumb (presentational, signal IO only).
+
+## State (NGXS)
+- Mutate ONLY via Immer `produce()` (deep) or `ctx.patchState()` (shallow) — never mutate directly.
+- Action type format `[Feature] ActionName`; payload via one `readonly` constructor param.
+- List actions use `{ cancelUncompleted: true }`. Selectors are static `@Selector([TOKEN])`.
+
+## Services
+- Extend `BaseHttpService`; inject a URI InjectionToken (never a hardcoded URL).
+- `@Injectable({ providedIn: 'root' })`; return typed Observables, never `any`.
+
+## Routing
+- Lazy-load feature state with `provideStates([...])` in route providers — never eager at root.
+- Functional guards/resolvers using `inject()`.
+
+## Models
+- All DTO/entity properties `readonly`. Separate `*Request` / `*Response`.
+- `SkeletonObjectType` for references; `LocalizedData` for multi-language fields.
+
+## Styling
+- PrimeNG design tokens (`--p-*`) only. NO `::ng-deep`, NO hex colors, NO raw `px` spacing.
+
+## Imports / TS
+- Order: side-effect → third-party → `@supy/*` → relative (simple-import-sort).
+- `strict` on; no `any` without justification; `import type` for type-only imports.
+- Cross-domain access goes through a shared lib, never another feature's internals.

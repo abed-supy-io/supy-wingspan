@@ -1,0 +1,94 @@
+import { Injectable } from '@angular/core';
+import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
+import { produce } from 'immer';
+import { tap } from 'rxjs';
+
+import {
+  BASE_REQUEST_META_DEFAULT,
+  type BaseRequestMetadata,
+  type BaseResponseMetadata,
+  EntityListState,
+  type EntityListStateModel,
+} from '@supy/common';
+
+import type { {{pascal entity}}, {{pascal entity}}Filters } from '../../models/{{kebab feature}}.model';
+import { {{pascal feature}}Service } from '../../services/{{kebab feature}}.service';
+import { {{pascal feature}}Create, {{pascal feature}}GetDetailed, {{pascal feature}}GetMany, {{pascal feature}}SetPage } from '../actions/{{kebab feature}}.actions';
+
+export interface {{pascal feature}}StateModel extends EntityListStateModel<{{pascal entity}}> {
+  readonly filters: {{pascal entity}}Filters;
+  readonly detailed: {{pascal entity}} | null;
+}
+
+const {{screaming feature}}_STATE_TOKEN = new StateToken<{{pascal feature}}StateModel>('{{camel feature}}');
+
+@State<{{pascal feature}}StateModel>({
+  name: {{screaming feature}}_STATE_TOKEN,
+  defaults: {
+    items: [],
+    filters: {},
+    detailed: null,
+    requestMetadata: BASE_REQUEST_META_DEFAULT,
+    responseMetadata: { total: 0, count: 0 },
+  },
+})
+@Injectable()
+export class {{pascal feature}}State extends EntityListState<{{pascal entity}}> {
+  constructor(private readonly {{camel feature}}Service: {{pascal feature}}Service) {
+    super();
+  }
+
+  @Selector([{{screaming feature}}_STATE_TOKEN])
+  static items(state: {{pascal feature}}StateModel): {{pascal entity}}[] {
+    return state.items;
+  }
+
+  @Selector([{{screaming feature}}_STATE_TOKEN])
+  static detailed(state: {{pascal feature}}StateModel): {{pascal entity}} | null {
+    return state.detailed;
+  }
+
+  @Selector([{{screaming feature}}_STATE_TOKEN])
+  static responseMetadata(state: {{pascal feature}}StateModel): BaseResponseMetadata {
+    return state.responseMetadata;
+  }
+
+  @Action({{pascal feature}}GetMany, { cancelUncompleted: true })
+  getMany(ctx: StateContext<{{pascal feature}}StateModel>) {
+    const { filters, requestMetadata } = ctx.getState();
+
+    return this.{{camel feature}}Service.getMany(filters, requestMetadata).pipe(
+      tap(response => {
+        ctx.setState(
+          produce(draft => {
+            draft.items = response.data;
+            draft.responseMetadata = response.metadata;
+          }),
+        );
+      }),
+    );
+  }
+
+  @Action({{pascal feature}}GetDetailed)
+  getDetailed(ctx: StateContext<{{pascal feature}}StateModel>, { payload }: {{pascal feature}}GetDetailed) {
+    return this.{{camel feature}}Service.getDetailed(payload.id).pipe(
+      tap(detailed => ctx.patchState({ detailed })),
+    );
+  }
+
+  @Action({{pascal feature}}Create)
+  create(ctx: StateContext<{{pascal feature}}StateModel>, { payload }: {{pascal feature}}Create) {
+    return this.{{camel feature}}Service.create(payload).pipe(
+      tap(created => this.setOne(ctx, created)),
+    );
+  }
+
+  @Action({{pascal feature}}SetPage)
+  setPage(ctx: StateContext<{{pascal feature}}StateModel>, { payload }: {{pascal feature}}SetPage) {
+    const meta: BaseRequestMetadata = { ...ctx.getState().requestMetadata, page: payload.page };
+
+    ctx.patchState({ requestMetadata: meta });
+
+    return ctx.dispatch(new {{pascal feature}}GetMany());
+  }
+}

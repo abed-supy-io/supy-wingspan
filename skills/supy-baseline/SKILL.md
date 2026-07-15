@@ -18,11 +18,18 @@ If `git rev-parse` fails (not a git repo), stop immediately and print:
 supy-baseline: not inside a git repository — nothing to do
 ```
 
-Detect the stack by inspecting the root:
+Detect the stack by inspecting the root. Nx repos are disambiguated by their framework dependency:
 
 ```bash
-# NestJS/Nx backend
-[ -f "$REPO_ROOT/nx.json" ] && [ -f "$REPO_ROOT/package.json" ] && STACK=nestjs-nx
+if [ -f "$REPO_ROOT/nx.json" ] && [ -f "$REPO_ROOT/package.json" ]; then
+  if grep -q '"@angular/core"' "$REPO_ROOT/package.json"; then
+    STACK=angular-nx
+  elif grep -q '"@nestjs/core"' "$REPO_ROOT/package.json"; then
+    STACK=nestjs-nx
+  else
+    STACK=nx
+  fi
+fi
 
 # Flutter (fallback)
 [ -f "$REPO_ROOT/pubspec.yaml" ] && STACK=flutter
@@ -31,42 +38,52 @@ Detect the stack by inspecting the root:
 [ -z "$STACK" ] && STACK=generic
 ```
 
-For a `generic` or `flutter` stack this skill currently only emits the missing-pieces checklist (Step 4) and skips template generation. Print a notice:
+Template generation is supported for **`nestjs-nx`** (backend) and **`angular-nx`** (frontend). For any other stack (`nx`, `flutter`, `generic`) this skill only emits the missing-pieces checklist (Step 4) and skips template generation. In that case print a notice:
 
 ```
-supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx repos.
+supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx and angular-nx repos.
 Reporting missing AI-setup pieces only.
 ```
 
 ---
 
-## Step 2 — Gather template inputs (nestjs-nx only)
+## Step 2 — Gather template inputs
 
-Read the Handlebars template from the plugin:
+Select the Handlebars template for the detected stack:
 
 ```bash
-TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.hbs"
+if [ "$STACK" = "angular-nx" ]; then
+  TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/frontend/CLAUDE.md.hbs"
+else
+  TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.hbs"
+fi
 ```
 
 Collect each placeholder value from the repo. If Cortex MCP is connected, augment with live data; otherwise fall back to static inspection. Every Cortex call is optional — never hard-fail if Cortex is absent.
 
-### `repo_name`
+Both templates share `repo_name`, `one_line_purpose`, `key_flows`, and `stack_versions`. Fill the **Backend placeholders (nestjs-nx)** block for a `nestjs-nx` repo, or the **Frontend placeholders (angular-nx)** block for an `angular-nx` repo.
+
+### Shared placeholders
+
+#### `repo_name`
 
 ```bash
 echo "$REPO_NAME"
 ```
 
-### `one_line_purpose`
+#### `one_line_purpose`
 
 1. If Cortex is connected, call `get_repo_guide('$REPO_NAME')` and extract the `description` or `summary` field.
 2. Fallback: read the first non-heading, non-blank line of the existing `CLAUDE.md` (if present), or read the `description` field in `package.json`. If neither exists, use `"<purpose — fill me in>"`.
 
-### `bounded_context`
+### Backend placeholders (nestjs-nx)
+
+#### `bounded_context`
 
 1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → `boundedContext` field.
 2. Fallback: use the first directory under `libs/` as a rough proxy (`ls libs/ | head -1`). If unclear, use `"<bounded-context>"`.
 
-### `database`
+#### `database`
 
 Inspect `package.json` dependencies for `mongoose` or `@nestjs/mongoose`; if found, emit `MongoDB`. Otherwise emit `"<database>"`.
 
@@ -74,7 +91,7 @@ Inspect `package.json` dependencies for `mongoose` or `@nestjs/mongoose`; if fou
 grep -q '"mongoose"' "$REPO_ROOT/package.json" && DB=MongoDB || DB="<database>"
 ```
 
-### `aggregates`
+#### `aggregates`
 
 1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → `aggregates` list.
 2. Fallback: grep for aggregate root class names:
@@ -87,7 +104,7 @@ grep -r "extends.*Aggregate\|AggregateRoot" "$REPO_ROOT/libs" --include="*.ts" -
 
 If nothing found, emit `"<aggregates>"`.
 
-### `nats_patterns`
+#### `nats_patterns`
 
 1. Cortex (if connected): `trace_implementation` or `search_relationships` for the repo.
 2. Fallback: grep for `@MessagePattern` and `@EventPattern` subjects:
@@ -99,7 +116,7 @@ grep -r "@MessagePattern\|@EventPattern" "$REPO_ROOT/libs" --include="*.ts" -h \
 
 If nothing found, emit `"<nats-patterns>"`.
 
-### `key_flows`
+#### `key_flows`
 
 1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → `flows` or `keyFlows`.
 2. Fallback: list interactor class names:
@@ -112,7 +129,7 @@ grep -r "Interactor\b" "$REPO_ROOT/libs" --include="*.ts" -l \
 
 If nothing found, emit `"<key-flows>"`.
 
-### `stack_versions`
+#### `stack_versions`
 
 Read from `package.json`:
 
@@ -120,10 +137,61 @@ Read from `package.json`:
 node -e "
   const p=require('$REPO_ROOT/package.json');
   const all={...p.dependencies,...p.devDependencies};
-  const v=k=>all[k]||'n/a';
   console.log('| Package | Version |');
   console.log('|---------|---------|');
   ['@nestjs/core','@nestjs/microservices','typescript','@nx/workspace','mongoose'].forEach(k=>{
+    if(all[k]) console.log('| '+k+' | '+all[k]+' |');
+  });
+"
+```
+
+### Frontend placeholders (angular-nx)
+
+#### `apps`
+
+The application shells under `apps/` (e.g. retailer, admin, supplier):
+
+```bash
+ls "$REPO_ROOT/apps" 2>/dev/null | paste -sd ', '
+```
+
+If nothing found, emit `"<apps>"`.
+
+#### `feature_libs`
+
+1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → feature list.
+2. Fallback: list libs tagged `type:feature` (fall back to the bare `libs/` listing if no tags resolve):
+
+```bash
+grep -rl '"type:feature"' "$REPO_ROOT/libs" --include="project.json" 2>/dev/null \
+  | sed "s#$REPO_ROOT/libs/##;s#/project.json##" | sort -u | head -12 | paste -sd ', '
+```
+
+If nothing found, emit `"<feature-libs>"`.
+
+#### `key_flows`
+
+1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → `flows` or `keyFlows`.
+2. Fallback: list the top-level route paths declared in the app shells:
+
+```bash
+grep -rh "path:" "$REPO_ROOT/apps" --include="*.routes.ts" 2>/dev/null \
+  | grep -oE "path: *'[^']+'" | sed "s/path: *'//;s/'//" | grep -v '^$' | sort -u | head -8 | paste -sd ', '
+```
+
+If nothing found, emit `"<key-flows>"`.
+
+#### `stack_versions`
+
+Read from `package.json`:
+
+```bash
+node -e "
+  const p=require('$REPO_ROOT/package.json');
+  const all={...p.dependencies,...p.devDependencies};
+  console.log('| Package | Version |');
+  console.log('|---------|---------|');
+  ['@angular/core','@ngxs/store','primeng','ag-grid-angular','nx','typescript'].forEach(k=>{
     if(all[k]) console.log('| '+k+' | '+all[k]+' |');
   });
 "
@@ -133,7 +201,7 @@ node -e "
 
 ## Step 3 — Fill the template and compute the diff
 
-Substitute each placeholder in `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.hbs` with the values collected in Step 2. Replace every `{{placeholder}}` token (Handlebars-style) with the corresponding value. The template uses `{{one_line_purpose}}` in two places — both must be filled identically.
+Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the values collected there. Replace every `{{placeholder}}` token (Handlebars-style) with the corresponding value. Both templates use `{{one_line_purpose}}` in two places — both must be filled identically. Fill only the placeholders the selected template actually contains (backend: `bounded_context`, `database`, `aggregates`, `nats_patterns`; frontend: `apps`, `feature_libs`).
 
 Produce the candidate content as an in-memory string called `GENERATED`.
 
@@ -259,11 +327,11 @@ Only emit hints for items that are actually missing.
 
 - **Cortex unavailable** (not connected, unauthenticated, or any MCP error): silently fall back to static inspection for every placeholder. Never print an error for missing Cortex — it is optional. The checklist item "Cortex MCP configured" reports its absence independently.
 - **`package.json` unreadable**: use `"<stack-versions>"` for the `stack_versions` placeholder and continue.
-- **No lib files found** (empty or non-standard repo): use `"<aggregates>"`, `"<nats-patterns>"`, `"<key-flows>"` as placeholder values and continue.
-- **Template file absent** (`${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.hbs` not found): stop generation and print:
+- **No lib files found** (empty or non-standard repo): use the `"<placeholder>"` default for every value that could not be resolved (`"<aggregates>"`, `"<feature-libs>"`, etc.) and continue.
+- **Template file absent** (the `$TEMPLATE` selected in Step 2 not found): stop generation and print:
 
 ```
-supy-baseline: template not found at ${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.hbs — cannot generate CLAUDE.md.
+supy-baseline: template not found at $TEMPLATE — cannot generate CLAUDE.md.
 Reporting missing-pieces checklist only.
 ```
 

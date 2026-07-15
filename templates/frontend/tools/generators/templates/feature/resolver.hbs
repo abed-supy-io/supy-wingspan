@@ -1,0 +1,15 @@
+import { Injectable, inject } from '@angular/core';
+import type { Resolve } from '@angular/router';
+import { Store } from '@ngxs/store';
+import type { Observable } from 'rxjs';
+
+import { {{pascal feature}}GetMany } from '../store/actions/{{kebab feature}}.actions';
+
+@Injectable({ providedIn: 'root' })
+export class {{pascal feature}}Resolver implements Resolve<void> {
+  readonly #store = inject(Store);
+
+  resolve(): Observable<void> {
+    return this.#store.dispatch(new {{pascal feature}}GetMany());
+  }
+}

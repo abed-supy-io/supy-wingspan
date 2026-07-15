@@ -1,44 +1,51 @@
 # supy-wingspan Pilot Notes
 
-supy-wingspan is Supy's internal Claude Code plugin. It enforces engineering best practices across every `supy-*` backend repository through AI: five parallel review subagents, a consistency-baseline generator, scaffolding and Git skills, and thin orchestration wrappers over `superpowers`. This document records the P5 (Task 10) pilot: what was structurally validated, the exact procedure to enable the plugin in a live session, the exercise checklist for confirming the core loop, degradation behaviour, and known gaps.
+supy-wingspan is Supy's internal Claude Code plugin. It enforces engineering best practices across every `supy-*` repository through AI: stack-aware review subagents (NestJS backend + Angular frontend, dispatched by stack), a consistency-baseline generator, scaffolding and Git skills, and thin orchestration wrappers over `superpowers`. This document records the P5 (Task 10) pilot: what was structurally validated, the exact procedure to enable the plugin in a live session, the exercise checklist for confirming the core loop, degradation behaviour, and known gaps.
+
+## Pilot status (2026-07-15)
+
+- ✅ **Structural validation — complete.** Plugin tree validated, all components load, verification checks (shellcheck, JSON, frontmatter) pass. See [Validation results](#validation-results).
+- ✅ **Graceful degradation — verified by inspection.** Fallback branches confirmed by reading the command/skill sources. See [Graceful degradation](#graceful-degradation).
+- ⏳ **Live install + core-loop exercise — pending.** The interactive `/plugin` install and the `/supy-review` + `supy-commit` runs cannot be driven headlessly; they must be run by a human in a real session. Follow the [Pilot exercise checklist](#pilot-exercise-checklist) and record results here. Boxes are unticked until confirmed live.
 
 ## Validation results
 
-The `plugin-dev:plugin-validator` was run against the full plugin tree on 2026-07-15.
+The `plugin-dev:plugin-validator` was run against the full plugin tree on 2026-07-15 (re-run after the `angular-nx` frontend additions). `shellcheck` was run against `detect-stack.sh` separately.
 
-Verdict: **VALID_WITH_WARNINGS** — zero critical errors.
+Verdict: **VALID** — zero critical errors, zero blocking warnings.
 
 | Component | Result |
 |---|---|
-| Agents | 5 / 5 valid (`supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-commit-pr-reviewer`, `supy-security-reviewer`) |
-| Skills | 5 / 5 valid (`supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`) |
+| Agents | 6 / 6 valid — backend: `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-security-reviewer`; frontend: `supy-angular-reviewer`; stack-agnostic: `supy-commit-pr-reviewer` |
+| Skills | 7 / 7 valid (`supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`, `supy-scaffold-feature`, `supy-angular-feature`) |
 | Commands | 4 / 4 valid — none carry a forbidden `name:` key (`supy-brainstorm`, `supy-plan`, `supy-build`, `supy-review`) |
 | `hooks/hooks.json` | Valid |
-| `hooks/detect-stack.sh` | Present and executable (`-rwxr-xr-x`) |
-| Hardcoded absolute paths | None — `${CLAUDE_PLUGIN_ROOT}` used throughout |
+| `hooks/detect-stack.sh` | Present and executable (`-rwxr-xr-x`); `shellcheck` clean |
+| Hardcoded absolute paths | None in component bodies — `${CLAUDE_PLUGIN_ROOT}` used throughout (16 files) |
+| Frontend assets | `templates/frontend/` (CLAUDE.md.hbs + Plop generator + enforcement configs) and `config/standards/frontend/` (`angular-conventions.md`, `module-boundaries.md`) present |
 
-Non-blocking warnings are recorded under [Verify at install / known gaps](#verify-at-install--known-gaps) below.
+Runtime items to confirm during the live pilot are recorded under [Verify at install / known gaps](#verify-at-install--known-gaps) below.
 
 ## Local enablement
 
 The following two commands enable the plugin from inside a Claude Code session opened in the target repository (e.g., `supy-service-inventory`). They are structurally validated — the marketplace `name` is `supy`, the plugin `name` is `supy-wingspan`, and `source` resolves to the repo root — but await live confirmation in an actual session.
 
 ```
-/plugin marketplace add /Users/abdalqaderalnajjar/Projects/supy-projects/supy-wingspan
+/plugin marketplace add ~/Projects/supy-projects/supy-wingspan
 /plugin install supy-wingspan@supy
 ```
 
 Where:
-- The path argument to `marketplace add` is the absolute path to the supy-wingspan repo root (or `~/Projects/supy-projects/supy-wingspan` if the shell expands `~`).
+- The path argument to `marketplace add` is the supy-wingspan repo root. The `~` form above is portable across machines; a fully-qualified absolute path (e.g. `/Users/<you>/Projects/supy-projects/supy-wingspan`) works too if `~` is not expanded.
 - `supy-wingspan@supy` is `<plugin-name>@<marketplace-name>` as defined in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`.
 
 If the pilot repo tracks its own `.claude/settings.json`, add the marketplace entry there before running the above, so the registration persists across sessions.
 
 After install, the following should be available:
 - **Commands (slash):** `/supy-brainstorm`, `/supy-plan`, `/supy-build`, `/supy-review`
-- **Skills (invoked as skills, not slash commands):** `supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`
-- Agents: the five review subagents (dispatched internally by `/supy-review`)
-- SessionStart hook: `detect-stack.sh` runs at session open and prints `supy-wingspan: detected <stack> repo.`
+- **Skills (invoked as skills, not slash commands):** `supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`; frontend: `supy-scaffold-feature`, `supy-angular-feature`
+- Agents: the review subagents dispatched internally by `/supy-review` — 5 backend reviewers for `nestjs-nx`, the Angular reviewer + commit/PR reviewer for `angular-nx`, the stack-agnostic commit/PR reviewer otherwise
+- SessionStart hook: `detect-stack.sh` runs at session open and prints `supy-wingspan: detected <stack> repo.` (one of `nestjs-nx`, `angular-nx`, `nx`, `flutter`, `generic`)
 
 ## Pilot exercise checklist
 
@@ -46,7 +53,7 @@ Run the following in `supy-service-inventory` on a scratch branch that contains 
 
 1. - [ ] Open a Claude Code session inside `supy-service-inventory` and run:
    ```
-   /plugin marketplace add /Users/abdalqaderalnajjar/Projects/supy-projects/supy-wingspan
+   /plugin marketplace add ~/Projects/supy-projects/supy-wingspan
    /plugin install supy-wingspan@supy
    ```
    **Expected:** Claude Code reports the plugin installed successfully, no errors.
@@ -107,10 +114,12 @@ The following two non-blocking warnings were recorded by the validator. They do 
 
 1. **`SessionStart` hook has no `matcher` field.** The `hooks/hooks.json` entry for `SessionStart` does not include a `matcher`. This is correct for session-lifecycle events, but if the target Claude Code runtime requires a `matcher` even for `SessionStart`, the hook entry could be silently skipped. Verify during the live pilot (checklist step 2) that the `detect-stack.sh` message actually fires at session open.
 
-2. **Review agents declare `Grep` and `Glob` as tool identifiers.** The five review agents list `tools: Read, Grep, Glob, Bash`. If the runtime does not expose `Grep` or `Glob` as explicit tool identifiers, those entries are silently ignored and the agents still function using `Read` and `Bash`. No action required unless the runtime tool ID list differs and the agents produce degraded results.
+2. **Review agents declare `Grep` and `Glob` as tool identifiers.** All six review agents list `tools: Read, Grep, Glob, Bash`. If the runtime does not expose `Grep` or `Glob` as explicit tool identifiers, those entries are silently ignored and the agents still function using `Read` and `Bash`. No action required unless the runtime tool ID list differs and the agents produce degraded results.
 
 ## Next stacks
 
-This pilot covers backend-first repositories: NestJS-on-Nx (`nestjs-nx`) with NATS eventing and Cerbos authorization. Flutter mobile and React/Next.js frontend repositories are intentionally out of scope for v0.1.0.
+This release covers two stacks in one plugin: NestJS-on-Nx (`nestjs-nx`) with NATS eventing and Cerbos authorization, and Angular-on-Nx (`angular-nx`) with NGXS + PrimeNG. Stack detection (SessionStart hook, `supy-review`, and `supy-baseline`) branches on the repo's `package.json` so each repo gets only its stack's agents, skills, and CLAUDE.md template. Flutter mobile and React/Next.js frontend repositories remain intentionally out of scope for v0.1.0.
 
-When those stacks are ready, the plan (per the design spec's open items, §11) is an **Approach C split**: separate per-stack plugins or per-stack profiles registered under the same `supy` marketplace, each carrying their own standards files, agents, and stack-detection hook output. This keeps backend, mobile, and frontend review logic independently versioned and avoids a monolithic plugin that tries to detect and branch across all three stacks at runtime.
+The `angular-nx` support was validated structurally alongside the backend (the Angular reviewer, the `supy-scaffold-feature`/`supy-angular-feature` skills, the `templates/frontend/` CLAUDE.md template, and the `config/standards/frontend/` rulebooks all load and pass verification). A live `angular-nx` pilot in a real Supy frontend repo — mirroring the backend checklist below — is still pending.
+
+When the remaining stacks are ready, the plan (per the design spec's open items, §11) is an **Approach C split**: separate per-stack plugins or per-stack profiles registered under the same `supy` marketplace, each carrying their own standards files, agents, and stack-detection hook output. The current backend/frontend pairing lives in one plugin because both are Nx/TypeScript and share the commit/PR reviewer and Git skills; a genuinely divergent stack (Flutter) would justify the split rather than more runtime branching.

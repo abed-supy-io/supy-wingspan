@@ -1,0 +1,5 @@
+<section class="{{kebab entity}}-list">
+  @for (item of items(); track item.id) {
+    <app-{{kebab entity}}-card [item]="item" (clicked)="onRowClick($event)" />
+  }
+</section>

@@ -1,0 +1,31 @@
+{
+  "//": "Merge into your root package.json. g:feature powers the NGXS feature scaffolder.",
+  "scripts": {
+    "g:feature": "plop --plopfile tools/generators/plopfile.js feature",
+    "lint": "nx run-many -t lint",
+    "lint:affected": "nx affected -t lint",
+    "all:stylelint": "stylelint \"{apps,libs}/**/*.scss\"",
+    "test": "nx run-many -t test",
+    "affected:test": "nx affected -t test",
+    "format": "nx format:write",
+    "graph": "nx graph",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,html}": ["eslint --fix", "prettier --write"],
+    "*.scss": ["stylelint --fix", "prettier --write"]
+  },
+  "devDependencies": {
+    "@nx/eslint-plugin": "latest",
+    "angular-eslint": "latest",
+    "typescript-eslint": "latest",
+    "eslint": "^9",
+    "eslint-plugin-simple-import-sort": "latest",
+    "stylelint": "latest",
+    "stylelint-config-standard-scss": "latest",
+    "husky": "latest",
+    "lint-staged": "latest",
+    "plop": "latest",
+    "prettier": "latest"
+  }
+}
