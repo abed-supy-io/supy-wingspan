@@ -12,7 +12,7 @@ Verdict: **VALID_WITH_WARNINGS** — zero critical errors.
 |---|---|
 | Agents | 5 / 5 valid (`supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-commit-pr-reviewer`, `supy-security-reviewer`) |
 | Skills | 5 / 5 valid (`supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`) |
-| Commands | 4 / 4 valid — none carry a forbidden `name:` key (`supy-brainstorm`, `supy-plan`, `supy-review-and-commit`, `supy-daily`) |
+| Commands | 4 / 4 valid — none carry a forbidden `name:` key (`supy-brainstorm`, `supy-plan`, `supy-build`, `supy-review`) |
 | `hooks/hooks.json` | Valid |
 | `hooks/detect-stack.sh` | Present and executable (`-rwxr-xr-x`) |
 | Hardcoded absolute paths | None — `${CLAUDE_PLUGIN_ROOT}` used throughout |
@@ -35,7 +35,8 @@ Where:
 If the pilot repo tracks its own `.claude/settings.json`, add the marketplace entry there before running the above, so the registration persists across sessions.
 
 After install, the following should be available:
-- Commands: `/supy-review`, `/supy-commit`, `/supy-baseline`, `/supy-brainstorm`, `/supy-plan`, `/supy-review-and-commit`, `/supy-daily`
+- **Commands (slash):** `/supy-brainstorm`, `/supy-plan`, `/supy-build`, `/supy-review`
+- **Skills (invoked as skills, not slash commands):** `supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`
 - Agents: the five review subagents (dispatched internally by `/supy-review`)
 - SessionStart hook: `detect-stack.sh` runs at session open and prints `supy-wingspan: detected <stack> repo.`
 
@@ -59,12 +60,12 @@ Run the following in `supy-service-inventory` on a scratch branch that contains 
    # make a small edit, then stage it
    git add <file>
    ```
-   **Expected:** `git diff HEAD~1...HEAD --stat` shows at least one changed file.
+   **Expected:** `git diff $(git merge-base HEAD origin/main || git merge-base HEAD main)...HEAD --stat` shows at least one changed file. (Note: `/supy-review` reviews the whole branch diff vs. the merge-base with `origin/main` or `main`, not just the last commit.)
 
 4. - [ ] Run `/supy-review` with no arguments.
    **Expected:** Claude dispatches all five review subagents in parallel, waits for results, and emits a consolidated report with the header `# Supy Review — N issues (H high, M med, L low)`, findings grouped into `## High`, `## Medium`, `## Low`, and `## Clean` sections.
 
-5. - [ ] Run `/supy-commit` with no arguments.
+5. - [ ] Invoke the `supy-commit` skill (ask Claude to prepare the commit; it is a skill, not a `/`-command — e.g. "run the supy-commit skill").
    **Expected:** Claude produces a conventional-commit message (type, optional scope, short description) that ends with the trailer:
    ```
    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
