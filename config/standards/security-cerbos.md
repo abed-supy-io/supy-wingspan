@@ -1,5 +1,5 @@
 ---
-source: supy-cerbos-policies/README.md, supy-cerbos-policies/resource_policies/resource_user.yaml, supy-cerbos-policies/resource_policies/resource_portal.yaml, supy-cerbos-policies/resource_policies/resource_item.yaml, supy-cerbos-policies/resource_policies/resource_stock_count.yaml, supy-cerbos-policies/resource_policies/resource_wastage.yaml, supy-cerbos-policies/resource_policies/resource_order.yaml
+source: supy-cerbos-policies/README.md, supy-cerbos-policies/resource_policies/resource_user.yaml, supy-cerbos-policies/resource_policies/portal.yaml, supy-cerbos-policies/resource_policies/resource_item.yaml, supy-cerbos-policies/resource_policies/resource_stock_count.yaml, supy-cerbos-policies/resource_policies/resource_wastage.yaml, supy-cerbos-policies/resource_policies/resource_order.yaml
 mined_on: 2026-07-15
 confidence: medium
 ---
@@ -13,7 +13,7 @@ Note: The cerbos-policies repo stores only policy definitions. Integration logic
 ## Rules
 
 1. **Every resource that can be acted upon must have a corresponding resource policy** in `supy-cerbos-policies/resource_policies/`. File naming convention: `resource_<resource_name>.yaml` (snake_case).
-2. **Default-deny pattern**: resource policies must start with a catch-all deny rule (`actions: ["*"], effect: EFFECT_DENY, roles: ["*"]`) before any allow rules. This ensures new resources are inaccessible until explicitly granted.
+2. **Default-deny pattern**: resource policies must start with a catch-all deny rule (`actions: ["*"], effect: EFFECT_DENY, roles: ["*"]`) before any allow rules. This ensures new resources are inaccessible until explicitly granted. (The deny-all example is from `resource_item.yaml`; the explicit allow examples below are from `portal.yaml` / `resource_user.yaml` — these demonstrate each approach separately, not halves of a single file.)
 3. **Explicit allow rules** enumerate permitted `roles` for specific `actions` — no implicit grants.
 4. Policy files use `apiVersion: api.cerbos.dev/v1`, `resourcePolicy.version: "default"`.
 5. **All environment branches**: dev changes go to `dev` branch; production-grade policies go to `main` branch. Never merge policy changes directly to `main` without review.
