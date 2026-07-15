@@ -47,7 +47,7 @@ For each changed file, check:
 4. **Default-deny pattern** (rule 2): any Cerbos policy file in the diff must include a catch-all deny rule (`actions: ["*"], effect: EFFECT_DENY, roles: ["*"]`) before allow rules — or must explicitly document why the resource is fully open.
 5. **Policy structure** (rule 4): policy files must have `apiVersion: api.cerbos.dev/v1` and `resourcePolicy.version: "default"`.
 6. **No wildcard allow for sensitive actions** (rule: `security-cerbos.md#red-flags`): `EFFECT_ALLOW` with `roles: ["*"]` must not appear for create/update/delete/approve/deactivate actions.
-7. **Policy version not set** (from `security-cerbos.md#red-flags`): `version` field missing from `resourcePolicy` is a red flag.
+7. **Policy version not set** (rule: `security-cerbos.md#red-flags`): `version` field missing from `resourcePolicy` is a red flag.
 8. **Red flags** listed in `security-cerbos.md#red-flags`.
 
 ---
