@@ -1,0 +1,28 @@
+import 'dart:io';
+
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
+import 'package:{{package}}/core/error/failures.dart';
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_datasource.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/repositories/{{feature}}_repository.dart';
+
+/// Implements the domain contract: calls the datasource, maps models to
+/// entities, and converts every thrown exception into a typed [Failure].
+class {{Feature}}RepositoryImpl implements {{Feature}}Repository {
+  const {{Feature}}RepositoryImpl(this._remote);
+
+  final {{Feature}}RemoteDatasource _remote;
+
+  @override
+  Future<Either<Failure, List<{{Entity}}>>> get{{Feature}}() async {
+    try {
+      final models = await _remote.get{{Feature}}();
+      return Right(models.map((model) => model.toEntity()).toList());
+    } on DioException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Request failed'));
+    } on SocketException {
+      return const Left(NetworkFailure('No connection'));
+    }
+  }
+}

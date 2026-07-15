@@ -1,0 +1,17 @@
+import 'package:dartz/dartz.dart';
+import 'package:{{package}}/core/error/failures.dart';
+import 'package:{{package}}/core/usecases/usecase.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/repositories/{{feature}}_repository.dart';
+
+/// Fetches the list of {{Entity}}. One operation, one usecase.
+class Get{{Feature}} extends UseCase<List<{{Entity}}>, NoParams> {
+  Get{{Feature}}(this._repository);
+
+  final {{Feature}}Repository _repository;
+
+  @override
+  Future<Either<Failure, List<{{Entity}}>>> call(NoParams params) {
+    return _repository.get{{Feature}}();
+  }
+}

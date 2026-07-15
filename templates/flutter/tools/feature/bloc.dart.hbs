@@ -1,0 +1,35 @@
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:{{package}}/core/error/failures.dart';
+import 'package:{{package}}/core/usecases/usecase.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+
+part '{{feature}}_event.dart';
+part '{{feature}}_state.dart';
+part '{{feature}}_bloc.freezed.dart';
+
+/// Always `Bloc`, never `Cubit`. Injects UseCases, resolves every [Either]
+/// with `fold`, and emits only inside an event handler.
+class {{Feature}}Bloc extends Bloc<{{Feature}}Event, {{Feature}}State> {
+  {{Feature}}Bloc({required Get{{Feature}} get{{Feature}}})
+      : _get{{Feature}} = get{{Feature}},
+        super(const {{Feature}}State.initial()) {
+    on<{{Feature}}Requested>(_onRequested);
+  }
+
+  final Get{{Feature}} _get{{Feature}};
+
+  Future<void> _onRequested(
+    {{Feature}}Requested event,
+    Emitter<{{Feature}}State> emit,
+  ) async {
+    emit(const {{Feature}}State.loading());
+    final result = await _get{{Feature}}(const NoParams());
+    result.fold(
+      (failure) => emit({{Feature}}State.error(failure)),
+      ({{feature}}) => emit({{Feature}}State.loaded({{feature}})),
+    );
+  }
+}

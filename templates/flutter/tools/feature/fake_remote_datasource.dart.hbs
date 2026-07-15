@@ -1,0 +1,15 @@
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_datasource.dart';
+import 'package:{{package}}/features/{{feature}}/data/models/{{entity}}_model.dart';
+
+/// In-memory datasource wired in DI when `FlavorConfig.instance.useFakeData`
+/// is true. Selected by flavor — never by commenting real code in and out.
+class Fake{{Feature}}RemoteDatasource implements {{Feature}}RemoteDatasource {
+  const Fake{{Feature}}RemoteDatasource();
+
+  @override
+  Future<List<{{Entity}}Model>> get{{Feature}}() async {
+    return const [
+      {{Entity}}Model(id: '1', name: 'Sample'),
+    ];
+  }
+}

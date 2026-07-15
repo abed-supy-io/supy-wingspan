@@ -1,0 +1,10 @@
+import 'package:dartz/dartz.dart';
+import 'package:{{package}}/core/error/failures.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+
+/// Domain contract for {{feature}}.
+///
+/// Returns [Either] — the domain never throws. Implemented in the data layer.
+abstract class {{Feature}}Repository {
+  Future<Either<Failure, List<{{Entity}}>>> get{{Feature}}();
+}

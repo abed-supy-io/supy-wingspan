@@ -1,0 +1,9 @@
+/// Public surface of the {{feature}} feature.
+///
+/// Export only what other features may reuse — never `data/` internals
+/// (models, datasources, repository impls).
+export 'domain/entities/{{entity}}.dart';
+export 'domain/repositories/{{feature}}_repository.dart';
+export 'domain/usecases/get_{{feature}}.dart';
+export 'presentation/bloc/{{feature}}_bloc.dart';
+export 'presentation/pages/{{feature}}_page.dart';

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Cheapest checks first so failures surface fast.
+      - name: Format check
+        run: dart format --set-exit-if-changed lib test
+
+      - name: Codegen (freezed / json_serializable)
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze (very_good_analysis)
+        run: flutter analyze
+
+      - name: Bloc lint (Bloc-not-Cubit, event/state discipline)
+        run: dart run bloc_lint lib
+
+      - name: Test
+        run: flutter test --coverage
+
+      - name: Enforce coverage floor (>=80%)
+        run: |
+          dart pub global activate coverage
+          PCT=$(dart pub global run coverage:format_coverage \
+            --lcov --in=coverage/lcov.info --report-on=lib 2>/dev/null; \
+            awk -F, '/^DA:/ {t++; if ($2>0) c++} END {if (t>0) printf "%d", (c/t)*100; else print 0}' coverage/lcov.info)
+          echo "Coverage: ${PCT}%"
+          if [ "${PCT:-0}" -lt 80 ]; then
+            echo "::error::Coverage ${PCT}% is below the 80% floor"
+            exit 1
+          fi

@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:{{package}}/app/injection_container.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/bloc/{{feature}}_bloc.dart';
+
+/// Route target for {{feature}}. Exposes `path` / `name` for the router and
+/// provides its BLoC from the get_it container — reached with `context.go`.
+class {{Feature}}Page extends StatelessWidget {
+  const {{Feature}}Page({super.key});
+
+  static const path = '/{{feature}}';
+  static const name = '{{feature}}';
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<{{Feature}}Bloc>()..add(const {{Feature}}Requested()),
+      child: const _{{Feature}}View(),
+    );
+  }
+}
+
+class _{{Feature}}View extends StatelessWidget {
+  const _{{Feature}}View();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('{{Feature}}')),
+      body: BlocBuilder<{{Feature}}Bloc, {{Feature}}State>(
+        builder: (context, state) {
+          return switch (state) {
+            {{Feature}}Loading() =>
+              const Center(child: CircularProgressIndicator()),
+            {{Feature}}Loaded(:final {{feature}}) => ListView.builder(
+                itemCount: {{feature}}.length,
+                itemBuilder: (context, index) => ListTile(
+                  title: Text({{feature}}[index].name),
+                ),
+              ),
+            {{Feature}}Error(:final failure) =>
+              Center(child: Text(failure.message)),
+            _ => const SizedBox.shrink(),
+          };
+        },
+      ),
+    );
+  }
+}

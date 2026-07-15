@@ -1,6 +1,6 @@
 # supy-wingspan Pilot Notes
 
-supy-wingspan is Supy's internal Claude Code plugin. It enforces engineering best practices across every `supy-*` repository through AI: stack-aware review subagents (NestJS backend + Angular frontend, dispatched by stack), a consistency-baseline generator, scaffolding and Git skills, and thin orchestration wrappers over `superpowers`. This document records the P5 (Task 10) pilot: what was structurally validated, the exact procedure to enable the plugin in a live session, the exercise checklist for confirming the core loop, degradation behaviour, and known gaps.
+supy-wingspan is Supy's internal Claude Code plugin. It enforces engineering best practices across every `supy-*` repository through AI: stack-aware review subagents (NestJS backend + Angular frontend + Flutter mobile, dispatched by stack), a consistency-baseline generator, scaffolding and Git skills, and thin orchestration wrappers over `superpowers`. This document records the P5 (Task 10) pilot: what was structurally validated, the exact procedure to enable the plugin in a live session, the exercise checklist for confirming the core loop, degradation behaviour, and known gaps.
 
 ## Pilot status (2026-07-15)
 
@@ -10,20 +10,21 @@ supy-wingspan is Supy's internal Claude Code plugin. It enforces engineering bes
 
 ## Validation results
 
-The `plugin-dev:plugin-validator` was run against the full plugin tree on 2026-07-15 (re-run after the `angular-nx` frontend additions). `shellcheck` was run against `detect-stack.sh` separately.
+The `plugin-dev:plugin-validator` was run against the full plugin tree on 2026-07-15 (re-run after the `flutter` mobile additions). `shellcheck` was run against `detect-stack.sh` separately.
 
 Verdict: **VALID** — zero critical errors, zero blocking warnings.
 
 | Component | Result |
 |---|---|
-| Agents | 6 / 6 valid — backend: `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-security-reviewer`; frontend: `supy-angular-reviewer`; stack-agnostic: `supy-commit-pr-reviewer` |
-| Skills | 9 / 9 valid (`supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`, `supy-clean-architecture`, `supy-scaffold-domain`, `supy-scaffold-feature`, `supy-angular-feature`) |
+| Agents | 7 / 7 valid — backend: `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-security-reviewer`; frontend: `supy-angular-reviewer`; mobile: `supy-flutter-reviewer`; stack-agnostic: `supy-commit-pr-reviewer` |
+| Skills | 11 / 11 valid (`supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`, `supy-clean-architecture`, `supy-scaffold-domain`, `supy-scaffold-feature`, `supy-angular-feature`, `supy-scaffold-flutter-feature`, `supy-flutter-feature`) |
 | Commands | 4 / 4 valid — none carry a forbidden `name:` key (`supy-brainstorm`, `supy-plan`, `supy-build`, `supy-review`) |
 | `hooks/hooks.json` | Valid |
 | `hooks/detect-stack.sh` | Present and executable (`-rwxr-xr-x`); `shellcheck` clean |
-| Hardcoded absolute paths | None in component bodies — `${CLAUDE_PLUGIN_ROOT}` used throughout (16 files) |
+| Hardcoded absolute paths | None in component bodies — `${CLAUDE_PLUGIN_ROOT}` used throughout |
 | Frontend assets | `templates/frontend/` (CLAUDE.md.hbs + Plop generator + enforcement configs) and `config/standards/frontend/` (`angular-conventions.md`, `module-boundaries.md`) present |
 | Backend clean-arch assets | `templates/backend/tools/generators/` (Plop `g:domain` generator + templates) and `config/standards/backend/module-boundaries.md` present; the `supy-clean-architecture` how-to and `supy-scaffold-domain` scaffolder cite `architecture.md` (incl. `#ddd-building-blocks`) + `module-boundaries.md` |
+| Flutter assets | `templates/flutter/` (CLAUDE.md.hbs + `analysis_options.yaml` + `.editorconfig` + CI workflow + `tools/feature/` bundled `.hbs` stubs) and `config/standards/flutter/` (`architecture.md`, `flutter-conventions.md`) present; the `supy-flutter-feature` how-to and `supy-scaffold-flutter-feature` scaffolder cite both by H2 anchor. No `package.json`/`node` — enforcement is `very_good_analysis` + `bloc_lint` |
 
 Runtime items to confirm during the live pilot are recorded under [Verify at install / known gaps](#verify-at-install--known-gaps) below.
 
@@ -44,8 +45,8 @@ If the pilot repo tracks its own `.claude/settings.json`, add the marketplace en
 
 After install, the following should be available:
 - **Commands (slash):** `/supy-brainstorm`, `/supy-plan`, `/supy-build`, `/supy-review`
-- **Skills (invoked as skills, not slash commands):** `supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`; backend: `supy-scaffold-handler`, `supy-clean-architecture`, `supy-scaffold-domain`; frontend: `supy-scaffold-feature`, `supy-angular-feature`
-- Agents: the review subagents dispatched internally by `/supy-review` — 5 backend reviewers for `nestjs-nx`, the Angular reviewer + commit/PR reviewer for `angular-nx`, the stack-agnostic commit/PR reviewer otherwise
+- **Skills (invoked as skills, not slash commands):** `supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`; backend: `supy-scaffold-handler`, `supy-clean-architecture`, `supy-scaffold-domain`; frontend: `supy-scaffold-feature`, `supy-angular-feature`; mobile: `supy-scaffold-flutter-feature`, `supy-flutter-feature`
+- Agents: the review subagents dispatched internally by `/supy-review` — 5 backend reviewers for `nestjs-nx`, the Angular reviewer + commit/PR reviewer for `angular-nx`, the Flutter reviewer + commit/PR reviewer for `flutter`, the stack-agnostic commit/PR reviewer otherwise
 - SessionStart hook: `detect-stack.sh` runs at session open and prints `supy-wingspan: detected <stack> repo.` (one of `nestjs-nx`, `angular-nx`, `nx`, `flutter`, `generic`)
 
 ## Pilot exercise checklist
@@ -115,12 +116,12 @@ The following two non-blocking warnings were recorded by the validator. They do 
 
 1. **`SessionStart` hook has no `matcher` field.** The `hooks/hooks.json` entry for `SessionStart` does not include a `matcher`. This is correct for session-lifecycle events, but if the target Claude Code runtime requires a `matcher` even for `SessionStart`, the hook entry could be silently skipped. Verify during the live pilot (checklist step 2) that the `detect-stack.sh` message actually fires at session open.
 
-2. **Review agents declare `Grep` and `Glob` as tool identifiers.** All six review agents list `tools: Read, Grep, Glob, Bash`. If the runtime does not expose `Grep` or `Glob` as explicit tool identifiers, those entries are silently ignored and the agents still function using `Read` and `Bash`. No action required unless the runtime tool ID list differs and the agents produce degraded results.
+2. **Review agents declare `Grep` and `Glob` as tool identifiers.** All seven review agents list `tools: Read, Grep, Glob, Bash`. If the runtime does not expose `Grep` or `Glob` as explicit tool identifiers, those entries are silently ignored and the agents still function using `Read` and `Bash`. No action required unless the runtime tool ID list differs and the agents produce degraded results.
 
 ## Next stacks
 
-This release covers two stacks in one plugin: NestJS-on-Nx (`nestjs-nx`) with NATS eventing and Cerbos authorization, and Angular-on-Nx (`angular-nx`) with NGXS + PrimeNG. Stack detection (SessionStart hook, `supy-review`, and `supy-baseline`) branches on the repo's `package.json` so each repo gets only its stack's agents, skills, and CLAUDE.md template. Flutter mobile and React/Next.js frontend repositories remain intentionally out of scope for v0.1.0.
+This release covers three stacks in one plugin: NestJS-on-Nx (`nestjs-nx`) with NATS eventing and Cerbos authorization, Angular-on-Nx (`angular-nx`) with NGXS + PrimeNG, and Flutter (`flutter`) with Clean Architecture + BLoC. Stack detection (SessionStart hook, `supy-review`, and `supy-baseline`) branches on the repo's `package.json` for the two Nx stacks and on `pubspec.yaml` for Flutter, so each repo gets only its stack's agents, skills, and CLAUDE.md template. React/Next.js frontend repositories remain intentionally out of scope for v0.1.0.
 
-The `angular-nx` support was validated structurally alongside the backend (the Angular reviewer, the `supy-scaffold-feature`/`supy-angular-feature` skills, the `templates/frontend/` CLAUDE.md template, and the `config/standards/frontend/` rulebooks all load and pass verification). A live `angular-nx` pilot in a real Supy frontend repo — mirroring the backend checklist below — is still pending.
+The `angular-nx` and `flutter` support was validated structurally alongside the backend. For `flutter`: the `supy-flutter-reviewer` agent, the `supy-scaffold-flutter-feature`/`supy-flutter-feature` skills, the `templates/flutter/` CLAUDE.md template + bundled `.hbs` feature stubs + `analysis_options.yaml`, and the `config/standards/flutter/` rulebooks all load and pass verification. Flutter is not Nx: it has no `package.json`, no Plop, and no npm/node — the scaffolder copies bundled `.hbs` stubs with manual placeholder substitution, and enforcement is `very_good_analysis` + `bloc_lint` via `analysis_options.yaml`. A live `angular-nx` pilot and a live `flutter` pilot in real Supy repos — mirroring the backend checklist below — are still pending.
 
-When the remaining stacks are ready, the plan (per the design spec's open items, §11) is an **Approach C split**: separate per-stack plugins or per-stack profiles registered under the same `supy` marketplace, each carrying their own standards files, agents, and stack-detection hook output. The current backend/frontend pairing lives in one plugin because both are Nx/TypeScript and share the commit/PR reviewer and Git skills; a genuinely divergent stack (Flutter) would justify the split rather than more runtime branching.
+Bringing Flutter into this plugin (rather than a separate one) proved the stack-branching model scales past Nx/TypeScript: detection simply adds a `pubspec.yaml` branch, and the shared commit/PR reviewer and Git skills apply unchanged. If a future stack diverges enough that runtime branching becomes unwieldy, the fallback plan (per the design spec's open items, §11) remains an **Approach C split**: separate per-stack plugins or profiles registered under the same `supy` marketplace, each carrying their own standards, agents, and stack-detection hook output.

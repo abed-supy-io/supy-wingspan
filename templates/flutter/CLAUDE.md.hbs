@@ -1,0 +1,119 @@
+# {{repo_name}}
+
+{{one_line_purpose}}
+
+> **Note:** This is an initial analysis. More detailed conventions, patterns, and domain knowledge will be added over time. Treat contents as directional guidance, not exhaustive documentation.
+
+## Cortex MCP — Live Architecture Reference
+
+If the Cortex MCP is connected, **always use it for up-to-date architecture data** rather than relying solely on this file:
+
+- `get_repo_guide('{{repo_name}}')` — feature list, layers, and dependencies for this repo
+- `search_entities('<concept>')` — find any BLoC, UseCase, repository, or entity across the app
+- `search_relationships('<query>')` — understand how features and layers connect
+- `trace_implementation('<pattern>')` — follow a flow from page → bloc → usecase → repository → datasource
+
+The static information in this file is **directional guidance and onboarding context**. Cortex is the live source of truth for the feature inventory and dependency graph — these change as features are added. If Cortex is not available (not all team members may have it connected), fall back to the information in this file.
+
+## Product Context
+
+{{one_line_purpose}}
+
+**Features**: {{features}} | **Flavors**: {{flavors}}
+
+## Role in the Platform
+
+- Key user flows: {{key_flows}}
+
+## Stack
+
+{{stack_versions}}
+
+Flutter + Dart, Clean Architecture, bloc/flutter_bloc, go_router, get_it, dio, dartz, freezed + json_serializable, hive, very_good_analysis + bloc_lint.
+
+## Architecture — Clean Architecture Layers by Feature
+
+```text
+lib/
+  app/
+    injection_container.dart   → get_it registrations (singletons + bloc factories)
+    router/                    → go_router config (routes reference page path constants)
+    flavor_config.dart         → dev / staging / production environment values
+  core/                        → cross-cutting primitives
+    error/                     → sealed Failure hierarchy
+    usecases/                  → UseCase<T, Params> + Params base
+    network/                   → Dio + interceptor chain (auth → cache → retry → error → logging)
+    cache/                     → Hive managers + cache policies
+  shared/
+    presentation/design_system/ → SupyColors, ColorTokens, spacing, SupyRadius, SupyTypography
+  features/[feature]/          → one feature, three layers
+    domain/                    → entities (Equatable), repository interfaces, usecases — PURE DART
+    data/                      → models (freezed + json), datasources (+ fake), repository impls
+    presentation/              → blocs (sealed events + freezed state), pages, widgets
+```
+
+### Layer Boundaries (enforced by import discipline + review)
+
+- **Dependencies point inward.** Presentation → Domain ← Data. Domain depends on nothing but Dart, `dartz`, `equatable`, and `core/`.
+- **Domain is pure Dart** — no `package:flutter`, `BuildContext`, widgets, Dio, Hive, or JSON. An entity extends `Equatable`; a repository is an `abstract class` returning `Future<Either<Failure, T>>`.
+- **Data implements domain interfaces** — one repository impl per domain interface, mapping exceptions to `Failure`. Models carry serialization; entities stay pure.
+- **Presentation reaches the domain only through UseCases** — a BLoC injects UseCases, never repositories or datasources. Widgets hold no business logic.
+- **`core/` = cross-cutting primitives; `shared/` = cross-feature code.** A feature never imports another feature's internals — shared concepts move to `lib/shared/`.
+- **Adding a feature `foo`:** create `lib/features/foo/{domain,data,presentation}/` → fill in dependency order → register usecases/repo/datasources (singletons) and the BLoC (factory) in `injection_container.dart` → add the page's route with its `static const path`.
+
+## State Rules (BLoC)
+
+- **Always `Bloc`, never `Cubit`.** One BLoC per feature concern, with a **sealed** event hierarchy and a **`freezed`** state union.
+- The BLoC injects **UseCases** and resolves every `Either` with `fold` — `Left` → error state, `Right` → data state.
+- Provide the BLoC with `BlocProvider(create: (_) => sl<FeatureBloc>())`; widgets dispatch events and render via `BlocBuilder`/`BlocListener`.
+
+## Error Handling (dartz)
+
+- Repositories and usecases return `Future<Either<Failure, T>>` — **the domain never throws**.
+- Failures are the sealed hierarchy: `ServerFailure` / `NetworkFailure` / `CacheFailure` / `AuthFailure` / `ValidationFailure` / `UnknownFailure`.
+- Every consumer `fold`s both branches — no `.getOrElse`-and-ignore.
+
+## UseCases
+
+- Each usecase extends `UseCase<T, Params>` and does one thing; `Params extends Equatable` (or `NoParams` when there are none).
+
+## Navigation (go_router)
+
+- Each page exposes `static const path` / `static const name`, is registered once in the router, and is reached with `context.go`.
+- **No `pushNamed` / `goNamed` / `push` / `extra`** — pass IDs in the path. Auth/role guards live in the router `redirect`.
+
+## Dependency Injection (get_it)
+
+- Everything registers in `lib/app/injection_container.dart`: services, Dio, datasources, repositories, and usecases as `registerLazySingleton`; BLoCs as `registerFactory`.
+- **No `riverpod` / `provider` for DI.** No `GetIt` resolution inside domain or data classes — pass dependencies through constructors.
+
+## Networking & Caching
+
+- Requests go through Dio with the fixed interceptor order `auth → cache → retry → error → logging`.
+- Caching goes through `HiveCacheManager` + `CacheInterceptor` with an explicit policy (`cacheFirst` / `networkFirst` / `staleWhileRevalidate` / `networkOnly`) — never ad-hoc Hive access from a repository.
+- The fake datasource is selected in DI by `FlavorConfig.instance.useFakeData` — never by commenting code in and out.
+
+## Design System
+
+- Colors from `context.supyColors` (primitives) / `context.colors` (semantic `ColorTokens`); spacing/radius from the spacing scale and `SupyRadius`; typography from `context.textTheme`.
+- **No `Color(0xFF…)`, no `Colors.*`, no raw numeric `EdgeInsets`, no inline `TextStyle`.**
+
+## Codegen
+
+- `freezed` + `json_serializable` models and states; regenerate with `dart run build_runner build --delete-conflicting-outputs`.
+- **Never hand-edit `*.g.dart` / `*.freezed.dart`.**
+
+## Testing
+
+- `mocktail` + `bloc_test`; mock the boundary (datasource for a repo test, usecase for a bloc test), never the class under test.
+- Widget tests use the shared `pumpApp` helper. Target ≥80% coverage.
+
+## Flavors & Security
+
+- Environment values (base URL, fake-data flag, Sentry DSN) come from `FlavorConfig` (dev / staging / production) — never hardcoded.
+- Tokens live in `flutter_secure_storage`; the auth interceptor attaches the bearer and a `401` triggers the session-expiry flow.
+- Sentry breadcrumbs are sanitized — never log a token or PII.
+
+## Commits
+
+- Conventional Commits. Subject imperative, ≤50 characters, no trailing period.

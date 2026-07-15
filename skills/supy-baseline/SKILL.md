@@ -38,10 +38,10 @@ fi
 [ -z "$STACK" ] && STACK=generic
 ```
 
-Template generation is supported for **`nestjs-nx`** (backend) and **`angular-nx`** (frontend). For any other stack (`nx`, `flutter`, `generic`) this skill only emits the missing-pieces checklist (Step 4) and skips template generation. In that case print a notice:
+Template generation is supported for **`nestjs-nx`** (backend), **`angular-nx`** (frontend), and **`flutter`** (mobile). For any other stack (`nx`, `generic`) this skill only emits the missing-pieces checklist (Step 4) and skips template generation. In that case print a notice:
 
 ```
-supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx and angular-nx repos.
+supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx, angular-nx, and flutter repos.
 Reporting missing AI-setup pieces only.
 ```
 
@@ -54,6 +54,8 @@ Select the Handlebars template for the detected stack:
 ```bash
 if [ "$STACK" = "angular-nx" ]; then
   TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/frontend/CLAUDE.md.hbs"
+elif [ "$STACK" = "flutter" ]; then
+  TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/flutter/CLAUDE.md.hbs"
 else
   TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.hbs"
 fi
@@ -61,7 +63,7 @@ fi
 
 Collect each placeholder value from the repo. If Cortex MCP is connected, augment with live data; otherwise fall back to static inspection. Every Cortex call is optional — never hard-fail if Cortex is absent.
 
-Both templates share `repo_name`, `one_line_purpose`, `key_flows`, and `stack_versions`. Fill the **Backend placeholders (nestjs-nx)** block for a `nestjs-nx` repo, or the **Frontend placeholders (angular-nx)** block for an `angular-nx` repo.
+All templates share `repo_name`, `one_line_purpose`, `key_flows`, and `stack_versions`. Fill the **Backend placeholders (nestjs-nx)** block for a `nestjs-nx` repo, the **Frontend placeholders (angular-nx)** block for an `angular-nx` repo, or the **Flutter placeholders (flutter)** block for a `flutter` repo. Flutter repos have no `package.json` — every command in the flutter block reads `pubspec.yaml` and the `lib/` tree instead, with no `node`.
 
 ### Shared placeholders
 
@@ -197,11 +199,65 @@ node -e "
 "
 ```
 
+### Flutter placeholders (flutter)
+
+Flutter repos have no `package.json` or `node`. Read `pubspec.yaml` and the `lib/` tree.
+
+#### `features`
+
+The feature modules under `lib/features/`:
+
+```bash
+ls "$REPO_ROOT/lib/features" 2>/dev/null | paste -sd ', '
+```
+
+If nothing found, emit `"<features>"`.
+
+#### `flavors`
+
+The build flavors, taken from the flavored entrypoints (`lib/main_<flavor>.dart`, the very_good_cli convention):
+
+```bash
+ls "$REPO_ROOT/lib"/main_*.dart 2>/dev/null \
+  | sed -E 's#.*/main_##;s#\.dart##' | sort -u | paste -sd ', '
+```
+
+If no flavored entrypoints exist, fall back to `dev, staging, production`.
+
+#### `key_flows`
+
+1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → `flows` or `keyFlows`.
+2. Fallback: list the route path constants declared on pages:
+
+```bash
+grep -rh "static const path" "$REPO_ROOT/lib" --include="*.dart" 2>/dev/null \
+  | grep -oE "'/[^']*'" | tr -d "'" | sort -u | head -8 | paste -sd ', '
+```
+
+If nothing found, emit `"<key-flows>"`.
+
+#### `stack_versions`
+
+Read from `pubspec.yaml` (no `node`). Emit a markdown table of the key dependencies:
+
+```bash
+{
+  echo '| Package | Version |'
+  echo '|---------|---------|'
+  for pkg in flutter_bloc go_router get_it dio dartz freezed_annotation hive very_good_analysis; do
+    ver=$(grep -E "^  $pkg:" "$REPO_ROOT/pubspec.yaml" | head -1 | sed -E "s/^  $pkg:[[:space:]]*//")
+    [ -n "$ver" ] && echo "| $pkg | $ver |"
+  done
+}
+```
+
+If `pubspec.yaml` is unreadable, emit `"<stack-versions>"`.
+
 ---
 
 ## Step 3 — Fill the template and compute the diff
 
-Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the values collected there. Replace every `{{placeholder}}` token (Handlebars-style) with the corresponding value. Both templates use `{{one_line_purpose}}` in two places — both must be filled identically. Fill only the placeholders the selected template actually contains (backend: `bounded_context`, `database`, `aggregates`, `nats_patterns`; frontend: `apps`, `feature_libs`).
+Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the values collected there. Replace every `{{placeholder}}` token (Handlebars-style) with the corresponding value. Every template uses `{{one_line_purpose}}` in two places — both must be filled identically. Fill only the placeholders the selected template actually contains (backend: `bounded_context`, `database`, `aggregates`, `nats_patterns`; frontend: `apps`, `feature_libs`; flutter: `features`, `flavors`).
 
 Produce the candidate content as an in-memory string called `GENERATED`.
 

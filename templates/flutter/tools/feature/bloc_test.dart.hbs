@@ -1,0 +1,49 @@
+import 'package:bloc_test/bloc_test.dart';
+import 'package:dartz/dartz.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/error/failures.dart';
+import 'package:{{package}}/core/usecases/usecase.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/bloc/{{feature}}_bloc.dart';
+
+class _MockGet{{Feature}} extends Mock implements Get{{Feature}} {}
+
+void main() {
+  late _MockGet{{Feature}} usecase;
+
+  const items = [{{Entity}}(id: '1', name: 'Sample')];
+  const failure = ServerFailure('boom');
+
+  setUp(() => usecase = _MockGet{{Feature}}());
+  setUpAll(() => registerFallbackValue(const NoParams()));
+
+  group('{{Feature}}Bloc', () {
+    blocTest<{{Feature}}Bloc, {{Feature}}State>(
+      'emits [loading, loaded] when the usecase succeeds',
+      setUp: () => when(() => usecase(any())).thenAnswer(
+        (_) async => const Right<Failure, List<{{Entity}}>>(items),
+      ),
+      build: () => {{Feature}}Bloc(get{{Feature}}: usecase),
+      act: (bloc) => bloc.add(const {{Feature}}Requested()),
+      expect: () => const [
+        {{Feature}}State.loading(),
+        {{Feature}}State.loaded(items),
+      ],
+    );
+
+    blocTest<{{Feature}}Bloc, {{Feature}}State>(
+      'emits [loading, error] when the usecase fails',
+      setUp: () => when(() => usecase(any())).thenAnswer(
+        (_) async => const Left<Failure, List<{{Entity}}>>(failure),
+      ),
+      build: () => {{Feature}}Bloc(get{{Feature}}: usecase),
+      act: (bloc) => bloc.add(const {{Feature}}Requested()),
+      expect: () => const [
+        {{Feature}}State.loading(),
+        {{Feature}}State.error(failure),
+      ],
+    );
+  });
+}

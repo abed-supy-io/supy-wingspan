@@ -1,0 +1,18 @@
+import 'package:equatable/equatable.dart';
+
+/// {{Entity}} domain entity — pure Dart, business fields only.
+///
+/// No serialization, no `package:flutter`, no framework types. The data layer
+/// maps its model to this; the presentation layer renders it.
+class {{Entity}} extends Equatable {
+  const {{Entity}}({
+    required this.id,
+    required this.name,
+  });
+
+  final String id;
+  final String name;
+
+  @override
+  List<Object?> get props => [id, name];
+}

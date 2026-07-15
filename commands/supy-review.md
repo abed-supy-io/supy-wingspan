@@ -13,6 +13,7 @@ The skill is located at `${CLAUDE_PLUGIN_ROOT}/skills/supy-review/SKILL.md`. It:
 2. Detects the repo's stack and dispatches the matching reviewer agents concurrently:
    - **nestjs-nx** (backend) → five reviewers: architecture, NATS events, test quality, commit/PR hygiene, and security.
    - **angular-nx** (frontend) → two reviewers: Angular/NGXS conventions and commit/PR hygiene.
+   - **flutter** (mobile) → two reviewers: Flutter/Clean-Architecture conventions and commit/PR hygiene.
    - **other** → the stack-agnostic commit/PR reviewer only.
 3. Consolidates findings into a severity-grouped report (high / medium / low).
 

@@ -1,0 +1,62 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/error/failures.dart';
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_datasource.dart';
+import 'package:{{package}}/features/{{feature}}/data/models/{{entity}}_model.dart';
+import 'package:{{package}}/features/{{feature}}/data/repositories/{{feature}}_repository_impl.dart';
+
+class _Mock{{Feature}}RemoteDatasource extends Mock
+    implements {{Feature}}RemoteDatasource {}
+
+void main() {
+  late _Mock{{Feature}}RemoteDatasource remote;
+  late {{Feature}}RepositoryImpl repository;
+
+  const models = [{{Entity}}Model(id: '1', name: 'Sample')];
+
+  setUp(() {
+    remote = _Mock{{Feature}}RemoteDatasource();
+    repository = {{Feature}}RepositoryImpl(remote);
+  });
+
+  group('{{Feature}}RepositoryImpl.get{{Feature}}', () {
+    test('maps a successful fetch to Right(entities)', () async {
+      when(remote.get{{Feature}}).thenAnswer((_) async => models);
+
+      final result = await repository.get{{Feature}}();
+
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('expected Right'),
+        (entities) => expect(entities.single.id, '1'),
+      );
+    });
+
+    test('maps a DioException to Left(ServerFailure)', () async {
+      when(remote.get{{Feature}}).thenThrow(
+        DioException(requestOptions: RequestOptions(path: '/{{feature}}')),
+      );
+
+      final result = await repository.get{{Feature}}();
+
+      result.fold(
+        (failure) => expect(failure, isA<ServerFailure>()),
+        (_) => fail('expected Left'),
+      );
+    });
+
+    test('maps a SocketException to Left(NetworkFailure)', () async {
+      when(remote.get{{Feature}}).thenThrow(const SocketException('offline'));
+
+      final result = await repository.get{{Feature}}();
+
+      result.fold(
+        (failure) => expect(failure, isA<NetworkFailure>()),
+        (_) => fail('expected Left'),
+      );
+    });
+  });
+}

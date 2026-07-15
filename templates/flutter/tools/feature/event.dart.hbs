@@ -1,0 +1,14 @@
+part of '{{feature}}_bloc.dart';
+
+/// Sealed event hierarchy — the compiler enforces exhaustive handling.
+sealed class {{Feature}}Event extends Equatable {
+  const {{Feature}}Event();
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// Load (or reload) the {{feature}} list.
+final class {{Feature}}Requested extends {{Feature}}Event {
+  const {{Feature}}Requested();
+}

@@ -1,0 +1,22 @@
+import 'package:dio/dio.dart';
+import 'package:{{package}}/features/{{feature}}/data/models/{{entity}}_model.dart';
+
+/// Talks to the network. Throws (Dio/Socket) on failure — the repository
+/// catches and maps to a [Failure]. No error swallowing here.
+abstract class {{Feature}}RemoteDatasource {
+  Future<List<{{Entity}}Model>> get{{Feature}}();
+}
+
+class {{Feature}}RemoteDatasourceImpl implements {{Feature}}RemoteDatasource {
+  const {{Feature}}RemoteDatasourceImpl(this._dio);
+
+  final Dio _dio;
+
+  @override
+  Future<List<{{Entity}}Model>> get{{Feature}}() async {
+    final response = await _dio.get<List<dynamic>>('/{{feature}}');
+    return (response.data ?? [])
+        .map((json) => {{Entity}}Model.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: supy-review
-description: Review the current Supy diff/PR against Supy standards using the stack-appropriate review subagents in parallel, then consolidate findings by severity. Backend (nestjs-nx) dispatches five reviewers; frontend (angular-nx) dispatches the Angular + commit/PR reviewers. Use before committing or opening a PR on a supy-* repo.
+description: Review the current Supy diff/PR against Supy standards using the stack-appropriate review subagents in parallel, then consolidate findings by severity. Backend (nestjs-nx) dispatches five reviewers; frontend (angular-nx) dispatches the Angular + commit/PR reviewers; mobile (flutter) dispatches the Flutter + commit/PR reviewers. Use before committing or opening a PR on a supy-* repo.
 ---
 
 ## Step 1 — Resolve the diff range
@@ -45,6 +45,8 @@ if [ -f "$REPO_PATH/nx.json" ] && grep -q '"@angular/core"' "$REPO_PATH/package.
   STACK="angular-nx"
 elif [ -f "$REPO_PATH/nx.json" ] && grep -q '"@nestjs/core"' "$REPO_PATH/package.json" 2>/dev/null; then
   STACK="nestjs-nx"
+elif [ -f "$REPO_PATH/pubspec.yaml" ]; then
+  STACK="flutter"
 else
   STACK="other"
 fi
@@ -56,9 +58,10 @@ Choose the reviewer set:
 |---|---|
 | `nestjs-nx` | `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-commit-pr-reviewer`, `supy-security-reviewer` (five) |
 | `angular-nx` | `supy-angular-reviewer`, `supy-commit-pr-reviewer` (two) |
+| `flutter` | `supy-flutter-reviewer`, `supy-commit-pr-reviewer` (two) |
 | `other` | `supy-commit-pr-reviewer` only (stack-agnostic) |
 
-The `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, and `supy-security-reviewer` agents are backend-specific — never dispatch them against an `angular-nx` repo. `supy-commit-pr-reviewer` is stack-agnostic and always dispatched.
+The `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, and `supy-security-reviewer` agents are backend-specific; `supy-angular-reviewer` is frontend-specific; `supy-flutter-reviewer` is mobile-specific. Never dispatch a stack-specific reviewer against a repo of a different stack. `supy-commit-pr-reviewer` is stack-agnostic and always dispatched.
 
 **In a single message, make one Agent tool call per reviewer in the selected set** so they all run in parallel. Do not make them sequentially. Passing both `DIFF_BASE` and `REPO_PATH` into each dispatch prompt is mandatory so all agents review the identical diff rather than each recomputing it independently.
 

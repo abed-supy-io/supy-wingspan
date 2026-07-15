@@ -1,0 +1,26 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+
+part '{{entity}}_model.freezed.dart';
+part '{{entity}}_model.g.dart';
+
+/// Data-layer DTO for [{{Entity}}].
+///
+/// Carries serialization (`fromJson`/`toJson`); maps to the pure entity via
+/// [toEntity]. Regenerate the part files with
+/// `dart run build_runner build --delete-conflicting-outputs` — never edit
+/// `*.freezed.dart` / `*.g.dart` by hand.
+@freezed
+class {{Entity}}Model with _${{Entity}}Model {
+  const {{Entity}}Model._();
+
+  const factory {{Entity}}Model({
+    required String id,
+    required String name,
+  }) = _{{Entity}}Model;
+
+  factory {{Entity}}Model.fromJson(Map<String, dynamic> json) =>
+      _${{Entity}}ModelFromJson(json);
+
+  {{Entity}} toEntity() => {{Entity}}(id: id, name: name);
+}

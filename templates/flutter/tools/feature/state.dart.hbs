@@ -1,0 +1,12 @@
+part of '{{feature}}_bloc.dart';
+
+/// `freezed` state union. Pattern-match with `switch` in the UI — no
+/// nullable "is it loading?" flags.
+@freezed
+class {{Feature}}State with _${{Feature}}State {
+  const factory {{Feature}}State.initial() = {{Feature}}Initial;
+  const factory {{Feature}}State.loading() = {{Feature}}Loading;
+  const factory {{Feature}}State.loaded(List<{{Entity}}> {{feature}}) =
+      {{Feature}}Loaded;
+  const factory {{Feature}}State.error(Failure failure) = {{Feature}}Error;
+}
