@@ -1,0 +1,11 @@
+## supy-api-common — NestJS-on-Nx shared libraries (nestjs-nx variant, lib-only)
+
+- **Purpose:** Shared domain, infra, and integration libraries (`@supy.api/*`) powering all Supy microservices.
+- **Structure:** ~30 flat-namespace libs (no tags): infra (nest, microservices, logging, opentelemetry, healthchecks), persistence (mongoose, elasticsearch, bigquery, redis), auth (authentication, authorization, permissions, cerbos, logto), domain (domain VOs, errors, validation), integrations (slack, messente, unleash, databricks, asyncapi).
+- **Architecture & patterns:** barrels `export * from './lib'`; path aliases `@supy.api/*` → `libs/*/src/index.ts`. Shared NestJS filters/interceptors/decorators (`libs/nest`). `Identity` base class with phantom type `__type` for type-safe IDs. Custom `BaseError`→specialized error hierarchy bridged to NestJS via HttpExceptionFilter. NATS client proxy with LZ4/snappy compression, serialization, timeouts. Shared validation transformers (phone/date/JSON).
+- **Tooling:** lint=@nx/eslint + simple-import-sort · format=Prettier 3.8 (@supy/prettier-config) · test=Jest 30 + ts-jest (passWithNoTests, coverage → coverage/libs/*) · CI=`nx affected` + `run-many --all` · codegen=@asyncapi/generator · pre-commit=format + lint-fix · commits=@supy/commitlint-config/conventional; pre-push branch regex (≤24 chars). **publishing=nx-release, independent versioning, tag `@supy.api/{lib}@{version}`, deploy to Google Artifact Registry (`.npmrc` git skip-worktree).**
+- **Testing:** Jest, passWithNoTests, coverage → workspace root; no e2e.
+- **Security / secrets / config:** `.env` via `@supy.api/env` configure (dotenv); Passport (JWT, header API key); Cerbos authz; no hardcoded secrets; scripted registry login pre-install.
+- **Divergences vs typical service repo:** no apps (lib-only); no feature-folder grouping (flat scope); independent per-lib release; custom compression-aware NATS wrapper.
+- **New patterns worth codifying:** (1) Identity + phantom-type IDs; (2) centralized error→HttpException filter; (3) compression-aware NATS proxy; (4) transformation decorators (phone/date/JSON); (5) delay-on-destroy/shutdown providers; (6) AsyncAPI codegen.
+- **Recommendation:** deepen nestjs-nx — codify shared-lib conventions (tagging policy, Identity archetype, NATS client, coverage baseline).

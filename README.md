@@ -14,8 +14,9 @@ From any supy repo (or user settings), add this directory as a local marketplace
 /plugin marketplace add ~/Projects/supy-projects/supy-wingspan
 /plugin install supy-wingspan@supy
 ```
-See [`docs/PILOT.md`](docs/PILOT.md) for the validated enablement procedure, the
-pilot exercise checklist, and known gaps.
+See [`docs/USAGE.md`](docs/USAGE.md) for the full install / usage / deployment
+guide, and [`docs/PILOT.md`](docs/PILOT.md) for the validated enablement
+procedure, the pilot exercise checklist, and known gaps.
 
 ## Usage
 

@@ -1,0 +1,11 @@
+## supy-integration-inventory — NestJS-on-Nx backend (nestjs-nx, integration adapters)
+
+- **Purpose:** Multi-tenant POS/accounting integration service orchestrating 40+ external provider adapters (Xero, Prologic, LS Retail, Clover…) with domain mapping/transformation layers.
+- **Structure:** `apps/api` (FastifyAdapter) + `libs/{adapters/*,accounting/*,mapping/*,tenants/*,big-query/*,common/*,supplier-sftp/*}`; each adapter = mini-module (input types, client wrapper, output transformer, module).
+- **Architecture & patterns:** anti-corruption layer per adapter (`*-error-parser.ts` centralizes error/retry; `*-output.transformer.ts` maps provider DTO→domain). Interactors orchestrate Redis lock-based concurrency, validation, `EventRepository` dispatch. Modular adapters via Symbol DI + factory providers. Explicit rate-limit/retry (429 `retry-after` parsing).
+- **Tooling:** lint=@nx/eslint (@stylistic, simple-import-sort) · format=`nx format:write` (@supy/prettier-config) · test=@nx/jest (ts-jest, per-lib coverage) · CI=none in-repo · codegen=Nx schematics (`generate:library-{group,feature-*}`) · pre-commit=Husky (format + lint-fix) · commits=@supy/commitlint-config/conventional.
+- **Testing:** Jest ts-jest per lib, passWithNoTests; no explicit coverage bar; e.g. Xero error-parser test (429 + retry-after).
+- **Security / secrets / config:** external creds via env DI Symbols (`XERO_CLIENT_ID`, `XERO_SECRET_KEY`…); Redis distributed locks for idempotency (`accounting-invoices:custom-sync:${tenantId}`); Fastify 10MB body limit; audit logging via `@supy.api/auditlog` (JetStream); multi-tenant isolation (`TenantId`, `TenantAuth`).
+- **Divergences vs typical Supy nestjs-nx:** none notable — textbook adapter/ACL layering.
+- **New patterns worth codifying:** (1) error-to-details parsing (structured provider validation errors + retry-after semantics); (2) 1:1 adapter file convention (`.adapter.ts`/`-output.transformer.ts`/`.client.ts`/`.module.ts`, pure static transformers); (3) interactor Redis-lock concurrency (retry budget + TTL, fail-fast on contention).
+- **Recommendation:** deepen nestjs-nx — exemplary integration architecture; consider shared `@supy/adapter-patterns` if scaling providers.

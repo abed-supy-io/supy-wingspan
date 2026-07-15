@@ -1,0 +1,11 @@
+## supy-firebase-functions — Firebase Cloud Functions (Node 22 / TypeScript, standalone) — candidate NEW stack
+
+- **Purpose:** Serverless backend — Firestore triggers (auth, orders, companies, products, messages), HTTPS callables, Cloud Tasks, BigQuery sync.
+- **Structure:** `functions/src/lib/{app,data,frameworks}/`; per-domain `use-cases/{auth,orders,messages,companies,products,bigquery}/`; per-trigger exports in `index.ts` (Firestore onWrite/onCreate/onUpdate + HTTPS onCall/onRequest).
+- **Architecture & patterns:** Clean architecture (Interactor → Repository → DataSource). **Awilix IoC** container for DI (not NestJS decorators). Per-domain app classes (AuthServer, OrdersServer…) wrap interactors. Errors via CustomError subclasses + ApplicationErrorFactory. Scope-per-request container for env injection. Decorators (@unauthenticated/@internal/@admin/@apiKey) are semantic-only, **not enforced at runtime**.
+- **Tooling:** lint=**tslint (deprecated, no eslint)** · format=Prettier (120, single-quote) · test=**none** · CI=**none (.github absent)** · codegen=none · pre-commit=**none** · commits=conventional (by history) · deploy=`firebase deploy --only functions` (predeploy lint+build).
+- **Testing:** none; `firebase-functions-test` in devDeps but unused.
+- **Security / secrets / config:** `functions.config()` at init (set via CLI); service accounts base64-injected into DI; **RISK: hardcoded values (mailgun key, jsReportAuthToken) in server.ts + API keys in container**; no Secret Manager; no `.env.example`. — flag as remediation; do not reproduce any secret value.
+- **Divergences vs Supy nestjs-nx conventions:** standalone (not Nx); tslint not ESLint; no pre-commit/CI/tests; Awilix vs NestJS DI; per-trigger exports.
+- **New patterns worth codifying:** scope-per-request container for multi-env function variants; plugin-based input mapping (QueryDocumentSnapshot → Input); CloudTasks + OIDC SA auth. Decorator auth markers SHOULD be runtime-enforced.
+- **Recommendation:** **candidate NEW stack (firebase-functions)** but with a **remediation-first standard**: migrate tslint→ESLint (@supy config), add Husky + commitlint, move secrets to Secret Manager, add jest + firebase-functions-test, enforce @decorator auth at runtime, add CI. High-value target because it is the least-governed TS repo.

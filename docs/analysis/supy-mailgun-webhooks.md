@@ -1,0 +1,10 @@
+## supy-mailgun-webhooks — NestJS-on-Nx backend (nestjs-nx, webhook ingress)
+
+- **Purpose:** Communication service — outgoing email, incoming invoice/order-confirmation email via webhooks, delivery tracking, suppression management.
+- **Structure:** `apps/api` + `libs/{email,notification,adapters,context-maps,common}`; DDD api/data/domain/logic per context.
+- **Architecture & patterns:** webhook auth = HMAC-SHA256 validation in guards + interceptors (`MailgunAuthGuard`, `AutoGrnSignatureInterceptor`, `OrderConfirmationSignatureInterceptor`). Event routing: external events (orders.*, settlements.*) → internal `communication.*-email-requested` via outbox; NATS listeners decouple sending. Custom exception filters (Slack notify) on failures. Idempotency = query-then-upsert (findByEmails → evaluateEvents → upsertManyByEmail, session transactions). Multipart attachments via `OptionalAttachmentInterceptor` + `StrictValidationPipe`.
+- **Tooling:** lint=@supy/eslint-config/node · format=@supy/prettier-config · test=Jest 27 + ts-jest (specs co-located, e.g. `mailgun.adapter.integration.spec.ts`) · CI=absent from git · codegen=Nx generators · pre-commit=Husky (format + lint-fix) · commits=commitlint + cz-commitlint.
+- **Security / secrets / config:** HMAC-SHA256 with `MAILGUN_API_KEY`; Nodemailer + nodemailer-mailgun-transport; SendGrid `@sendgrid/eventwebhook`; env via dotenv-cli + `.env.vault`; no secrets committed.
+- **Divergences vs typical Supy nestjs-nx:** DDD aggregates (EmailSuppression, Email) + outbox; webhook handlers as guards+interceptors (not middleware); provider-specific suppression parsers + adapters (Mailgun/SendGrid); multi-tenant via context-map proxies.
+- **New patterns worth codifying:** (1) signature-verification stacking (guard → interceptor, defensive + logged); (2) `@EventPattern` NATS listeners + exception filters (JetStream/Nats) coupled to domain events; (3) suppression event evaluation (skip/merge/replace) in domain model; (4) Slack notification on critical failures.
+- **Recommendation:** deepen nestjs-nx — webhook-ingress conventions generalize to other external integrations (Stripe, Twilio).

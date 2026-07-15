@@ -1,0 +1,11 @@
+## supy-flutter-packages — Flutter shared-packages monorepo (melos) — candidate NEW stack: flutter-melos
+
+- **Purpose:** Multi-package Dart/Flutter shared-library distribution (cart, feature flags, filtering, auth, observability) published to pub.dev.
+- **Structure:** 6 packages under `packages/`: `flexi_cart` (cart + grouping/provider), `unleash_client` (feature-flag SDK), `filterator` (API query builder), `cerbos_http_client` (Cerbos auth), `opentelemetry_dart` (tracing), `flutter_upkeep` (stub). No inter-package deps.
+- **Architecture & patterns:** independent libraries (zero coupling); barrel exports `lib/<name>.dart` → `src/*`; provider for state (flexi_cart); native http/dio/protobuf in clients. Melos used for bootstrap only.
+- **Tooling:** lint=very_good_analysis (flexi_cart, filterator) or lints:recommended (unleash_client) · format=dart format · test=flutter test + very_good_coverage (**min 85%**) · CI=GitHub Actions per-package (paths-filtered) · codegen=json_serializable/build_runner (filterator) · pre-commit=none · commits=conventional (auto CHANGELOG) · melos-scripts=`analyze` only · publishing=pub.dev (manual, versions in pubspec.yaml).
+- **Testing:** test / flutter_test + mocktail; 85% coverage gate enforced per package; group-based structure in `test/`.
+- **Security / secrets / config:** CODECOV_TOKEN via GitHub secrets; plain HTTP clients; no env/secret management.
+- **Divergences vs a typical Supy flutter app repo:** monorepo with zero inter-package coupling; minimal melos (only `analyze`, no version/publish automation); each package independently releasable; no shared design system; dual analysis configs (VGA vs lints:recommended).
+- **New patterns worth codifying:** (1) per-package CI with path-based triggers; (2) barrel export (`lib/<name>.dart` → `src/*`); (3) dual analysis-config policy (VGA for Flutter-heavy, lints:recommended for pure-Dart CLI); (4) **85% per-package coverage gate**; (5) provider + mocktail for state testing.
+- **Recommendation:** **candidate NEW stack (flutter-melos)** — establishes melos as Supy's Dart/Flutter monorepo standard. Strengthen with melos version/publish scripts, inter-package dependency rules, and a package template (analysis_options.yaml + CI). Likely realized as a **flutter sub-profile (melos package monorepo)** rather than a wholly separate stack.

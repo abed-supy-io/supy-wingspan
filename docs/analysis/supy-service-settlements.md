@@ -1,0 +1,11 @@
+## supy-service-settlements — NestJS + Nx backend (nestjs-nx, finance domain)
+
+- **Purpose:** Settlements service — GRNs, invoices, credit notes, supplier returns and related financial documents.
+- **Structure:** `libs/<context>/{domain/{model,service},data,logic,commands,queries,api,common}` (grns, credit-notes, supplier-return, invoices) + `libs/{core,context-maps,elastic,recognition}` + `apps/api`.
+- **Architecture & patterns:** CQRS + DDD. `AggregateRoot` + strongly-typed VOs (`GrnId`, `GrnItemId`). **Monetary values: BigInt-backed decimal arithmetic (`floatingPointAdd/Subtract/Multiply/Divide`) with configurable precision + rounding (half-up/half-even/down/floor/ceil) — never plain Number math.** MongoDB session transactions + outbox; NATS RPC/EventPattern with `StrictValidationPipe`; interactor pattern; context-maps for inter-service calls.
+- **Tooling:** lint=ESLint (flat, strict no-console/no-var) · format=Prettier (@supy/prettier-config) · test=Jest 30 (co-located, mocks from `@supy/{lib}/mocks`) · CI=none in repo · codegen=Nx generators (library-feature-*) · pre-commit=lint-fix + format (pre-push runs lint/format/test) · commits=commitlint conventional (@supy/commitlint-config).
+- **Testing:** Jest 30, co-located, passWithNoTests, mock repos, `Test.createTestingModule`; no enforced coverage bar.
+- **Security / secrets / config:** `.env{,.local,.development,.production}` (dotenv-cli); `@supy.api/authentication` NATS auth; typed errors; `.npmrc` skip-worktree.
+- **Divergences vs typical Supy nestjs-nx:** Elasticsearch only for Received Items (contained in `libs/elastic/`); BigQuery deprecated (→ Databricks in Core); `grns.get.stats`/`.summary` deprecated (BFFs call Core).
+- **New patterns worth codifying:** (1) **decimal arithmetic `math.helper.ts` (quantized BigInt ops)** — all monetary VOs/services delegate; (2) idempotency via aggregate ID as key + transactions; (3) event sourcing via outbox (`addEvent()`, never direct emit); (4) `addActivities()` audit to `supy.ops.audit-log` JetStream; (5) VO ID wrapping (`new GrnId(str)`, `.toObject()`).
+- **Recommendation:** deepen nestjs-nx — strong candidate for extracting the decimal-arithmetic helper as a reusable financial foundation.
