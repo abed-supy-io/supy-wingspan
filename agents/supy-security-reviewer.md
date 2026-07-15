@@ -43,10 +43,10 @@ For each changed file, check:
 
 1. **Authorization check on destructive handlers** (rule 7 in `security-cerbos.md#rules`): any handler that exposes `create`, `update`, `delete`, `approve`, or `deactivate` actions must include a Cerbos authorization check before executing business logic. Missing check is high severity.
 2. **No hardcoded roles** (rule 8): application code must not contain inline role checks (e.g., `if (user.role === 'admin')`). Role names must match canonical values from Cerbos policies.
-3. **New resource policy required** (rule 9): if a new resource type is introduced by the diff, a corresponding `resource_<resource_name>.yaml` policy file must be referenced or present. Flag missing policy as high severity.
+3. **New resource policy required** (rule 9 in `security-cerbos.md#rules`): Cerbos policies live in a separate repository (`supy-cerbos-policies`) and will never appear in a service diff. Do NOT flag "policy file not present in diff." Instead: if a new resource type or handler is introduced by the diff, flag for the reviewer to CONFIRM that a corresponding PR to `supy-cerbos-policies` (adding `resource_<resource_name>.yaml`) exists or is planned before the feature ships to production. Absence of a confirmed cross-repo policy PR is high severity.
 4. **Default-deny pattern** (rule 2): any Cerbos policy file in the diff must include a catch-all deny rule (`actions: ["*"], effect: EFFECT_DENY, roles: ["*"]`) before allow rules — or must explicitly document why the resource is fully open.
 5. **Policy structure** (rule 4): policy files must have `apiVersion: api.cerbos.dev/v1` and `resourcePolicy.version: "default"`.
-6. **No wildcard allow for sensitive actions** (rule from `security-cerbos.md#red-flags`): `EFFECT_ALLOW` with `roles: ["*"]` must not appear for create/update/delete/approve/deactivate actions.
+6. **No wildcard allow for sensitive actions** (rule: `security-cerbos.md#red-flags`): `EFFECT_ALLOW` with `roles: ["*"]` must not appear for create/update/delete/approve/deactivate actions.
 7. **Policy version not set** (from `security-cerbos.md#red-flags`): `version` field missing from `resourcePolicy` is a red flag.
 8. **Red flags** listed in `security-cerbos.md#red-flags`.
 

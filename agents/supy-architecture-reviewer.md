@@ -83,7 +83,7 @@ Diff adds in `libs/ledger/api/src/ledger.rpc.controller.ts`:
 import { TransferRepository } from '@supy/transfer/data';
 ```
 
-And a repository method:
+And in `libs/transfer/data/src/lib/repositories/transfer.repository.ts`:
 
 ```typescript
 async findById(id: string): Promise<Transfer | null> {

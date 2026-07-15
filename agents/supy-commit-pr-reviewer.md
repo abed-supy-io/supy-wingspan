@@ -61,7 +61,7 @@ For each commit message, check:
 11. **Footer leading blank line** (rule 11): if a footer is present, a blank line must separate the body/header from the footer.
 12. **Multi-scope format** (rule 12): if multiple scopes, they must be comma-separated (e.g., `refactor(recipe,wastage):`).
 13. **Issue reference format** (rule 13): issue references use `closes #N` or `fixes #N` in the footer — not inline in the subject.
-14. **No secrets in commit messages**: flag if a commit message contains what looks like a token, API key, or connection string.
+14. **No secrets in commit messages** (rule: `commit-conventions.md#red-flags`): flag if a commit message contains what looks like a token, API key, or connection string.
 15. **Red flags** listed in `commit-conventions.md#red-flags`.
 
 ---
