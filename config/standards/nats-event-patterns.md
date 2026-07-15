@@ -25,6 +25,7 @@ Supy services communicate exclusively over NATS. Two distinct transports are use
 10. When the same event subject is consumed by multiple handlers in the same service, use the `{ discriminator: 'unique-id' }` option on `@EventPattern` to disambiguate.
 11. Domain events emitted by an aggregate must always use `this.addEvent(new MyEvent(...))` — never emit directly to NATS.
 12. Every new domain event class must register its `fullName` discriminator in `apps/api/src/app/domain-events.discriminators.ts`.
+13. **Event consumers must be idempotent.** JetStream is at-least-once — the same event can be redelivered, and external webhook bridges add another redelivery source. A handler must produce the same end state on a second delivery: reconcile against a stable key rather than blindly inserting. The mined pattern is query-then-upsert inside a session transaction (`find…` → evaluate (skip / merge / replace) → `upsert…`); a monotonic version / occurred-at check or a dedup key are equivalent. A listener whose logic is a bare `insert`/`create` on redeliverable input is a defect. (Webhook ingress states the HTTP-boundary form of this — see `architecture.md#webhook-ingress-profile` rule W3.)
 
 ## Examples
 
@@ -111,6 +112,7 @@ await this.client.catalog.sendAsync('catalog.get.item', { id });
 - Domain event emitted without `addEvent()` — i.e., published directly via NATS client.
 - Missing discriminator registration in `domain-events.discriminators.ts`.
 - Two `@EventPattern` handlers for the same subject without a `discriminator` option.
+- An event listener that performs a bare `insert`/`create` on redeliverable input with no idempotency key or query-then-upsert reconciliation (rule 13) — duplicates state on JetStream/webhook redelivery.
 
 ## Source
 
@@ -119,3 +121,4 @@ await this.client.catalog.sendAsync('catalog.get.item', { id });
 - `supy-service-inventory/libs/ledger/api/src/ledger.rpc.controller.ts` — real RPC handler examples: `ledger.items.stock-movement`, `ledger.items.statement`, `ledger.grns.statement.one`, `ledger.event.check-status`
 - `supy-service-inventory/libs/ledger/api/src/ledger.nats.controller.ts` — real event handler examples with discriminators: `settlements.grn.grn-pushed-to-stock`, `inventory.ledger.shipped-out-changed`
 - `supy-api/CLAUDE.md` — corroborates same patterns in core domain service
+- `supy-mailgun-webhooks` — consumer/handler idempotency (rule 13): the query-then-upsert reconciliation pattern (`findByEmails` → evaluate skip/merge/replace → `upsertManyByEmail` inside a session transaction) at a redelivery-prone ingress boundary; HTTP-boundary form documented in `architecture.md#webhook-ingress-profile` (W3)

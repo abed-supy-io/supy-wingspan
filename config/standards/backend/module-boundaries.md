@@ -104,6 +104,16 @@ confidence: high
 - A relative import (`../../../transfer/domain/model/...`) crossing a library boundary instead of the `@supy/*` alias.
 - A new domain added without its aliases in `tsconfig.base.json`, its scope constraint in `eslint.config.mjs`, or its `ApiModule` registered in `app.module.ts`.
 
+## Shared-library variant
+
+Rules 1–8 govern a **bounded-context service repo** (apps + tagged domain libs). One recognized repo does **not** match that shape: `supy-api-common`, the shared-library-only repo that publishes the `@supy.api/*` packages.
+
+- **The untagged-lib defect (rule 1) does not apply to `supy-api-common`.** Its ~30 libraries are a flat, single-purpose namespace with no `type:`/`scope:` tags by design — there are no domains to isolate and no apps to protect, so `@nx/enforce-module-boundaries` is not the enforcement mechanism there. Do **not** flag its libraries as untagged defects.
+- **Everything else still holds.** Domain purity (rule 5), typed errors (rule 6), and alias-not-relative imports (rule 7) still apply to any lib in that repo that contains domain logic. Only the tag-based boundary rules (1, 3, 4, and the adding-a-domain wiring in 8) are out of scope there.
+- **Cross-context translation still goes through an anti-corruption layer.** In a service repo that is the `type:context-map` lib (rules 2, 4); in `supy-api-common` the equivalent role is played by dedicated integration/adapter libs. Reaching into another context's internals directly is a defect in either shape.
+
+See `nx-nestjs-patterns.md#shared-library-variant-supy-api-common` (SV1–SV6) for the full profile.
+
 ## Source
 
 - `architecture-starter-kit/docs/module-boundaries.md` — tag dimensions, `type:` meanings, example tagging, path aliases, adding-a-domain steps, and the explicit `@app/*` → `@supy/*` swap note

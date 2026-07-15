@@ -144,6 +144,17 @@ import { TransferRepository } from '../../../transfer/data/src/lib/repositories'
 - `jest.resetAllMocks()` missing from `afterEach` in test suites.
 - Tautological or assertion-free spec (only `expect(true).toBe(true)` or a lone `toBeDefined()`) — provides no real coverage of the new logic.
 
+## Shared-library variant (supy-api-common)
+
+`supy-api-common` is a **shared-library-only** repo (the `@supy.api/*` packages consumed by every service). It is a deliberate, recognized variant of the layout above — not a violation of it. When reviewing a repo that matches this shape, apply these adjustments instead of the rules above; do not flag the divergences as defects.
+
+- **SV1 — No apps, flat library namespace.** There are no `apps/`. Libraries are ~30 flat, single-purpose packages (`libs/<name>`), not grouped under `libs/<domain>/<layer>/`. The bounded-context layer layout (rules 2, 9–14) does **not** apply here.
+- **SV2 — No Nx tags.** Libraries in this repo are intentionally untagged. Do **not** flag missing `type:`/`scope:` tags here (contrast the tagged-service rule in `backend/module-boundaries.md`). See `module-boundaries.md#shared-library-variant`.
+- **SV3 — Path alias shape.** Cross-package imports use `@supy.api/<name>` → `libs/<name>/src/index.ts` (barrels `export * from './lib'`), not `@supy/<domain>/<sublibrary>`.
+- **SV4 — Independent release + publishing.** Packages are versioned independently via `nx-release`, tagged `@supy.api/{lib}@{version}`, and published to Google Artifact Registry (`.npmrc` kept out of tree via git `skip-worktree`). A change to one lib bumps only that lib.
+- **SV5 — Shared archetypes to preserve.** `Identity` base class with a phantom `__type` for type-safe IDs; a custom `BaseError` hierarchy bridged to NestJS via a single `HttpExceptionFilter`; a compression-aware NATS client proxy (LZ4/snappy + serialization + timeouts); transformation decorators (phone/date/JSON). New shared IDs, errors, and NATS wiring should reuse these, not reinvent them.
+- **SV6 — `passWithNoTests`.** Jest runs with `passWithNoTests`; a lib with no `*.spec.ts` does not fail CI here. Coverage rule 19 still applies to any lib that contains business logic.
+
 ## Source
 
 - `supy-service-inventory/CLAUDE.md` — Stack versions, NestJS 11 import quirk, Nx Sync Note, generator commands, architecture layer layout, testing patterns
@@ -152,3 +163,4 @@ import { TransferRepository } from '../../../transfer/data/src/lib/repositories'
 - `supy-service-inventory/apps/api/project.json` — webpack executor, `compiler: tsc`, sourceRoot
 - `supy-api/CLAUDE.md` — corroborates NestJS 11 + Fastify 5, Nx 22.5.3, same library layout conventions
 - Cortex `get_coding_rules(category: testing)` rule-0007 (severity: must; source: review-feedback:62-accepted-findings) — test coverage for new business logic + meaningful assertions (rule 19).
+- `supy-api-common` — shared-library-only variant: flat untagged libs, `@supy.api/*` barrel aliases, `Identity` phantom-type IDs, `BaseError`→`HttpExceptionFilter`, compression-aware NATS proxy, `nx-release` independent versioning to Google Artifact Registry, Jest `passWithNoTests` (Shared-library variant SV1–SV6).

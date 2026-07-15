@@ -47,6 +47,16 @@ The layer rules above govern *where* code lives; these govern *how* the domain i
 
 7. **Domain event names are `<context>.<aggregate>.<past-tense-verb>`** (e.g. `inventory.transfer.transfer-submitted`). Event payloads carry raw primitives only (no VOs, no Mongoose documents), set `metadata.occurredBy`, and every event class is registered as a discriminator in `domain-events.discriminators.ts` or it will not deserialise on the worker side.
 
+## Webhook ingress profile
+
+Services that accept **external HTTP webhooks** (email providers, payment providers, SMS) add these conventions on top of the layer rules above. Mined from `supy-mailgun-webhooks` (Mailgun / SendGrid email ingress); the same shape generalizes to Stripe / Twilio ingress. The `supy-architecture-reviewer` cites these by anchor (`architecture.md#webhook-ingress-profile rule WN`) and applies them only when the diff touches an HTTP webhook entry point.
+
+1. **W1 — Verify the signature before parsing the body.** Provider authenticity (HMAC-SHA256 over the raw payload) is checked in a guard (`MailgunAuthGuard`) that runs *before* any business logic. Where a route needs a second, payload-specific check, stack a signature interceptor on top of the guard (`AutoGrnSignatureInterceptor`, `OrderConfirmationSignatureInterceptor`) — defensive and logged. An unauthenticated or unverified webhook must be rejected, not processed.
+2. **W2 — No business logic in the webhook controller.** The controller authenticates, validates, and translates the external event into an internal domain intent — it does not mutate domain state inline. External events (`orders.*`, `settlements.*`) are republished as internal `communication.*-email-requested` messages via an **outbox**, and NATS `@EventPattern` listeners do the actual work. This decouples ingress latency/retries from processing.
+3. **W3 — Webhook handlers are idempotent.** Providers retry delivery, so the same event may arrive more than once. Use query-then-upsert against a stable key (`findByEmails` → `evaluateEvents` (skip / merge / replace) → `upsertManyByEmail`) inside a session transaction — never a blind `insert` that would duplicate on redelivery. (See `nats-event-patterns.md` consumer-idempotency rule for the event-consumer side of this.)
+4. **W4 — Failures are surfaced, never swallowed.** Ingest/processing failures go through a custom exception filter that notifies Slack (or the standard alerting channel). A webhook handler that catches and drops an error is a red flag — redelivery and observability both depend on the failure being visible.
+5. **W5 — Strict validation and typed payloads at the boundary.** Parse with `StrictValidationPipe` and typed payload classes; handle multipart/attachments through a dedicated interceptor (`OptionalAttachmentInterceptor`) rather than reading the raw request. Provider-specific quirks (suppression parsers, payload shapes) live behind per-provider adapters, not in the controller.
+
 ## Examples
 
 ### Good — layer layout for bounded context `transfer`
@@ -161,6 +171,10 @@ import { ITransferRepository } from '../../../transfer/domain/model/src';
 - A repository call, NATS emit, or event *persistence* performed inside an aggregate (aggregates only `this.addEvent`).
 - Domain event name not `<context>.<aggregate>.<past-tense-verb>`, or an event payload carrying value objects / Mongoose documents instead of raw primitives.
 - Cortex MCP available but not consulted for architecture questions (agent relying on potentially stale static docs).
+- **(webhook ingress)** A webhook route that parses or acts on the body before verifying the provider signature (rule W1).
+- **(webhook ingress)** Business/domain state mutated directly in a webhook controller instead of republishing an internal intent via the outbox + `@EventPattern` listener (rule W2).
+- **(webhook ingress)** A webhook handler that blindly inserts instead of query-then-upsert on a stable key — non-idempotent under provider redelivery (rule W3).
+- **(webhook ingress)** A webhook handler that catches and swallows an ingest/processing error without surfacing it (rule W4).
 
 ## Source
 
@@ -169,3 +183,4 @@ import { ITransferRepository } from '../../../transfer/domain/model/src';
 - `supy-api/CLAUDE.md` — corroborates same patterns in core domain service; confirms `api → logic → domain ← data` rule
 - `supy-service-inventory/.github/copilot-instructions.md` — operator-level conventions reinforcing layer rules and import conventions
 - `architecture-starter-kit/docs` + `skills/clean-architecture-ddd`, `skills/domain-review` — the **DDD building blocks** section: aggregate methods + `this.assign` / `this.addEvent`, state-machine-in-VO, `createNew` / `createFromExisting` factories, and domain-event naming
+- `supy-mailgun-webhooks` — the **Webhook ingress profile** (W1–W5): HMAC-SHA256 signature guard + stacked signature interceptors, no-logic controller republishing to internal `communication.*-email-requested` via outbox, query-then-upsert idempotency, Slack-notifying exception filters, `StrictValidationPipe` + attachment interceptor

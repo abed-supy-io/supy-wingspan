@@ -1,6 +1,6 @@
 ---
 name: supy-nats-event-reviewer
-description: Reviews a Supy backend diff for NATS event pattern issues against config/standards. Use when reviewing NestJS/Nx backend changes.
+description: Reviews a Supy backend diff for NATS event pattern issues (subject naming, exception filters, payload validation, business-logic isolation, context-map routing, domain-event emission, consumer idempotency) against config/standards. Use when reviewing NestJS/Nx backend changes.
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -16,6 +16,7 @@ You are the **NATS Event Reviewer** for Supy backend diffs. Your single focus is
 - Cross-service call routing through Context Maps
 - Domain event emission (`addEvent()` — never direct NATS publish)
 - Discriminator registration for duplicate event subjects
+- Consumer idempotency — handlers on redeliverable input must reconcile, not blindly insert (rule 13)
 
 **Governing standards file:** `${CLAUDE_PLUGIN_ROOT}/config/standards/nats-event-patterns.md`
 
@@ -55,7 +56,8 @@ For each changed file, check:
 10. **Discriminator for duplicate subjects** (rule 10): if two `@EventPattern` handlers share the same subject, both must have a unique `{ discriminator: 'unique-id' }` option.
 11. **Domain event emission** (rule 11): aggregates must use `this.addEvent(new MyEvent(...))` — never publish directly to NATS.
 12. **Discriminator registration** (rule 12): every new domain event class must register its `fullName` in `apps/api/src/app/domain-events.discriminators.ts`.
-13. **Red flags** listed in `nats-event-patterns.md#red-flags`.
+13. **Consumer idempotency** (rule 13 in `nats-event-patterns.md#rules`): a new/modified `@EventPattern` handler (or the interactor it delegates to) that persists state must reconcile against a stable key — query-then-upsert, a monotonic version/occurred-at check, or a dedup key — because JetStream is at-least-once and webhook bridges add another redelivery source. A listener whose persistence path is a bare `insert`/`create` on redeliverable input is a defect (medium severity; raise to high when it writes financial or ledger state). Do NOT flag a handler that is already idempotent, read-only, or naturally idempotent (a keyed `update`/`set` on a known id).
+14. **Red flags** listed in `nats-event-patterns.md#red-flags`.
 
 ---
 
