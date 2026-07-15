@@ -126,10 +126,17 @@ PATTERN_BASE=$(echo "$NATS_PATTERN" | tr '.' '-')
 DOMAIN_BASE=$(echo "$NATS_PATTERN" | cut -d. -f1)
 ```
 
-Set file paths according to `nx-nestjs-patterns.md` rules 9, 10, and 15:
+Set file paths according to `nx-nestjs-patterns.md` rules 9, 10, and 15.
+
+First, probe whether the library uses the `src/lib/` layout (produced by `@nx/nest:library`) or the flat `src/` layout, and set `API_SRC` accordingly so that controller, DTO, and spec are truly co-located:
 
 ```bash
-API_SRC="$REPO_ROOT/$LIB_ROOT/src"
+# Probe for src/lib/ layout (common output of @nx/nest:library)
+if [ -d "$REPO_ROOT/$LIB_ROOT/src/lib" ]; then
+  API_SRC="$REPO_ROOT/$LIB_ROOT/src/lib"
+else
+  API_SRC="$REPO_ROOT/$LIB_ROOT/src"
+fi
 
 if [ "$HANDLER_TYPE" = "request" ]; then
   CONTROLLER_FILE="$API_SRC/${DOMAIN_BASE}.rpc.controller.ts"
@@ -139,8 +146,8 @@ else
   CONTROLLER_SPEC="$API_SRC/${DOMAIN_BASE}.nats.controller.spec.ts"
 fi
 
-# DTOs go in exchanges/ (exchange types) per rule 10
-DTO_DIR="$API_SRC/lib/exchanges"
+# DTOs go in exchanges/ (exchange types) per rule 10 — derived from API_SRC
+DTO_DIR="$API_SRC/exchanges"
 DTO_FILE="$DTO_DIR/${PATTERN_BASE}.dto.ts"
 ```
 
@@ -156,7 +163,7 @@ cat "$REPO_ROOT/nx.json" 2>/dev/null | grep -i "generator\|plugin" | head -20
 
 # List any locally installed generator collections
 ls "$REPO_ROOT/tools/generators" 2>/dev/null
-ls "$REPO_ROOT/libs/*/generators" 2>/dev/null
+find "$REPO_ROOT/libs" -maxdepth 3 -type d -name "generators" 2>/dev/null
 
 # Check for @nx/nest or @nestjs-nx generators
 cat "$REPO_ROOT/package.json" | grep -i "\"@nx/nest\|nestjs-nx\|@nrwl/nest"
@@ -211,8 +218,8 @@ import { Controller, UseFilters } from '@nestjs/common/decorators';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { NatsExceptionFilter } from '@supy/common/filters';  // adjust alias to repo
 import { StrictValidationPipe } from '@supy/common/pipes';   // adjust alias to repo
-import { <PayloadClass> } from '../lib/exchanges/<PATTERN_BASE>.dto';
-import { <ReplyClass> } from '../lib/exchanges/<PATTERN_BASE>.dto';
+import { <PayloadClass> } from './exchanges/<PATTERN_BASE>.dto';
+import { <ReplyClass> } from './exchanges/<PATTERN_BASE>.dto';
 
 @Controller()
 @UseFilters(NatsExceptionFilter)
@@ -234,7 +241,7 @@ import { Controller, UseFilters } from '@nestjs/common/decorators';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { JetStreamExceptionFilter } from '@supy/common/filters';  // adjust alias to repo
 import { StrictValidationPipe } from '@supy/common/pipes';        // adjust alias to repo
-import { <PayloadClass>, options } from '../lib/exchanges/<PATTERN_BASE>.dto';
+import { <PayloadClass>, options } from './exchanges/<PATTERN_BASE>.dto';
 
 @Controller()
 @UseFilters(JetStreamExceptionFilter)
@@ -295,10 +302,6 @@ describe('<ControllerClass>', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
   });
 
   it('should delegate to the interactor/listener on valid payload', async () => {
