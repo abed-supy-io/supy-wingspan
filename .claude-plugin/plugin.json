@@ -1,7 +1,7 @@
 {
   "name": "supy-wingspan",
   "version": "0.1.0",
-  "description": "AI-assisted engineering standards for Supy repos: stack-aware review agents (NestJS backend + Angular frontend + Flutter mobile), scaffolding and Git skills, a consistency baseline generator, and orchestration wrappers over superpowers.",
+  "description": "AI-assisted engineering standards for Supy repos: stack-aware review agents (NestJS backend + Angular frontend + Flutter mobile + Kubernetes config), a stack-agnostic secrets reviewer that blocks committed credentials, scaffolding and Git skills, a consistency baseline generator, and orchestration wrappers over superpowers.",
   "author": { "name": "Supy Engineering" },
-  "keywords": ["supy", "nestjs", "nx", "nats", "clean-architecture", "ddd", "cqrs", "angular", "ngxs", "primeng", "frontend", "flutter", "dart", "bloc", "mobile", "code-review", "standards"]
+  "keywords": ["supy", "nestjs", "nx", "nats", "clean-architecture", "ddd", "cqrs", "angular", "ngxs", "primeng", "frontend", "flutter", "dart", "bloc", "mobile", "kubernetes", "secrets", "code-review", "standards"]
 }

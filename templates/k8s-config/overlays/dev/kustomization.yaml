@@ -1,0 +1,18 @@
+# Per-environment overlay: patch ONLY what differs from base (secrets-and-config.md#rules rule 4).
+# No config duplication — dev/preview/prod each patch the single base.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dev
+resources:
+  - ../../base
+patches:
+  - target:
+      kind: ConfigMap
+      name: supy-api-config
+    patch: |-
+      - op: replace
+        path: /data/NATS_URL
+        value: "nats://nats.dev.svc:4222"
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: "debug"

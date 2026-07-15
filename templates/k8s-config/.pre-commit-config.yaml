@@ -1,0 +1,20 @@
+# Supy k8s-config / secret-safe pre-commit config.
+# Copy to the ROOT of any repo that can hold config, manifests, or code.
+# Install once:  pip install pre-commit && pre-commit install
+# The gitleaks hook exits non-zero on a detected secret and BLOCKS the commit
+# (secrets-and-config.md#rules rule 5). A warn-only scanner is non-compliant.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+        name: gitleaks (block committed secrets)
+
+  # k8s config/manifest repos: validate schema + misconfigurations on changed YAML
+  # (secrets-and-config.md#rules rule 6). Remove this block in non-k8s repos.
+  - repo: https://github.com/stackrox/kube-linter
+    rev: v0.7.1
+    hooks:
+      - id: kube-linter
+        name: kube-linter (validate manifests)
+        files: \.(ya?ml)$

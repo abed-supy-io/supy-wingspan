@@ -1,6 +1,6 @@
 # Standards Index
 
-Extracted from real Supy repos on **2026-07-15**. Each file documents rules that the review subagents cite by H2 anchor (`## Rules`, `## DDD building blocks`, `## Examples`, `## Red flags`, `## Source`). Standards are organized by stack: backend files live at the root of this directory (plus [`backend/`](backend/) for module boundaries), frontend files under [`frontend/`](frontend/), and mobile (Flutter) files under [`flutter/`](flutter/).
+Extracted from real Supy repos on **2026-07-15**. Each file documents rules that the review subagents cite by H2 anchor (`## Rules`, `## DDD building blocks`, `## Examples`, `## Red flags`, `## Source`). Standards are organized by stack: backend files live at the root of this directory (plus [`backend/`](backend/) for module boundaries), frontend files under [`frontend/`](frontend/), and mobile (Flutter) files under [`flutter/`](flutter/). Two files at the root are **cross-cutting / stack-agnostic** and govern every repo: `commit-conventions.md` and `secrets-and-config.md` (see the Cross-cutting section below).
 
 **Rule: Refresh these files when the mined source repos change** (new commitlint config, refactored NATS conventions, updated Cerbos policies, Angular/NGXS convention changes, Flutter/BLoC convention changes, stack version bumps).
 
@@ -35,6 +35,17 @@ The `supy-angular-reviewer` agent and the `supy-angular-feature` / `supy-scaffol
 
 The `supy-flutter-reviewer` agent and the `supy-flutter-feature` / `supy-scaffold-flutter-feature` skills cite these two files by H2 anchor (e.g. `architecture.md#rules rule 2`, `flutter-conventions.md#red-flags`).
 
+## Cross-cutting files (stack-agnostic)
+
+These live at the root of this directory and govern **every** repo regardless of stack.
+
+| File | What it covers | Confidence |
+|---|---|---|
+| [commit-conventions.md](commit-conventions.md) | Allowed commit types, scope rules, subject/body/footer formatting, `fix` vs `bug` correction (also listed under backend) | high |
+| [secrets-and-config.md](secrets-and-config.md) | No committed secrets (BLOCKING); Kubernetes config-vs-Secret separation; externalize to Secret/external-secrets/sealed-secrets/Vault; Kustomize base+overlays; mandatory failing secret-scan pre-commit hook; kubeval/kube-linter CI; rotate-on-exposure; no hardcoded fallbacks/leaks | high |
+
+The `supy-secrets-reviewer` agent cites `secrets-and-config.md` by H2 anchor (e.g. `secrets-and-config.md#rules rule 1`, `secrets-and-config.md#red-flags`). It is dispatched by `supy-review` on **every** stack (like `supy-commit-pr-reviewer`), and additionally defines the `k8s-config` stack (ConfigMap/Secret YAML or a `kustomization.yaml`, no app stack). This standard directly enforces the organization rule that secrets must never be exposed — **never reproduce a secret value; cite path:line only.** The [`templates/k8s-config/`](../../templates/k8s-config/) scaffold provides a ready-to-use blocking secret-scan pre-commit config and a config/secret Kustomize split.
+
 ## Mining provenance
 
 | Source repo | What was mined |
@@ -42,6 +53,8 @@ The `supy-flutter-reviewer` agent and the `supy-flutter-feature` / `supy-scaffol
 | `supy-service-inventory` | commitlint config, CLAUDE.md, ARCHITECTURE.md, copilot-instructions.md, real handler files in `libs/ledger/api/src/`, nx.json, project.json |
 | `supy-api` | CLAUDE.md (corroborates patterns in core domain service) |
 | `supy-cerbos-policies` | README.md, resource policy YAML files |
+| `supy-configmaps` | per-service `{service}-{env}.yaml` ConfigMaps (BLOCKING: committed plaintext secrets — paths recorded, **values never reproduced**); absence of Kustomize / validation / secret-scanning |
+| `supy-manifest` | ArgoCD App-of-Apps, `kind: Secret` references, Datree CI validation gate (target-state model for config repos) |
 | `angular-frontend-starter-kit` | CLAUDE.md, docs/module-boundaries.md, eslint.config.mjs, .stylelintrc.json, tools/generators (Plop feature generator) |
 | `architecture-starter-kit` | CLAUDE.md, README.md, docs/module-boundaries.md, eslint.config.mjs (boundary/purity/typed-error rules), skills/clean-architecture-ddd + skills/domain-review, tools/generators (Plop `g:domain` generator) |
 | `supy-checklists` (Supy Checklists mobile app) | CLAUDE.md-style spec: Clean Architecture layering, BLoC + freezed conventions, go_router/get_it/dio/dartz patterns, hive cache policies, design tokens, flavors, testing conventions, `analysis_options.yaml` (`very_good_analysis` + `bloc_lint`) |
