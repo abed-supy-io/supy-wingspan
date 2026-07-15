@@ -1,0 +1,89 @@
+# {{repo_name}}
+
+{{one_line_purpose}}
+
+> **Note:** This is an initial analysis. More detailed conventions, patterns, and domain knowledge will be added over time. Treat contents as directional guidance, not exhaustive documentation.
+
+## Cortex MCP — Live Architecture Reference
+
+If the Cortex MCP is connected, **always use it for up-to-date architecture data** rather than relying solely on this file:
+
+- `get_repo_guide('{{repo_name}}')` — full handler list, events, aggregates, dependencies for this repo
+- `trace_implementation('<pattern>')` — end-to-end implementation chain for any NATS pattern
+- `search_entities('<concept>')` — find any service, aggregate, event, or flow across the platform
+- `search_relationships('<query>')` — understand how entities connect
+- `get_perspective('service-dependency-graph')` — bird's-eye view of inter-service dependencies
+
+The static information in this file is **directional guidance and onboarding context**. Cortex is the live source of truth for NATS patterns, event lists, dependency graphs, and business flows — these change as features are added. If Cortex is not available (not all team members may have it connected), fall back to the information in this file.
+
+## Product Context
+
+{{one_line_purpose}}
+
+**Bounded context**: `{{bounded_context}}` | **Database**: `{{database}}` (MongoDB)
+
+## Role in the Platform
+
+- Aggregates: {{aggregates}}
+- Key NATS patterns: {{nats_patterns}}
+- Key business flows: {{key_flows}}
+
+## Stack
+
+{{stack_versions}}
+
+## Architecture — CQRS + DDD per Bounded Context
+
+```text
+libs/[bounded-context]/
+  domain/     → Aggregate root, value objects
+  data/       → Mongoose schemas, repositories
+  logic/      → Interactors, listeners, strategies
+  commands/   → CQRS command handlers
+  queries/    → CQRS query handlers
+  api/        → @MessagePattern controllers, exchange DTOs
+```
+
+### Layer Isolation Rules (ENFORCED)
+
+- `api/` must NEVER import `data/` — all persistence accessed through domain interfaces
+- `logic/` must NEVER import `data/` — interactors depend on `I*Repository` interfaces from `domain/model/`
+- `domain/model/` must NEVER import framework packages (`@nestjs/*`, Mongoose, NATS) — pure domain
+- Dependencies flow inward only: `api → logic → domain ← data`
+- Cross-domain access must go through Context Maps, never by importing another domain's internals
+
+## NATS Patterns — Inter-Service Communication Hierarchy
+
+**Goal**: All NATS patterns should eventually be centralized in context-maps. Direct `ClientAdapter` calls are last resort and tech debt.
+
+1. **Context-Maps** _(strongly preferred)_ — `libs/context-maps/[external-service]/`
+   - 3 layers: `model/` (Value Objects) → `proxy/` (raw NATS wrapper) → `service/` (facade)
+   - **Create a new context-map** if one doesn't exist for a target service
+2. **Direct `ClientAdapter` call** _(last resort — add `// TODO: move to context-map`)_
+
+## File Naming
+
+- `*.rpc.controller.ts` — `@MessagePattern` RPC controllers (API mode)
+- `*.nats.controller.ts` — `@EventPattern` event controllers (Worker mode)
+
+## Import Conventions
+
+- Always use `@supy/<domain>/<sublibrary>` aliases from `tsconfig.base.json`
+- Never use relative paths across library boundaries
+- Import sort order (ESLint-enforced): side-effect imports → third-party packages → `@supy*` scoped → relative imports
+
+## Error Types
+
+Always use typed errors, never generic `Error`:
+
+- `ValidationError` — business rule violations
+- `NotFoundError` — entity not found
+- `ConflictError` — concurrent modification / lock conflicts
+
+## Style Rules
+
+- Curly braces required on all control-flow blocks
+- `readonly` on all DTO and entity properties
+- No `any` without explicit justification comment
+- Prefix unused parameters with `_`
+- Import sort order (ESLint-enforced): side-effect imports → third-party packages → `@supy*` scoped → relative imports
