@@ -1,12 +1,14 @@
 ---
-source: supy-checklists (Supy Checklists Flutter app) CLAUDE.md
+source: supy-checklists (Profile A app), supy-mobile (Profile B app), supy-scanner (plugin sub-profile), supy-flutter-packages (melos-packages sub-profile)
 mined_on: 2026-07-15
 confidence: high
 ---
 
 # Flutter Conventions
 
-Supy Flutter apps are **Dart 3.11 + Flutter 3.41 + bloc/flutter_bloc + go_router + get_it + dio + dartz + freezed + hive + mocktail/bloc_test**, analysed with **`very_good_analysis` + `bloc_lint`** via `analysis_options.yaml`. These rules govern what goes inside a layer; the layer split, folder layout, and dependency direction live in the companion [architecture.md](architecture.md). There is no ESLint and no Nx — enforcement is `flutter analyze` + `bloc_lint` + review.
+Supy Flutter apps are **Dart 3.11 + Flutter 3.41 + bloc/flutter_bloc + go_router + get_it + dio + freezed + hive + mocktail/bloc_test**, analysed with **`very_good_analysis` + `bloc_lint`** via `analysis_options.yaml`. These rules govern what goes inside a layer; the layer split, folder layout, and dependency direction live in the companion [architecture.md](architecture.md). There is no ESLint and no Nx — enforcement is `flutter analyze` + `bloc_lint` + review.
+
+**Error handling differs by profile.** Supy runs two sanctioned app profiles that share every rule below except how errors cross the data→presentation boundary: **Profile A** (source `supy-checklists`) uses `dartz` `Either<Failure, T>`; **Profile B** (source `supy-mobile`) uses bare `Future<T>` + a central `throwAppException()` + `PageState<T>`. **The profile is selected by whether `dartz` is a dependency in `pubspec.yaml`** (present → A, absent → B). Rules 10–12 spell out both variants; a repo commits to one profile and never mixes them. The two library sub-profiles — the `supy-scanner` native plugin and the `supy-flutter-packages` melos monorepo — are not apps and follow their own reduced rule sets; see [architecture.md — Profiles](architecture.md#profiles).
 
 ## Rules
 
@@ -28,15 +30,23 @@ Supy Flutter apps are **Dart 3.11 + Flutter 3.41 + bloc/flutter_bloc + go_router
 8. **One `get_it` container, configured in `lib/app/injection_container.dart`.** Services, Dio, repository implementations, datasources, and UseCases register as `registerLazySingleton`; BLoCs register as `registerFactory`. (Restated from [architecture.md](architecture.md) rule 7 because it is the most-violated rule.)
 9. **`get_it` is the only DI mechanism.** No `riverpod`, no `provider` for dependency injection (`flutter_bloc`'s `BlocProvider` is for BLoC lifecycle, not general DI).
 
-### Functional error handling (dartz)
+### Error handling (profile-specific)
 
-10. **Every repository and usecase method returns `Future<Either<Failure, T>>`.** The domain layer **never throws** and never returns a raw value or a nullable-on-error.
-11. **Exceptions are caught in the data layer and mapped to a `Failure`.** The failure type is the sealed hierarchy: `ServerFailure`, `NetworkFailure`, `CacheFailure`, `AuthFailure`, `ValidationFailure`, `UnknownFailure`. No other failure types; no bare `Exception` crossing a layer boundary.
-12. **Consumers resolve `Either` explicitly with `fold`** (Left → error state, Right → data state). Never `getOrElse`/`(r as Right).value` to discard the error branch silently.
+Rules 10–12 have a **Profile A** variant (`dartz`/`Either`) and a **Profile B** variant (bare `Future` + `throwAppException` + `PageState`). Apply the variant matching the repo's profile — detected by `dartz` presence in `pubspec.yaml` (see the intro and [architecture.md — Profiles](architecture.md#profiles)). A single repo uses one variant throughout; mixing the two is a red flag.
+
+10. **Repository/usecase return type.**
+    - *Profile A* — every repository and usecase method returns `Future<Either<Failure, T>>`. The domain layer **never throws** and never returns a raw value or a nullable-on-error.
+    - *Profile B* — every repository and usecase method returns a **bare `Future<T>`**. Errors are not part of the return type; they surface as thrown typed `AppException`s. The domain still never returns a nullable-on-error to signal failure.
+11. **Error translation at the data boundary.**
+    - *Profile A* — exceptions are caught in the data layer and mapped to a `Failure`. The failure type is the sealed hierarchy: `ServerFailure`, `NetworkFailure`, `CacheFailure`, `AuthFailure`, `ValidationFailure`, `UnknownFailure`. No other failure types; no bare `Exception` crossing a layer boundary as a raw type.
+    - *Profile B* — exceptions are caught in the data layer and re-thrown through the **central `throwAppException(e, stackTrace)`**, which normalizes any error into a typed `AppException` (e.g. `NetworkException`, `ServerException`, `UnauthorizedException`, `ValidationException`, `UnknownException`). Data layers never let a raw `DioException`/`Exception` escape untranslated, and never invent an ad-hoc exception type outside the `AppException` family.
+12. **How consumers resolve the outcome.**
+    - *Profile A* — resolve `Either` explicitly with `fold` (Left → error state, Right → data state). Never `getOrElse`/`(r as Right).value` to discard the error branch silently.
+    - *Profile B* — presentation wraps the result in a `PageState<T>` sealed union (`init` / `loading` / `success` / `empty` / `failure`) and resolves it with `when` / `whenOrNull` / `maybeWhen` (or the `isLoading` / `isSuccess` guards). Never read a `PageState` value without handling the `failure`/`empty` cases; never swallow the thrown `AppException` with an empty `catch`.
 
 ### UseCases
 
-13. **Every usecase extends the `UseCase<T, Params>` base** and implements `Future<Either<Failure, T>> call(Params params)`. `Params` extends `Equatable`; a parameter-less usecase takes `NoParams`. One operation per usecase.
+13. **Every usecase extends the `UseCase<T, Params>` base** and implements `call(Params params)` — returning `Future<Either<Failure, T>>` in Profile A, or a bare `Future<T>` in Profile B (matching rule 10). `Params` extends `Equatable`; a parameter-less usecase takes `NoParams`. One operation per usecase.
 
 ### Networking (Dio)
 
@@ -59,7 +69,10 @@ Supy Flutter apps are **Dart 3.11 + Flutter 3.41 + bloc/flutter_bloc + go_router
 
 ### Testing
 
-21. **Test with `mocktail` + `bloc_test`, ≥80% coverage.** Mock at the boundary (datasource or repository), **never mock the class under test**. Widget tests use the shared `pumpApp` helper so theme, router, and providers are wired consistently.
+21. **Test with `mocktail` + `bloc_test`; mock at the boundary (datasource or repository), never mock the class under test.** Widget tests use the shared `pumpApp` helper so theme, router, and providers are wired consistently. The **coverage bar depends on the profile/sub-profile**:
+    - *Apps (Profile A and Profile B)* — **≥80%**.
+    - *Melos packages (`supy-flutter-packages`)* — **≥85% per package**, enforced by `very_good_coverage` in each package's CI job.
+    - *Plugin (`supy-scanner`)* — **≥70% lcov on the Dart side**, plus native tests on both platforms (Robolectric on the JVM, XCTest on iOS). See [architecture.md — Profiles](architecture.md#profiles) rules P6 / M3.
 
 ### Flavors & security
 
@@ -103,7 +116,7 @@ class TasksState with _$TasksState {
 }
 ```
 
-### Good — usecase on the `UseCase` base, resolved with `fold`
+### Good — Profile A: usecase on the `UseCase` base, resolved with `fold`
 
 ```dart
 // core/usecases/usecase.dart
@@ -148,7 +161,7 @@ class TasksPage extends StatelessWidget {
 onTap: () => context.go(TaskDetailPage.path.replaceFirst(':id', task.id)),
 ```
 
-### Good — sealed Failure hierarchy
+### Good — Profile A: sealed Failure hierarchy
 
 ```dart
 // core/error/failures.dart
@@ -180,7 +193,7 @@ Container(
 );
 ```
 
-### Good — bloc_test with mocked boundary
+### Good — Profile A: bloc_test with mocked boundary
 
 ```dart
 class _MockGetTasks extends Mock implements GetTasks {}
@@ -195,6 +208,69 @@ blocTest<TasksBloc, TasksState>(
 );
 ```
 
+### Good — Profile B: bare `Future` + `throwAppException` + `PageState`
+
+Same feature under Profile B. Repositories/usecases return bare `Future<T>`; the data layer funnels every error through the central `throwAppException`; presentation exposes a `PageState<T>` and resolves it with `when`.
+
+```dart
+// core/error/app_exception.dart — the typed AppException family
+sealed class AppException implements Exception {
+  const AppException(this.message);
+  final String message;
+}
+class NetworkException extends AppException { const NetworkException(super.message); }
+class ServerException extends AppException { const ServerException(super.message); }
+class UnauthorizedException extends AppException { const UnauthorizedException(super.message); }
+class ValidationException extends AppException { const ValidationException(super.message); }
+class UnknownException extends AppException { const UnknownException(super.message); }
+
+// core/error/throw_app_exception.dart — the single translation point
+Never throwAppException(Object error, [StackTrace? stackTrace]) {
+  if (error is AppException) throw error;
+  if (error is DioException) {
+    throw switch (error.response?.statusCode) {
+      401 => const UnauthorizedException('Session expired'),
+      422 => const ValidationException('Invalid request'),
+      _ => ServerException(error.message ?? 'Request failed'),
+    };
+  }
+  throw UnknownException(error.toString());
+}
+
+// features/tasks/data/repositories/task_repository_impl.dart
+@override
+Future<List<Task>> getTasks() async {
+  try {
+    final models = await _remote.getTasks();
+    return models.map((m) => m.toEntity()).toList();
+  } catch (e, s) {
+    throwAppException(e, s); // never lets a raw DioException escape
+  }
+}
+
+// presentation — state is PageState<T>, resolved with when
+Future<void> load() async {
+  emit(state.copyWith(tasks: const PageState.loading()));
+  try {
+    final tasks = await _getTasks(const NoParams());
+    emit(state.copyWith(
+      tasks: tasks.isEmpty ? const PageState.empty() : PageState.success(tasks),
+    ));
+  } on AppException catch (e) {
+    emit(state.copyWith(tasks: PageState.failure(e)));
+  }
+}
+
+// widget
+tasksState.when(
+  init: () => const SizedBox.shrink(),
+  loading: () => const LoadingView(),
+  success: (tasks) => TaskListView(tasks),
+  empty: () => const EmptyView(),
+  failure: (e) => ErrorView(e.message),
+);
+```
+
 ## Red flags
 
 These are auto-reject in review — each maps to the fix on its right:
@@ -206,9 +282,13 @@ These are auto-reject in review — each maps to the fix on its right:
 - A page missing `static const path` / `name`, or a route string written at the call site → declare it on the page.
 - An auth/role check in `initState` or a widget → move it to the `go_router` `redirect`.
 - `riverpod` / `provider` used for dependency injection → `get_it`.
-- A repository or usecase returning a raw value / nullable / throwing → `Future<Either<Failure, T>>`; catch in data, map to a `Failure`.
-- A `Failure` type outside the sealed hierarchy, or a bare `Exception` crossing a layer → one of `ServerFailure`/`NetworkFailure`/`CacheFailure`/`AuthFailure`/`ValidationFailure`/`UnknownFailure`.
-- `getOrElse` / `(x as Right).value` discarding the Left branch → `fold` both branches explicitly.
+- *(Profile A)* A repository or usecase returning a raw value / nullable / throwing → `Future<Either<Failure, T>>`; catch in data, map to a `Failure`.
+- *(Profile A)* A `Failure` type outside the sealed hierarchy, or a bare `Exception` crossing a layer as a raw type → one of `ServerFailure`/`NetworkFailure`/`CacheFailure`/`AuthFailure`/`ValidationFailure`/`UnknownFailure`.
+- *(Profile A)* `getOrElse` / `(x as Right).value` discarding the Left branch → `fold` both branches explicitly.
+- *(Profile B)* A data-layer `catch` that rethrows a raw `DioException`/`Exception`, or invents an ad-hoc exception type → funnel every error through `throwAppException(e, s)` into the typed `AppException` family.
+- *(Profile B)* Presentation reading a `PageState<T>` value without handling `failure`/`empty`, or an empty `catch` swallowing an `AppException` → resolve with `when`/`whenOrNull`/`maybeWhen` and surface the failure state.
+- *(Profile B)* A Profile B repo/usecase returning `Future<Either<Failure, T>>` → drop `dartz`; return bare `Future<T>` and translate via `throwAppException`.
+- **Mixing profiles in one repo** — `dartz`/`Either` on some paths and `PageState`/`throwAppException` on others, or a `pubspec.yaml` that has `dartz` while presentation is built on `PageState` → commit the whole app to one profile (see [architecture.md — Profiles](architecture.md#profiles)).
 - A usecase not extending `UseCase<T, Params>`, or `Params` not extending `Equatable` → use the base + `NoParams`.
 - A reordered/missing Dio interceptor → keep the `auth → cache → retry → error → logging` order.
 - Fake data toggled by commenting code → gate on `FlavorConfig.instance.useFakeData`.
@@ -222,6 +302,9 @@ These are auto-reject in review — each maps to the fix on its right:
 
 ## Source
 
-- `supy-checklists` CLAUDE.md — the enforced Flutter rulebook: BLoC-not-Cubit state management, `go_router` `context.go` navigation, `get_it` DI split, `dio` interceptor order, `dartz` `Either`/sealed `Failure` handling, `UseCase`/`Params` base, `hive` cache policies, the `SupyColors`/`ColorTokens`/spacing/`SupyRadius`/`SupyTypography` design system, `freezed`/`json_serializable` codegen, `mocktail`/`bloc_test`/`pumpApp` testing, dev/staging/production flavors + `FlavorConfig`, `flutter_secure_storage` + sanitized Sentry, and Conventional Commits
-- Analysis is enforced by `very_good_analysis` + `bloc_lint` in `analysis_options.yaml` (shipped in `templates/flutter/`)
-- Layer split, folder layout, and dependency direction: [architecture.md](architecture.md)
+- `supy-checklists` CLAUDE.md — the enforced Flutter rulebook and **Profile A** error handling: BLoC-not-Cubit state management, `go_router` `context.go` navigation, `get_it` DI split, `dio` interceptor order, `dartz` `Either`/sealed `Failure` handling, `UseCase`/`Params` base, `hive` cache policies, the `SupyColors`/`ColorTokens`/spacing/`SupyRadius`/`SupyTypography` design system, `freezed`/`json_serializable` codegen, `mocktail`/`bloc_test`/`pumpApp` testing (≥80%), dev/staging/production flavors + `FlavorConfig`, `flutter_secure_storage` + sanitized Sentry, and Conventional Commits
+- `supy-mobile` — **Profile B** error handling: bare `Future<T>` repositories/usecases, central `throwAppException()` → typed `AppException`, and the `PageState<T>` sealed presentation union resolved with `when`/`whenOrNull`/`maybeWhen`
+- `supy-scanner` — **plugin sub-profile** testing bar: ≥70% lcov (Dart) + Robolectric/XCTest native tests (rule 21); full plugin rules P1–P6 in [architecture.md](architecture.md#profiles)
+- `supy-flutter-packages` — **melos-packages sub-profile** testing bar: ≥85% per package via `very_good_coverage` (rule 21); full melos rules M1–M5 in [architecture.md](architecture.md#profiles)
+- Analysis is enforced by `very_good_analysis` + `bloc_lint` in `analysis_options.yaml` (shipped in `templates/flutter/`); melos packages may use `lints:recommended` for pure-Dart packages (architecture.md rule M4)
+- Layer split, folder layout, dependency direction, and the full profile/sub-profile catalogue: [architecture.md](architecture.md)
