@@ -1,0 +1,121 @@
+---
+name: supy-review
+description: Review the current Supy backend diff/PR against Supy standards using the five review subagents in parallel, then consolidate findings by severity. Use before committing or opening a PR on a supy-* backend repo.
+---
+
+## Step 1 — Resolve the diff range
+
+Determine the diff range using the following logic (in order):
+
+1. If `$ARGUMENTS` names a base ref (e.g., `origin/main`, a commit SHA, or a branch name), use that ref directly as the range base.
+2. Otherwise, resolve the merge base against the main branch:
+   ```bash
+   git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main
+   ```
+3. If neither yields a valid ref (e.g., not a git repo or no common ancestor), fall back to `HEAD~1`.
+
+Capture the resolved base ref as `DIFF_BASE`. Then verify the diff is non-empty:
+
+```bash
+git diff ${DIFF_BASE}...HEAD --stat
+```
+
+If the diff is empty (no output), or if the working directory is not a git repository, stop immediately and print:
+
+```
+No changes to review — supy-review needs a non-empty diff
+```
+
+Do not proceed to dispatch.
+
+Also capture the absolute repo path:
+
+```bash
+REPO_PATH=$(git rev-parse --show-toplevel)
+```
+
+---
+
+## Step 2 — Dispatch all five reviewer agents concurrently
+
+**In a single message, make exactly five Agent tool calls** — one per reviewer — so all five run in parallel. Do not make them sequentially. Passing both `DIFF_BASE` and `REPO_PATH` into each dispatch prompt is mandatory so all agents review the identical diff rather than each recomputing it independently.
+
+Use the following agent types (frontmatter `name` values from Task 3):
+- `supy-architecture-reviewer`
+- `supy-nats-event-reviewer`
+- `supy-test-quality-reviewer`
+- `supy-commit-pr-reviewer`
+- `supy-security-reviewer`
+
+For each of the five Agent calls, use this dispatch prompt template (substituting the actual values of `DIFF_BASE` and `REPO_PATH`):
+
+```
+Repo: <REPO_PATH>
+Diff range: <DIFF_BASE>...HEAD
+
+Review the diff at the range above against your governing standards.
+Use `git diff <DIFF_BASE>...HEAD` to obtain the diff — do not recompute the merge base.
+Return findings in the fixed output shape defined in your Output Contract.
+```
+
+---
+
+## Step 3 — Collect outputs
+
+Wait for all five agents to complete. Each agent returns a fixed-shape output:
+
+```
+## <reviewer name> — <PASS | ISSUES FOUND>
+- **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
+```
+
+A clean agent returns only the header line ending in `PASS`, with no bullets.
+
+If an agent errors, times out, or returns output that does not match the fixed shape, treat it as **skipped** — do not let it fail the overall review.
+
+---
+
+## Step 4 — Consolidate into the severity-grouped report
+
+Parse every finding bullet from all five outputs. Classify each bullet by its severity token (`high`, `med`, or `low`). Build the consolidated report in this exact structure:
+
+```markdown
+# Supy Review — <N> issues (<H> high, <M> med, <L> low)
+
+## High
+- <all high-severity finding lines, each prefixed by reviewer name for traceability>
+
+## Medium
+- <all med-severity finding lines>
+
+## Low
+- <all low-severity finding lines>
+
+## Clean
+- <comma-separated list of reviewer names that returned PASS with no bullets>
+
+## Skipped
+- <reviewer names that errored or returned unparseable output, one per line, with a brief reason>
+```
+
+Rules for building the report:
+
+- `N` = total count of all parsed finding bullets across all five agents.
+- `H`, `M`, `L` = counts per severity level.
+- If a severity section has no findings, write the heading but leave the body as `(none)`.
+- If no reviewers were skipped, omit the `## Skipped` section entirely.
+- If no reviewers returned PASS, write `(none)` under `## Clean`.
+- Prefix each finding line with the reviewer name in parentheses for traceability, e.g.:
+  ```
+  - (supy-architecture-reviewer) **[severity: high]** libs/ledger/api/src/ledger.rpc.controller.ts:3 — ...
+  ```
+- Sort findings within each section by file path, then line number, for readability.
+- A single failed or skipped reviewer must never cause the whole report to fail — always emit a complete report with whatever findings were successfully collected.
+
+---
+
+## Degradation paths
+
+**Empty diff / not a git repo:** Detected in Step 1. Print the message and stop before dispatching.
+
+**Per-reviewer skip:** If an individual agent errors or returns malformed output, list it under `## Skipped` with a one-line reason (e.g., `supy-nats-event-reviewer — agent error: timeout`). Continue consolidating findings from the remaining agents.
