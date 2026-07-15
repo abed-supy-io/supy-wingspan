@@ -1,0 +1,33 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { ClientSession, Model, Types } from 'mongoose';
+
+import { Repository } from '@supy/common';
+import { {{pascal name}}, {{pascal name}}Id, I{{pascal name}}Repository } from '@supy/{{kebab name}}/domain/model';
+
+import { {{pascal name}}Document, {{pascal name}}Schema } from '../schemas/{{kebab name}}.schema';
+import { {{pascal name}}InputTransformer } from '../transformers/{{kebab name}}-input.transformer';
+import { {{pascal name}}OutputTransformer } from '../transformers/{{kebab name}}-output.transformer';
+
+@Injectable()
+export class {{pascal name}}Repository
+  extends Repository<{{pascal name}}, Model<{{pascal name}}Document>>
+  implements I{{pascal name}}Repository
+{
+  protected readonly outputTransformer = new {{pascal name}}OutputTransformer();
+  protected override readonly inputTransformer = new {{pascal name}}InputTransformer();
+
+  constructor(@InjectModel({{pascal name}}Schema.name) protected readonly model: Model<{{pascal name}}Document>) {
+    super();
+  }
+
+  getNextId(): {{pascal name}}Id {
+    return new {{pascal name}}Id(new Types.ObjectId().toString());
+  }
+
+  async get(id: {{pascal name}}Id, session?: ClientSession): Promise<{{pascal name}} | null> {
+    const doc = await this.model.findById(id.toObject(), null, { session }).lean();
+
+    return doc ? this.outputTransformer.transform(doc as {{pascal name}}Document) : null;
+  }
+}

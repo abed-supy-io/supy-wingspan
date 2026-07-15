@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# Local guardrail: catch lint/boundary/type errors BEFORE they become a commit.
+# Mirrors CI so feedback is instant. Install with: npx husky init
+
+# 1. Lint + format only what's staged (fast).
+npx lint-staged
+
+# 2. Module boundaries + types on affected projects (the architecture guarantee).
+npx nx affected -t lint typecheck --uncommitted

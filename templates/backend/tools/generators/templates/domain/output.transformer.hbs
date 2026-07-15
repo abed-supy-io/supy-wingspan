@@ -1,0 +1,22 @@
+import { MongoSerializer } from '@supy/common';
+import { {{pascal name}}, {{pascal name}}Factory } from '@supy/{{kebab name}}/domain/model';
+
+import type { {{pascal name}}Document } from '../schemas/{{kebab name}}.schema';
+
+// Persistence document -> domain aggregate.
+export class {{pascal name}}OutputTransformer {
+  transform(document: {{pascal name}}Document): {{pascal name}} {
+    const s = MongoSerializer.serializeDoc(document);
+
+    return {{pascal name}}Factory.createFromExisting({
+      id: s._id,
+      name: s.name,
+      state: s.state,
+      createdBy: s.createdBy,
+    });
+  }
+
+  transformMany(documents: {{pascal name}}Document[]): {{pascal name}}[] {
+    return documents.map((doc) => this.transform(doc));
+  }
+}

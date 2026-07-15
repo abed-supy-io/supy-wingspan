@@ -1,0 +1,26 @@
+import { DomainEvent } from '@supy/common';
+
+import type { {{pascal name}} } from '../entities/{{kebab name}}.aggregate';
+
+export interface {{pascal name}}CreatedData {
+  {{camel name}}Id: string;
+  createdBy: string;
+}
+
+export class {{pascal name}}CreatedEvent extends DomainEvent<{{pascal name}}CreatedData> {
+  static fullName = 'core.{{kebab name}}.{{kebab name}}-created';
+
+  constructor({{camel name}}: {{pascal name}}) {
+    super({
+      contextName: 'core',
+      aggregateName: '{{kebab name}}',
+      eventName: '{{kebab name}}-created',
+      data: {
+        {{camel name}}Id: {{camel name}}.id.toObject(),
+        createdBy: {{camel name}}.props.createdBy,
+      },
+      metadata: { occurredBy: {{camel name}}.props.createdBy },
+      aggregateId: {{camel name}}.id.get(),
+    });
+  }
+}

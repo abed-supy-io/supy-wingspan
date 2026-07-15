@@ -1,0 +1,17 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+
+@Schema({ collection: '{{camel name}}s', versionKey: '__v', timestamps: true })
+export class {{pascal name}}Schema {
+  @Prop({ required: true })
+  name: string;
+
+  @Prop({ required: true })
+  state: string;
+
+  @Prop({ required: true })
+  createdBy: string;
+}
+
+export type {{pascal name}}Document = HydratedDocument<{{pascal name}}Schema>;
+export const {{pascal name}}MongoSchema = SchemaFactory.createForClass({{pascal name}}Schema);

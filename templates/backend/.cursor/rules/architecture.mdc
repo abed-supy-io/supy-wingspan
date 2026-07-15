@@ -1,0 +1,44 @@
+---
+description: Clean Architecture + DDD + CQRS rules for this NestJS/Mongoose/NATS/Nx repo
+globs:
+  - "libs/**/*.ts"
+  - "apps/**/*.ts"
+alwaysApply: true
+---
+
+# Architecture rules (editor-enforced)
+
+Full rationale lives in `CLAUDE.md`. These are the constraints to apply while editing.
+
+## Dependency direction (never violate)
+- `api/` may import `logic`, `domain/model`, `common` — NEVER `data`.
+- `logic/` may import `domain/*`, `common`, context-maps — NEVER `data` or `api`.
+- `domain/model/` may import `common` ONLY — NEVER `@nestjs/*`, mongoose, or any framework.
+- `data/` may import `domain/model`, `common`, mongoose — NEVER `api` or `logic`.
+- Cross-domain access goes through a context map, never another domain's internals.
+
+## Domain modeling
+- Wrap EVERY non-primitive domain concept (IDs, states, enums, composites) in a Value Object.
+- Aggregates: mutate via `this.assign('prop', value)`; emit events only via `this.addEvent(...)`.
+- Never override the base `toObject()` — use a transformer in `data/`.
+- Factories: `createNew()` (Created) vs `createFromExisting()` (Loaded).
+- Throw typed errors (`ValidationError`, `NotFoundError`, `ConflictError`) — never `new Error()`.
+
+## Application & data
+- Interactors/handlers inject repository INTERFACES, never implementations.
+- Persist aggregate + domain events atomically in `TransactionManager.withTransaction()`.
+- Side-effects (queues, notifications, external calls) run AFTER the transaction commits.
+- Repositories extend the base `Repository`, use Input/Output transformers, accept `ClientSession`.
+
+## Transport
+- Controllers: validate (`StrictValidationPipe`) + delegate. Zero business logic.
+- Always apply `@UseFilters(NatsExceptionFilter | JetStreamExceptionFilter)`.
+- Return response DTOs, never domain objects. DTOs live in `api/src/lib/{dtos,exchanges}/`.
+
+## Imports
+- Use `@supy/*` aliases, never relative paths across library boundaries.
+- Order: side-effect → third-party → `@supy/*` → relative.
+
+## Misc
+- Store dates in UTC; convert to retailer `ianaTimeZone` for business logic only.
+- No `any` without a justification comment. Scaffold new domains with the generator.

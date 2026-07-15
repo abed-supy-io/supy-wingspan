@@ -29,6 +29,24 @@ Supy backend services follow a Hexagonal / Clean Architecture pattern with Domai
 17. Services run in dual transport mode: API mode (`IS_IN_WORKER_MODE=false`) serves `@MessagePattern` RPC via `NatsServer`; Worker mode (`IS_IN_WORKER_MODE=true`) serves `@EventPattern` events via `JetStreamServer`.
 18. `nx.json` should have `sync.applyChanges: false` to prevent `nx sync` auto-populating `tsconfig.app.json` references (causes webpack TS6305 failures).
 
+## DDD building blocks
+
+The layer rules above govern *where* code lives; these govern *how* the domain is modelled inside `domain/model/`. The `supy-architecture-reviewer` cites these by anchor (`architecture.md#ddd-building-blocks rule N`).
+
+1. **Aggregate roots own their invariants.** State changes happen only through intention-revealing methods on the aggregate (`transfer.submit()`, not `transfer.state = ...`). A method validates the transition, then mutates through the protected `this.assign('<prop>', <valueObject>)` setter — never by writing `this.props.x = y` from outside or reaching into another aggregate's props.
+
+2. **Aggregates raise events, never persist them.** A state-changing method records what happened with `this.addEvent(new <Thing>Event(this))`; the interactor drains and persists those events atomically with the aggregate. Never call a repository or emit to NATS from inside an aggregate.
+
+3. **Never override `toObject()`** on an aggregate or value object. The base class serialisation is the persistence contract — overriding it silently desynchronises the input/output transformers. Expose read access through getters instead.
+
+4. **Value objects wrap every domain concept** (ids, money, quantities, states). A VO has a private constructor plus static factory methods, is immutable after construction, and validates in the factory. Two VOs are equal by value, not reference.
+
+5. **State machines live in a state value object.** Model the lifecycle as a `<Aggregate>State extends ValueObject<<Aggregate>StateEnum>` whose factories (`createDraft()`, `createSubmitted()`, …) and `isTransientTo` / `canTransitionTo` map define legal transitions. The aggregate asks the state VO whether a transition is legal; it never re-implements the state chart with `if/switch` on a raw enum.
+
+6. **Construct aggregates through factories, never `new` in application code.** `createNew(...)` builds a brand-new aggregate and records the `<Thing>CreatedEvent` (a Created result); `createFromExisting(...)` rehydrates a persisted aggregate with no event (a Loaded result). Interactors and repositories call the factory — they never invoke the aggregate constructor directly.
+
+7. **Domain event names are `<context>.<aggregate>.<past-tense-verb>`** (e.g. `inventory.transfer.transfer-submitted`). Event payloads carry raw primitives only (no VOs, no Mongoose documents), set `metadata.occurredBy`, and every event class is registered as a discriminator in `domain-events.discriminators.ts` or it will not deserialise on the worker side.
+
 ## Examples
 
 ### Good — layer layout for bounded context `transfer`
@@ -64,9 +82,54 @@ export interface ITransferRepository {
 }
 ```
 
+### Good — aggregate method, state VO, and factory (DDD building blocks)
+
+```typescript
+// domain/model — state machine lives in the state VO (rule 5)
+export class TransferState extends ValueObject<TransferStateEnum> {
+  private static readonly isTransientTo: Record<TransferStateEnum, TransferStateEnum[]> = {
+    [TransferStateEnum.Draft]: [TransferStateEnum.Submitted],
+    [TransferStateEnum.Submitted]: [TransferStateEnum.Approved, TransferStateEnum.Rejected],
+    [TransferStateEnum.Approved]: [],
+    [TransferStateEnum.Rejected]: [],
+  };
+  public static createDraft(): TransferState { return new TransferState(TransferStateEnum.Draft); }
+  public static createSubmitted(): TransferState { return new TransferState(TransferStateEnum.Submitted); }
+  public canTransitionTo(next: TransferStateEnum): boolean {
+    return TransferState.isTransientTo[this.value].includes(next);
+  }
+}
+
+// domain/model — state changes through a method + this.assign, events via this.addEvent (rules 1, 2)
+export class Transfer extends AggregateRoot<TransferProps> {
+  public submit(): void {
+    if (!this.props.state.canTransitionTo(TransferStateEnum.Submitted)) {
+      throw new ValidationError('Transfer can only be submitted from draft');
+    }
+    this.assign('state', TransferState.createSubmitted());
+    this.addEvent(new TransferSubmittedEvent(this));
+  }
+}
+
+// domain/model — factories, not `new`, in application code (rule 6)
+export class TransferFactory {
+  public static createNew(props: NewTransferProps): Transfer { /* …builds + records TransferCreatedEvent */ }
+  public static createFromExisting(props: TransferProps): Transfer { /* …rehydrates, no event */ }
+}
+```
+
 ### Bad
 
 ```typescript
+// WRONG: mutating aggregate state from outside instead of via a method + this.assign (rule 1)
+transfer.props.state = TransferState.createSubmitted();
+
+// WRONG: constructing an aggregate directly instead of through its factory (rule 6)
+const transfer = new Transfer({ ...props });
+
+// WRONG: event name not <context>.<aggregate>.<past-tense-verb> (rule 7)
+this.addEvent(new TransferSubmittedEvent(this)); // subject "submitTransfer" — must be "inventory.transfer.transfer-submitted"
+
 // WRONG: api layer importing data layer
 import { TransferRepository } from '@supy/transfer/data'; // in api controller
 
@@ -91,6 +154,12 @@ import { ITransferRepository } from '../../../transfer/domain/model/src';
 - `.find()` without `.lean()` on read queries.
 - New API module not capability-gated via `register({ capability })`.
 - Missing discriminator registration in `domain-events.discriminators.ts`.
+- Aggregate state mutated from outside via `this.props.x = ...` or a public setter instead of an intention-revealing method + `this.assign(...)`.
+- An aggregate constructed with `new` in an interactor/repository instead of through `createNew` / `createFromExisting`.
+- `toObject()` overridden on an aggregate or value object.
+- Lifecycle logic implemented as `if/switch` on a raw enum instead of a state value object with `canTransitionTo` / `isTransientTo`.
+- A repository call, NATS emit, or event *persistence* performed inside an aggregate (aggregates only `this.addEvent`).
+- Domain event name not `<context>.<aggregate>.<past-tense-verb>`, or an event payload carrying value objects / Mongoose documents instead of raw primitives.
 - Cortex MCP available but not consulted for architecture questions (agent relying on potentially stale static docs).
 
 ## Source
@@ -99,3 +168,4 @@ import { ITransferRepository } from '../../../transfer/domain/model/src';
 - `supy-service-inventory/.github/ARCHITECTURE.md` §2–§11 — canonical architecture specification with ASCII diagram, layer rules table, CQRS structure, context maps, import path map, MongoDB patterns
 - `supy-api/CLAUDE.md` — corroborates same patterns in core domain service; confirms `api → logic → domain ← data` rule
 - `supy-service-inventory/.github/copilot-instructions.md` — operator-level conventions reinforcing layer rules and import conventions
+- `architecture-starter-kit/docs` + `skills/clean-architecture-ddd`, `skills/domain-review` — the **DDD building blocks** section: aggregate methods + `this.assign` / `this.addEvent`, state-machine-in-VO, `createNew` / `createFromExisting` factories, and domain-event naming

@@ -1,0 +1,14 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+
+import { I{{pascal name}}Repository } from '@supy/{{kebab name}}/domain/model';
+
+import { {{pascal name}}MongoSchema, {{pascal name}}Schema } from './schemas/{{kebab name}}.schema';
+import { {{pascal name}}Repository } from './repositories/{{kebab name}}.repository';
+
+@Module({
+  imports: [MongooseModule.forFeature([{ name: {{pascal name}}Schema.name, schema: {{pascal name}}MongoSchema }])],
+  providers: [{ provide: I{{pascal name}}Repository, useClass: {{pascal name}}Repository }],
+  exports: [I{{pascal name}}Repository],
+})
+export class {{pascal name}}DataModule {}

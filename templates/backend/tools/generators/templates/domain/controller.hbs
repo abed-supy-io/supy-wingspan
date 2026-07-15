@@ -1,0 +1,20 @@
+import { Controller, UseFilters } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+
+import { NatsExceptionFilter, StrictValidationPipe } from '@supy/common';
+import { Create{{pascal name}}Interactor } from '@supy/{{kebab name}}/logic';
+
+import { Create{{pascal name}}Payload, Create{{pascal name}}Response } from '../exchanges/create-{{kebab name}}.payload';
+
+@Controller()
+@UseFilters(NatsExceptionFilter)
+export class {{pascal name}}RpcController {
+  constructor(private readonly create{{pascal name}}: Create{{pascal name}}Interactor) {}
+
+  @MessagePattern('{{kebab name}}.create.one')
+  async create(
+    @Payload(StrictValidationPipe) payload: Create{{pascal name}}Payload,
+  ): Promise<Create{{pascal name}}Response> {
+    return this.create{{pascal name}}.execute(payload);
+  }
+}

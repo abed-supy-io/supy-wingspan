@@ -1,0 +1,45 @@
+import { ValidationError, ValueObject } from '@supy/common';
+
+export enum {{pascal name}}StateEnum {
+  Draft = 'draft',
+  Submitted = 'submitted',
+  Archived = 'archived',
+}
+
+export class {{pascal name}}State extends ValueObject<{{pascal name}}StateEnum> {
+  private constructor(value: {{pascal name}}StateEnum) {
+    super({ value });
+  }
+
+  static createDraft(): {{pascal name}}State {
+    return new {{pascal name}}State({{pascal name}}StateEnum.Draft);
+  }
+
+  static createSubmitted(): {{pascal name}}State {
+    return new {{pascal name}}State({{pascal name}}StateEnum.Submitted);
+  }
+
+  static create(value: {{pascal name}}StateEnum): {{pascal name}}State {
+    return new {{pascal name}}State(value);
+  }
+
+  isTransientTo(to: {{pascal name}}StateEnum): boolean {
+    const transitions: Record<{{pascal name}}StateEnum, {{pascal name}}StateEnum[]> = {
+      [{{pascal name}}StateEnum.Draft]: [{{pascal name}}StateEnum.Submitted],
+      [{{pascal name}}StateEnum.Submitted]: [{{pascal name}}StateEnum.Archived],
+      [{{pascal name}}StateEnum.Archived]: [],
+    };
+
+    return transitions[this.props.value].includes(to);
+  }
+
+  isSubmitted(): boolean {
+    return this.props.value === {{pascal name}}StateEnum.Submitted;
+  }
+
+  protected override validate(value: {{pascal name}}StateEnum): void {
+    if (!Object.values({{pascal name}}StateEnum).includes(value)) {
+      throw new ValidationError(`Invalid {{kebab name}} state: ${value}`);
+    }
+  }
+}

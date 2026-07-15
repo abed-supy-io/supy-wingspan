@@ -1,0 +1,17 @@
+import type { ClientSession } from 'mongoose';
+
+import { {{pascal name}} } from './entities/{{kebab name}}.aggregate';
+import { {{pascal name}}Id } from './value-objects/{{kebab name}}-id.vo';
+
+// NOTE: `mongoose` is imported here ONLY as a type (ClientSession) — this is the one
+// permitted exception so repository methods can participate in transactions. No runtime
+// mongoose usage belongs in the domain layer.
+export interface I{{pascal name}}Repository {
+  getNextId(): {{pascal name}}Id;
+  get(id: {{pascal name}}Id, session?: ClientSession): Promise<{{pascal name}} | null>;
+  save({{camel name}}: {{pascal name}}, session?: ClientSession): Promise<void>;
+  delete(id: {{pascal name}}Id, session?: ClientSession): Promise<void>;
+}
+
+// Empty class enables the NestJS DI token.
+export class I{{pascal name}}Repository {}

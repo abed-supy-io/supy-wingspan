@@ -1,0 +1,37 @@
+import { Injectable } from '@nestjs/common';
+
+import { TransactionManager } from '@supy/common';
+import { {{pascal name}}Factory, I{{pascal name}}Repository } from '@supy/{{kebab name}}/domain/model';
+
+export interface Create{{pascal name}}Input {
+  name: string;
+  createdBy: string;
+}
+
+export interface Create{{pascal name}}Result {
+  id: string;
+}
+
+@Injectable()
+export class Create{{pascal name}}Interactor {
+  constructor(
+    private readonly repository: I{{pascal name}}Repository,
+    private readonly transactionManager: TransactionManager,
+  ) {}
+
+  async execute(input: Create{{pascal name}}Input): Promise<Create{{pascal name}}Result> {
+    const id = this.repository.getNextId();
+
+    const {{camel name}} = {{pascal name}}Factory.createNew({
+      id: id.toObject(),
+      name: input.name,
+      createdBy: input.createdBy,
+    });
+
+    await this.transactionManager.withTransaction(async (session) => {
+      await this.repository.save({{camel name}}, session);
+    });
+
+    return { id: {{camel name}}.id.toObject() };
+  }
+}

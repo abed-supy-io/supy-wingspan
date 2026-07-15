@@ -1,0 +1,20 @@
+import { DynamicModule, Module, Type } from '@nestjs/common';
+
+import { BootstrapCapabilities } from '@supy/common';
+import { {{pascal name}}LogicModule } from '@supy/{{kebab name}}/logic';
+
+import { {{pascal name}}RpcController } from './controllers/{{kebab name}}.rpc.controller';
+
+const bootstrapControllers: Partial<Record<BootstrapCapabilities, Type<unknown>[]>> = {
+  [BootstrapCapabilities.Api]: [{{pascal name}}RpcController],
+};
+
+@Module({ imports: [{{pascal name}}LogicModule] })
+export class {{pascal name}}ApiModule {
+  static register(options: { capability: BootstrapCapabilities }): DynamicModule {
+    return {
+      module: {{pascal name}}ApiModule,
+      controllers: bootstrapControllers[options.capability] ?? [],
+    };
+  }
+}

@@ -1,0 +1,16 @@
+import { InputTransformer } from '@supy/common';
+import { {{pascal name}} } from '@supy/{{kebab name}}/domain/model';
+
+// Domain -> persistence document.
+export class {{pascal name}}InputTransformer extends InputTransformer<{{pascal name}}> {
+  override transform({{camel name}}: {{pascal name}}) {
+    const raw = {{camel name}}.toObject();
+
+    return {
+      _id: {{camel name}}.id.toObject(),
+      name: raw.name,
+      state: raw.state,
+      createdBy: raw.createdBy,
+    };
+  }
+}

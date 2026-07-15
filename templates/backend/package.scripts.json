@@ -1,0 +1,26 @@
+{
+  "//": "Merge these into your root package.json. The g:domain script powers the scaffolder.",
+  "scripts": {
+    "g:domain": "plop --plopfile tools/generators/plopfile.js domain",
+    "lint": "nx run-many -t lint",
+    "lint:affected": "nx affected -t lint",
+    "test": "nx run-many -t test",
+    "graph": "nx graph",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write"]
+  },
+  "devDependencies": {
+    "@nx/eslint-plugin": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest",
+    "eslint": "^9",
+    "eslint-plugin-import": "latest",
+    "husky": "latest",
+    "lint-staged": "latest",
+    "plop": "latest",
+    "prettier": "latest",
+    "typescript-eslint": "latest"
+  }
+}

@@ -17,12 +17,13 @@ Verdict: **VALID** — zero critical errors, zero blocking warnings.
 | Component | Result |
 |---|---|
 | Agents | 6 / 6 valid — backend: `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-security-reviewer`; frontend: `supy-angular-reviewer`; stack-agnostic: `supy-commit-pr-reviewer` |
-| Skills | 7 / 7 valid (`supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`, `supy-scaffold-feature`, `supy-angular-feature`) |
+| Skills | 9 / 9 valid (`supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`, `supy-clean-architecture`, `supy-scaffold-domain`, `supy-scaffold-feature`, `supy-angular-feature`) |
 | Commands | 4 / 4 valid — none carry a forbidden `name:` key (`supy-brainstorm`, `supy-plan`, `supy-build`, `supy-review`) |
 | `hooks/hooks.json` | Valid |
 | `hooks/detect-stack.sh` | Present and executable (`-rwxr-xr-x`); `shellcheck` clean |
 | Hardcoded absolute paths | None in component bodies — `${CLAUDE_PLUGIN_ROOT}` used throughout (16 files) |
 | Frontend assets | `templates/frontend/` (CLAUDE.md.hbs + Plop generator + enforcement configs) and `config/standards/frontend/` (`angular-conventions.md`, `module-boundaries.md`) present |
+| Backend clean-arch assets | `templates/backend/tools/generators/` (Plop `g:domain` generator + templates) and `config/standards/backend/module-boundaries.md` present; the `supy-clean-architecture` how-to and `supy-scaffold-domain` scaffolder cite `architecture.md` (incl. `#ddd-building-blocks`) + `module-boundaries.md` |
 
 Runtime items to confirm during the live pilot are recorded under [Verify at install / known gaps](#verify-at-install--known-gaps) below.
 
@@ -43,7 +44,7 @@ If the pilot repo tracks its own `.claude/settings.json`, add the marketplace en
 
 After install, the following should be available:
 - **Commands (slash):** `/supy-brainstorm`, `/supy-plan`, `/supy-build`, `/supy-review`
-- **Skills (invoked as skills, not slash commands):** `supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`, `supy-scaffold-handler`; frontend: `supy-scaffold-feature`, `supy-angular-feature`
+- **Skills (invoked as skills, not slash commands):** `supy-review`, `supy-baseline`, `supy-commit`, `supy-create-pr`; backend: `supy-scaffold-handler`, `supy-clean-architecture`, `supy-scaffold-domain`; frontend: `supy-scaffold-feature`, `supy-angular-feature`
 - Agents: the review subagents dispatched internally by `/supy-review` — 5 backend reviewers for `nestjs-nx`, the Angular reviewer + commit/PR reviewer for `angular-nx`, the stack-agnostic commit/PR reviewer otherwise
 - SessionStart hook: `detect-stack.sh` runs at session open and prints `supy-wingspan: detected <stack> repo.` (one of `nestjs-nx`, `angular-nx`, `nx`, `flutter`, `generic`)
 

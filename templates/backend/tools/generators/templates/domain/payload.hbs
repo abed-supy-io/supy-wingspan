@@ -1,0 +1,15 @@
+import { IsString, IsNotEmpty } from 'class-validator';
+
+export class Create{{pascal name}}Payload {
+  @IsString()
+  @IsNotEmpty()
+  readonly name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly createdBy: string;
+}
+
+export class Create{{pascal name}}Response {
+  readonly id: string;
+}

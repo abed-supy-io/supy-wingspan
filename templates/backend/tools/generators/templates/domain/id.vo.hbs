@@ -1,0 +1,13 @@
+import { DomainPrimitive, Identity } from '@supy/common';
+
+export class {{pascal name}}Id extends Identity {
+  protected override __type: this;
+
+  constructor(id: string) {
+    super(id);
+  }
+
+  protected validate(_props: DomainPrimitive<string>): void {
+    // Add format validation (ObjectId / UUID) if needed.
+  }
+}

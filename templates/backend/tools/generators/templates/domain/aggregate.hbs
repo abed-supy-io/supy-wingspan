@@ -1,0 +1,37 @@
+import { AggregateRoot, ValidationError } from '@supy/common';
+
+import { {{pascal name}}Id } from '../value-objects/{{kebab name}}-id.vo';
+import { {{pascal name}}State, {{pascal name}}StateEnum } from '../value-objects/{{kebab name}}-state.vo';
+import { {{pascal name}}CreatedEvent } from '../events/{{kebab name}}-created.event';
+
+export interface {{pascal name}}Props {
+  name: string;
+  state: {{pascal name}}State;
+  createdBy: string;
+}
+
+export interface {{pascal name}}RawProps {
+  name: string;
+  state: {{pascal name}}StateEnum;
+  createdBy: string;
+}
+
+export class {{pascal name}} extends AggregateRoot<{{pascal name}}Id, {{pascal name}}Props, {{pascal name}}RawProps> {
+  get name(): string {
+    return this.props.name;
+  }
+
+  get state(): {{pascal name}}State {
+    return this.props.state;
+  }
+
+  /** Draft -> Submitted. Only drafts can be submitted. */
+  submit(): void {
+    if (!this.props.state.isTransientTo({{pascal name}}StateEnum.Submitted)) {
+      throw new ValidationError('{{pascal name}} cannot be submitted from current state');
+    }
+
+    this.assign('state', {{pascal name}}State.createSubmitted());
+    this.addEvent(new {{pascal name}}CreatedEvent(this));
+  }
+}

@@ -1,0 +1,13 @@
+import { Module } from '@nestjs/common';
+
+import { CommonModule } from '@supy/common';
+import { {{pascal name}}DataModule } from '@supy/{{kebab name}}/data';
+
+import { Create{{pascal name}}Interactor } from './interactors/create-{{kebab name}}.interactor';
+
+@Module({
+  imports: [CommonModule, {{pascal name}}DataModule],
+  providers: [Create{{pascal name}}Interactor],
+  exports: [Create{{pascal name}}Interactor],
+})
+export class {{pascal name}}LogicModule {}

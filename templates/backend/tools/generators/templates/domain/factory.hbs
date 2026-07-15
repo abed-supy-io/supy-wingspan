@@ -1,0 +1,46 @@
+import { EntityStateEnum } from '@supy/common';
+
+import { {{pascal name}} } from '../entities/{{kebab name}}.aggregate';
+import { {{pascal name}}Id } from '../value-objects/{{kebab name}}-id.vo';
+import { {{pascal name}}State } from '../value-objects/{{kebab name}}-state.vo';
+
+export interface CreateNew{{pascal name}}Dto {
+  id?: string;
+  name: string;
+  createdBy: string;
+}
+
+export interface Existing{{pascal name}}Dto {
+  id: string;
+  name: string;
+  state: string;
+  createdBy: string;
+}
+
+export class {{pascal name}}Factory {
+  /** Fresh aggregate, not yet persisted. */
+  static createNew(args: CreateNew{{pascal name}}Dto): {{pascal name}} {
+    return new {{pascal name}}({
+      id: args.id ? new {{pascal name}}Id(args.id) : null,
+      state: EntityStateEnum.Created,
+      props: {
+        name: args.name,
+        state: {{pascal name}}State.createDraft(),
+        createdBy: args.createdBy,
+      },
+    });
+  }
+
+  /** Hydrate from persistence. */
+  static createFromExisting(args: Existing{{pascal name}}Dto): {{pascal name}} {
+    return new {{pascal name}}({
+      id: new {{pascal name}}Id(args.id),
+      state: EntityStateEnum.Loaded,
+      props: {
+        name: args.name,
+        state: {{pascal name}}State.create(args.state as never),
+        createdBy: args.createdBy,
+      },
+    });
+  }
+}
