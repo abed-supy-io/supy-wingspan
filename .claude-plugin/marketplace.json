@@ -1,0 +1,12 @@
+{
+  "name": "supy",
+  "owner": { "name": "Supy Engineering" },
+  "metadata": { "description": "Supy's internal Claude Code plugins." },
+  "plugins": [
+    {
+      "name": "supy-wingspan",
+      "source": "./",
+      "description": "Supy engineering best-practices plugin (backend-first)."
+    }
+  ]
+}
