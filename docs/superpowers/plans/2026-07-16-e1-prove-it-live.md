@@ -126,7 +126,7 @@ Expected: prints `FAIL: runbook missing: .../docs/pilots/RUNBOOK.md`, then `veri
 
 Create `docs/pilots/RUNBOOK.md`:
 
-```markdown
+````markdown
 # supy-wingspan Per-Stack Pilot Runbook
 
 This runbook is the **human-run** procedure that proves supy-wingspan works
@@ -188,7 +188,7 @@ triage per [`TRIAGE.md`](TRIAGE.md) and tick the tracker in
 ## Pilot 7 — ai-agents: supy-ai-agents
 
 ## Pilot 8 — k8s-config: supy-configmaps
-```
+````
 
 - [ ] **Step 4: Make the verifier executable and run it to confirm it passes**
 

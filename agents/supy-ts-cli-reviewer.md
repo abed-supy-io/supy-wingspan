@@ -93,7 +93,7 @@ Diff adds `application/scripts/replace-catalog-skus.script.ts` implementing `ISc
 repo from `ctx`, and batching updates with `batchArray(..., 500)`. No inline Mongo, no hardcoded URI.
 Output:
 
-```
+```text
 ## supy-ts-cli-reviewer — PASS
 ```
 
@@ -114,7 +114,7 @@ program
 
 Output:
 
-```
+```text
 ## supy-ts-cli-reviewer — ISSUES FOUND
 - **[severity: high]** src/presentation/commands/replace-skus.command.ts:3 — MongoDB connection URI accepted as a CLI argument (value not reproduced); it leaks into shell history and process listings → read the target DB from env (.env.{development,production}) and pass the environment name, not a URI (rule: architecture.md#rules rule 6)
 - **[severity: high]** src/presentation/commands/replace-skus.command.ts:6 — production-capable in-place rewrite runs with no confirmation prompt → gate the mutation behind an explicit inquirer confirmation naming the target DB, and refuse in a non-interactive context (rule: architecture.md#rules rule 5)
@@ -129,7 +129,7 @@ Output:
 
 Return findings in **exactly** this shape (the `supy-review` skill parses this format — do not deviate):
 
-```
+```text
 ## supy-ts-cli-reviewer — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
 ```

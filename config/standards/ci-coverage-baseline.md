@@ -198,7 +198,7 @@ Baseline shapes mined verbatim from the per-stack scaffolds in this plugin:
 (triggers, concurrency, Node/Flutter version pins, check ordering, `--ci --coverage`, the
 Flutter lcov ≥80% floor, and the firebase-functions/ts-cli/ai-agents repo-root secret-scan CI
 jobs) and `templates/{backend,frontend,firebase-functions,ts-cli,ai-agents}/.husky/pre-commit`
-+ `templates/k8s-config/.pre-commit-config.yaml` (gitleaks-first ordering, `lint-staged`,
+- `templates/k8s-config/.pre-commit-config.yaml` (gitleaks-first ordering, `lint-staged`,
 `nx affected --uncommitted`, package `typecheck`, kube-linter). Coverage bars for Flutter come
 from `flutter/flutter-conventions.md` (apps ≥80% / melos packages ≥85% / plugin ≥70% Dart +
 native). The `passWithNoTests` carve-out is the `supy-api-common` shared-library variant

@@ -37,7 +37,7 @@ Runtime items to confirm during the live pilot are recorded under [Verify at ins
 
 The following two commands enable the plugin from inside a Claude Code session opened in the target repository (e.g., `supy-service-inventory`). They are structurally validated — the marketplace `name` is `supy`, the plugin `name` is `supy-wingspan`, and `source` resolves to the repo root — but await live confirmation in an actual session.
 
-```
+```text
 /plugin marketplace add ~/Projects/supy-projects/supy-wingspan
 /plugin install supy-wingspan@supy
 ```
@@ -59,21 +59,25 @@ After install, the following should be available:
 Run the following in `supy-service-inventory` on a scratch branch that contains a small real change. Do not push — local-only. Tick each item after confirming the expected result.
 
 1. - [ ] Open a Claude Code session inside `supy-service-inventory` and run:
-   ```
+
+   ```text
    /plugin marketplace add ~/Projects/supy-projects/supy-wingspan
    /plugin install supy-wingspan@supy
    ```
+
    **Expected:** Claude Code reports the plugin installed successfully, no errors.
 
 2. - [ ] Check the session-start output (scroll up to the very beginning of the session).
    **Expected:** A line matching `supy-wingspan: detected nestjs-nx repo.` appears at session open.
 
 3. - [ ] Create a scratch branch and make a small real change (e.g., add a method stub or modify a module file):
+
    ```bash
    git checkout -b pilot/supy-wingspan-test
    # make a small edit, then stage it
    git add <file>
    ```
+
    **Expected:** `git diff $(git merge-base HEAD origin/main || git merge-base HEAD main)...HEAD --stat` shows at least one changed file. (Note: `/supy-review` reviews the whole branch diff vs. the merge-base with `origin/main` or `main`, not just the last commit.)
 
 4. - [ ] Run `/supy-review` with no arguments.
@@ -81,16 +85,20 @@ Run the following in `supy-service-inventory` on a scratch branch that contains 
 
 5. - [ ] Invoke the `supy-commit` skill (ask Claude to prepare the commit; it is a skill, not a `/`-command — e.g. "run the supy-commit skill").
    **Expected:** Claude produces a conventional-commit message (type, optional scope, short description) that ends with the trailer:
-   ```
+
+   ```text
    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
    ```
+
    Confirm the message is not auto-pushed — the skill is commit-only with no push step.
 
 6. - [ ] Clean up:
+
    ```bash
    git checkout main
    git branch -D pilot/supy-wingspan-test
    ```
+
    **Expected:** Branch deleted locally, nothing pushed to remote.
 
 ## Graceful degradation
@@ -109,7 +117,7 @@ Both commands degrade gracefully — they still produce useful, Supy-contextuali
 
 Confirmed by reading `skills/supy-review/SKILL.md` (Step 1 of the skill): before dispatching any agent, the skill runs `git diff ${DIFF_BASE}...HEAD --stat`. If the output is empty (no changes) or the working directory is not a git repository, the skill stops immediately and prints:
 
-```
+```text
 No changes to review — supy-review needs a non-empty diff
 ```
 

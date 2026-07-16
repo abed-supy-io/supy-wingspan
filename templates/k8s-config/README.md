@@ -18,7 +18,7 @@ target). Enforces `config/standards/secrets-and-config.md`.
 
 Split every service into:
 
-```
+```text
 base/
   <svc>-config.yaml          # kind: ConfigMap — NON-sensitive only (hosts, ports, flags)
   <svc>-external-secret.yaml # kind: ExternalSecret — pulls sensitive values from the manager

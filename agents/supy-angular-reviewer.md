@@ -80,7 +80,7 @@ export class OrderListComponent {
 
 OnPush present, `inject()` in a `#private` field, `selectSignal`, tagged lib, `@supy/*` imports, tokens in SCSS. Output:
 
-```
+```text
 ## supy-angular-reviewer — PASS
 ```
 
@@ -111,7 +111,7 @@ import { InventoryItem } from '@supy/inventory/internal'; // cross-domain intern
 
 Output:
 
-```
+```text
 ## supy-angular-reviewer — ISSUES FOUND
 - **[severity: high]** libs/orders/src/lib/components/order-list/order-list.component.ts:1 — component has no OnPush change detection → add `changeDetection: ChangeDetectionStrategy.OnPush` (rule: angular-conventions.md#rules rule 1)
 - **[severity: med]** libs/orders/src/lib/components/order-list/order-list.component.ts:3 — constructor injection → hold in a `#private` field via `inject(Store)` (rule: angular-conventions.md#rules rule 2)
@@ -125,7 +125,7 @@ Output:
 
 Return findings in **exactly** this shape (the `supy-review` skill parses this format — do not deviate):
 
-```
+```text
 ## supy-angular-reviewer — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
 ```

@@ -98,14 +98,14 @@ Then walk the rules:
 stable key, wraps work in `try`/`catch` with the logger (logging only the key,
 not the body), and uses `getRedis()`. Nothing violates the rules:
 
-```
+```text
 ## supy-ai-agents-reviewer — PASS
 ```
 
 **Example 2 — issues found.** A diff hardcodes a Postgres connection string,
 registers a mutating tool with no auth, and swallows the error:
 
-```
+```text
 ## supy-ai-agents-reviewer — ISSUES FOUND
 - **[severity: high]** cortex/kg/inject.ts:14 — Postgres connection string with an embedded credential committed in source → read the URL from the env-driven config singleton; move the credential to env / a secret store and add a placeholder-only key to .env.example (rule: ai-agents/architecture.md#rules rule 1; secrets-and-config.md#rules rule 1)
 - **[severity: high]** cortex/kg/inject.ts:20 — mutating MCP tool `inject_entity` registered with no auth guard → wrap it behind the package's OAuth/JWT scope check (e.g. requireScope('kg:write')) so read/engineer tokens cannot reach it (rule: ai-agents/architecture.md#rules rule 2)
@@ -117,7 +117,7 @@ registers a mutating tool with no auth, and swallows the error:
 
 Return exactly this shape:
 
-```
+```text
 ## supy-ai-agents-reviewer — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
 ```

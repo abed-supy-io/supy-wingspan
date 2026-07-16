@@ -92,7 +92,7 @@ Diff adds a callable in `functions/src/index.ts` that calls `requireAdmin(reques
 `setAdminClaimInteractor` from the container, and delegates through `mapCallableInput(request)`. No
 inline Firestore, no hardcoded secret, auth enforced. Output:
 
-```
+```text
 ## supy-firebase-functions-reviewer — PASS
 ```
 
@@ -112,7 +112,7 @@ export const syncOrders = onRequest(async (req, res) => {
 
 Output:
 
-```
+```text
 ## supy-firebase-functions-reviewer — ISSUES FOUND
 - **[severity: high]** functions/src/index.ts:2 — handler marked `@admin` never verifies the admin claim; the endpoint is effectively open → enforce the marker at runtime (check the admin custom claim / OIDC identity) before running logic (rule: architecture.md#rules rule 4)
 - **[severity: high]** functions/src/index.ts:5 — hardcoded credential in an `Authorization` header (value not reproduced) → read it from Firebase Secret Manager / injected env and rotate the exposed key (rule: secrets-and-config.md#rules rule 1)
@@ -125,7 +125,7 @@ Output:
 
 Return findings in **exactly** this shape (the `supy-review` skill parses this format — do not deviate):
 
-```
+```text
 ## supy-firebase-functions-reviewer — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
 ```

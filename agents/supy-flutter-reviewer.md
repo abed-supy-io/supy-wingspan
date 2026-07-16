@@ -151,7 +151,7 @@ class TasksPage extends StatelessWidget {
 
 `Bloc` (not `Cubit`), sealed event, `freezed` state, injects a UseCase, `fold`s both branches, page exposes `path`/`name`. Output:
 
-```
+```text
 ## supy-flutter-reviewer — PASS
 ```
 
@@ -183,7 +183,7 @@ color: Color(0xFF1A1A1A),                                     // raw color liter
 
 Output:
 
-```
+```text
 ## supy-flutter-reviewer — ISSUES FOUND
 - **[severity: high]** lib/features/tasks/presentation/bloc/tasks_cubit.dart:1 — uses `Cubit` → convert to a `Bloc` with explicit sealed events (rule: flutter-conventions.md#rules rule 1)
 - **[severity: high]** lib/features/tasks/presentation/bloc/tasks_cubit.dart:3 — repository result consumed without `Either` fold; domain must not throw → return `Future<Either<Failure, T>>` and `fold` both branches (rule: flutter-conventions.md#rules rule 10)
@@ -220,7 +220,7 @@ state = PageState.success(orders);                        // never emits loading
 
 Output:
 
-```
+```text
 ## supy-flutter-reviewer — ISSUES FOUND
 - **[severity: high]** lib/features/orders/data/repositories/orders_repository_impl.dart:1 — Profile B repo imports `dartz` (`Either`) → this repo mixes error-handling profiles; drop `dartz` and use bare `Future<T>` + `throwAppException` (rule: architecture.md#red-flags)
 - **[severity: high]** lib/features/orders/data/repositories/orders_repository_impl.dart:9 — `catch` swallows the error and returns `[]`; failures become invisible → rethrow via `throwAppException(e, s)` so a typed `AppException` reaches the caller (rule: flutter-conventions.md#rules rule 11)
@@ -233,7 +233,7 @@ Output:
 
 Return findings in **exactly** this shape (the `supy-review` skill parses this format — do not deviate):
 
-```
+```text
 ## supy-flutter-reviewer — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
 ```

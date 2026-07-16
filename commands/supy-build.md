@@ -22,7 +22,7 @@ If the Cortex MCP server is connected, query relevant entities and handler contr
 
 If `$ARGUMENTS` is empty or does not resolve to a readable file, stop immediately and print:
 
-```
+```text
 supy-build: no plan file provided — pass a path, e.g. /supy-build docs/superpowers/plans/my-feature.md
 ```
 

@@ -17,6 +17,7 @@ Standards in scope: `nx-nestjs-patterns.md`, `nats-event-patterns.md`,
 `security-cerbos.md`.
 
 ### ✅ Confirmed (keep as-is)
+
 - CQRS + DDD per bounded context; layer isolation api→logic→domain←data — matched in
   `supy-api`, `supy-service-*`, `supy-integration-inventory`.
 - `@nx/enforce-module-boundaries` with `type:`/`scope:` tags; domain purity (no nest/mongoose
@@ -29,6 +30,7 @@ Standards in scope: `nx-nestjs-patterns.md`, `nats-event-patterns.md`,
 - Commit convention `@supy/commitlint-config/conventional` — every repo. `bug` rejected.
 
 ### ⚠️ Divergent (reconcile)
+
 - **`supy-api-common` is a shared-library repo, not an app.** No `apps/*`, no dual transport;
   publishes `@supy/*` libs consumed by the app repos. → Standards must carry a **"shared-lib
   variant"** note: which rules apply (module boundaries, domain purity, typed errors, commits)
@@ -40,6 +42,7 @@ Standards in scope: `nx-nestjs-patterns.md`, `nats-event-patterns.md`,
   coverage gate. → cross-cutting (see Group X).
 
 ### ➕ New (codify)
+
 - **Decimal-money helper** — money handled as integer minor units / decimal helper, never JS
   float; recurring across settlements/orders/inventory. New rule in `architecture.md` +
   reviewer red-flag on `number` fields named `price|amount|total|cost`.
@@ -59,6 +62,7 @@ Standards in scope: `nx-nestjs-patterns.md`, `nats-event-patterns.md`,
 Standards in scope: `frontend/angular-conventions.md`, `frontend/module-boundaries.md`.
 
 ### ✅ Confirmed (keep as-is)
+
 - Angular 21 + Nx + NGXS(+Immer) + PrimeNG 21 + AG Grid + Jest + SCSS tokens — matches the repo.
 - `OnPush` everywhere; `inject()` in `#private` fields; signal inputs/outputs; `selectSignal`;
   `takeUntilDestroyed`; smart/dumb split — all present and lint-enforced.
@@ -69,11 +73,13 @@ Standards in scope: `frontend/angular-conventions.md`, `frontend/module-boundari
 - `type:`/`scope:` tags, inward deps, `@supy/*` aliases — module-boundaries doc is accurate.
 
 ### ⚠️ Divergent (reconcile)
+
 - The two frontend standards are sourced from the **starter-kit** with an `@app/*`→`@supy/*`
   swap already applied; confirm the live `supy-frontend` alias prefix matches (analysis says
   yes). No rule change — just a verification note in the reviewer.
 
 ### ➕ New (codify)
+
 - **AG Grid col-def factories + external `supy-pagination`** wiring to response metadata —
   already in rule 21; reinforce with a template snippet under `templates/frontend/`.
 - **`saveToUrl` / URL-synced list state** pattern observed — candidate rule if confirmed as a
@@ -91,12 +97,14 @@ The current standards encode **one** profile (the `checklist` reference: dartz `
 sealed `Failure` + Hive). Reality is **two app profiles + two library sub-profiles.**
 
 ### ✅ Confirmed (keep as-is)
+
 - Bloc-not-Cubit; sealed events + freezed states; get_it DI (registerFactory for blocs,
   registerLazySingleton for the rest); UseCase<T,Params>; Dio interceptor order; design tokens;
   mocktail + bloc_test; flavors + FlavorConfig; flutter_secure_storage; VGA + `bloc_lint`.
 - 3-layer presentation→domain←data; domain pure Dart; DI in `injection_container.dart`.
 
 ### ⚠️ Divergent (reconcile — the central Group C task)
+
 - **`supy-mobile` (the main app) does NOT use dartz `Either`.** It uses a `PageState<T>` sealed
   union + `throwAppException()` for error flow. The current standard presents `Either` as *the*
   Supy way — it is only `checklist`'s way. → **Split the error-handling rule into two named
@@ -109,6 +117,7 @@ sealed `Failure` + Hive). Reality is **two app profiles + two library sub-profil
   Neither is "wrong"; mixing within one repo is the red-flag.
 
 ### ➕ New (codify — sub-profiles)
+
 - **`supy-scanner` — federated native plugin sub-profile.** Versioned `MethodChannel`,
   platform-interface package, no app-level DI/bloc rules. New section in `flutter/architecture.md`
   ("plugin package profile") + a reviewer branch.
@@ -121,6 +130,7 @@ sealed `Failure` + Hive). Reality is **two app profiles + two library sub-profil
 ## Group D — New/uncovered stacks & infra (9 repos)
 
 ### ➕ New stacks worth full asset sets
+
 - **`firebase-functions`** (`supy-firebase-functions`) — Firebase Cloud Functions on Node.
   Recommendation: **remediation-first** new stack (repo needs structure/tests/CI before it's a
   clean template). Asset set: `config/standards/firebase-functions/`, reviewer, how-to +
@@ -135,6 +145,7 @@ sealed `Failure` + Hive). Reality is **two app profiles + two library sub-profil
   to the Cortex-optional integration already in the plugin.
 
 ### Policy / docs-only (no new stack)
+
 - **`supy-cerbos-policies`** → deepen existing `security-cerbos` (see below — its own delta).
 - **`supy-manifest`** → policy-only: codify Datree policy set (req/limits, securityContext, RBAC,
   networkPolicy), document blue-green-vs-Deployment policy, document the known hotfix tag-corruption
@@ -144,6 +155,7 @@ sealed `Failure` + Hive). Reality is **two app profiles + two library sub-profil
 - **`supy-core`** → empty; skip.
 
 ### 🔒 Security-blocking (highest priority of the whole analysis)
+
 - **`supy-configmaps` — committed plaintext secrets** (Twilio, Firebase, Intercom, JSReport,
   Unleash, Referral Hero, Lightspeed, Xero, Tissl, SFTP, SendGrid; paths recorded in the analysis
   file, **values never reproduced** per the org rule). → **New BLOCKING infra/config-secrets
@@ -154,6 +166,7 @@ sealed `Failure` + Hive). Reality is **two app profiles + two library sub-profil
   reinforces the org rule against exposed secrets.
 
 ### `security-cerbos` reconciliation (stale standard)
+
 The current `security-cerbos.md` describes CEL conditions and derived roles **as if present**.
 The actual `supy-cerbos-policies` repo has **none** (empty `derived_roles/`, no CEL, no tests,
 coarse all-actions-per-resource, no pre-commit compile). → **Split the standard into

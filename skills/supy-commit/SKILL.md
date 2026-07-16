@@ -27,13 +27,13 @@ git diff --staged --stat
 
 If `git rev-parse` fails, stop and print:
 
-```
+```text
 supy-commit: not inside a git repository — nothing to commit
 ```
 
 If `git diff --staged --stat` produces no output (nothing staged), print:
 
-```
+```text
 supy-commit: no staged changes found.
 Stage the files you want to commit (git add <files>) and re-run.
 ```
@@ -59,7 +59,7 @@ Analyse the staged diff and propose a commit message that complies with every ru
 5. **Footer**: issue references (`closes #N`) if applicable. Preceded by a blank line.
 6. **Co-Authored-By trailer**: always append exactly this line in the footer section, preceded by a blank line if no other footer exists:
 
-```
+```text
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 ```
 
@@ -72,7 +72,7 @@ Red flags to avoid (from the standard):
 
 Build the proposed message in full and present it as a fenced code block so it is easy to copy:
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body if applicable>
@@ -90,7 +90,7 @@ Below the proposed message, add a brief rationale (1–3 sentences) explaining w
 
 Display the following prompt to the user before taking any action:
 
-```
+```text
 supy-commit: proposed message shown above.
 
 Note: if a .husky/commit-msg hook is present, commitlint will validate the message automatically.
@@ -102,7 +102,7 @@ Commit with this message? [y/N]
 - If the user answers `y` or `yes` (case-insensitive): proceed to Step 5.
 - Any other answer (including silence, `n`, or editing requests): stop and print:
 
-```
+```text
 supy-commit: commit aborted — no changes were made.
 Adjust the staged files or the proposed message and re-run.
 ```
@@ -152,7 +152,7 @@ If the commit fails (non-zero exit code), print the git error output and stop. D
 
 **commitlint or pre-commit hook failure:** The hook runs automatically after `git commit` is issued. If the hook rejects the message, git exits non-zero. Print the hook output, then print:
 
-```
+```text
 supy-commit: the commit was rejected by a hook. Fix the issue above and re-run supy-commit.
 ```
 

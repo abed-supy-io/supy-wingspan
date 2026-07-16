@@ -26,7 +26,7 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 If `git rev-parse` fails (not a git repo), stop and print:
 
-```
+```text
 supy-create-pr: not inside a git repository — nothing to do
 ```
 
@@ -47,7 +47,7 @@ git log ${BASE_BRANCH}..HEAD --oneline
 
 If this produces no output (no commits ahead of base), print:
 
-```
+```text
 supy-create-pr: no commits found ahead of <BASE_BRANCH>.
 Make sure you have committed your changes (try supy-commit) and are on the correct branch.
 ```
@@ -92,7 +92,7 @@ Analyse the commits and diff. Choose a single conventional type that best repres
 
 The PR title follows the same format as a commit header:
 
-```
+```text
 <type>(<scope>): <subject>
 ```
 
@@ -131,7 +131,7 @@ Rules for the description:
 - Do not include secrets, tokens, or connection strings.
 - Append the Co-Authored-By footer after the last section:
 
-```
+```text
 ---
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 ```
@@ -165,7 +165,7 @@ If `git push` fails (e.g., permission denied, branch protection), print the erro
 
 Do not attempt to push or call `gh`. Instead, print the following to the terminal so the user can paste it directly:
 
-```
+```text
 supy-create-pr: gh CLI is unavailable or no remote is configured — outputting PR details for manual creation.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

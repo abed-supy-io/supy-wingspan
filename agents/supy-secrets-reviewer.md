@@ -83,7 +83,7 @@ missed committed credential is not.
 Return findings in **exactly** this shape (the `supy-review` skill parses this format — do not
 deviate):
 
-```
+```text
 ## supy-secrets-reviewer — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem, NO secret value> → <concrete fix> (rule: <standards anchor>)
 ```

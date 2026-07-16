@@ -42,13 +42,13 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 If `git rev-parse` fails (not a git repo), stop and print:
 
-```
+```text
 supy-scaffold-handler: not inside a git repository — nothing to scaffold
 ```
 
 Ask the user for the three required inputs. If `$ARGUMENTS` was passed, parse them from it in order (pattern, project, type); otherwise prompt interactively:
 
-```
+```text
 supy-scaffold-handler needs three pieces of information:
 
 1. NATS subject pattern — e.g. "ledger.items.get-one" (RPC) or "inventory.transfer.transfer-submitted" (event)
@@ -68,7 +68,7 @@ echo "$NATS_PATTERN" | grep -qP '^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*\.[a-z][a-z0-9
 
 If validation fails, stop and print:
 
-```
+```text
 supy-scaffold-handler: invalid NATS pattern "<NATS_PATTERN>".
   RPC format:   <domain>.<entity>.<verb>       e.g. ledger.items.get-one
   Event format: <source-domain>.<aggregate>.<past-tense-event>  e.g. inventory.transfer.transfer-submitted
@@ -77,7 +77,7 @@ All three segments must be lowercase kebab-case.
 
 For `HANDLER_TYPE=event`, also check that the third segment looks like a past-tense verb (ends in `-ed`, `-d`, or a recognised past form). If it does not, print a **warning** (not a stop):
 
-```
+```text
 supy-scaffold-handler: warning — event subject third segment "<segment>" does not appear to be past-tense (rule 2 in nats-event-patterns.md). Proceed? [y/N]
 ```
 
@@ -111,7 +111,7 @@ fi
 
 If `LIB_ROOT` is still empty, stop and print:
 
-```
+```text
 supy-scaffold-handler: could not locate Nx project "<NX_PROJECT>".
 Run `nx show projects` in the repo to list all projects and re-run with the correct name.
 ```
@@ -197,7 +197,7 @@ If no template is found, use the inline stub in Step 6 directly.
 
 If Cortex MCP is available, augment the template with live contract information for the pattern:
 
-```
+```text
 Cortex: get_handler_contract("<NATS_PATTERN>")
 Cortex: get_entity("<DOMAIN>")
 ```
@@ -318,7 +318,7 @@ describe('<ControllerClass>', () => {
 
 Before writing any file, print the full plan:
 
-```
+```text
 supy-scaffold-handler: planned changes for pattern "<NATS_PATTERN>"
 
   Handler type : <request|event>
@@ -340,7 +340,7 @@ Proceed with scaffold? [y/N]
 - If the user answers `y` or `yes` (case-insensitive): proceed to Step 8.
 - Any other answer: stop and print:
 
-```
+```text
 supy-scaffold-handler: aborted — no files were written.
 ```
 
@@ -356,7 +356,7 @@ Write or update the files as planned:
 
 After writing, print:
 
-```
+```text
 supy-scaffold-handler: scaffold complete.
 
   Written:
@@ -383,7 +383,7 @@ supy-scaffold-handler: scaffold complete.
 
 **Nx generator dry-run fails or produces wrong paths:** Fall back to the copy-from-template path in Step 5. Print a notice:
 
-```
+```text
 supy-scaffold-handler: Nx generator dry-run failed or produced unexpected paths — falling back to template-copy scaffold.
 ```
 
