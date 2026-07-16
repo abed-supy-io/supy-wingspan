@@ -1,7 +1,42 @@
 {
   "name": "supy-wingspan",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AI-assisted engineering standards for Supy repos: stack-aware review agents (NestJS backend + Angular frontend + Flutter mobile + standalone Firebase Functions backend + standalone commander.js CLI + polyglot AI-agents monorepo + Kubernetes config), a stack-agnostic secrets reviewer that blocks committed credentials, scaffolding and Git skills, a consistency baseline generator, and orchestration wrappers over superpowers.",
-  "author": { "name": "Supy Engineering" },
-  "keywords": ["supy", "nestjs", "nx", "nats", "clean-architecture", "ddd", "cqrs", "angular", "ngxs", "primeng", "frontend", "flutter", "dart", "bloc", "mobile", "firebase", "firebase-functions", "firestore", "awilix", "ts-cli", "commander", "mongodb", "cli", "ai-agents", "mcp", "bullmq", "pgvector", "agents", "kubernetes", "secrets", "code-review", "standards"]
+  "author": {
+    "name": "Supy Engineering"
+  },
+  "keywords": [
+    "supy",
+    "nestjs",
+    "nx",
+    "nats",
+    "clean-architecture",
+    "ddd",
+    "cqrs",
+    "angular",
+    "ngxs",
+    "primeng",
+    "frontend",
+    "flutter",
+    "dart",
+    "bloc",
+    "mobile",
+    "firebase",
+    "firebase-functions",
+    "firestore",
+    "awilix",
+    "ts-cli",
+    "commander",
+    "mongodb",
+    "cli",
+    "ai-agents",
+    "mcp",
+    "bullmq",
+    "pgvector",
+    "agents",
+    "kubernetes",
+    "secrets",
+    "code-review",
+    "standards"
+  ]
 }
