@@ -4,12 +4,14 @@ Supy's internal Claude Code plugin. Makes every `supy-*` repo follow Supy engine
 best practices through AI: stack-aware review agents (NestJS backend, Angular frontend,
 Flutter mobile, Firebase Functions, TypeScript CLI, the polyglot AI-agents monorepo, and
 Kubernetes config), plus two stack-agnostic reviewers — commit/PR conventions and a
-secret scanner — that run on every repo. Ships scaffolding & Git skills, a
-consistency-baseline generator, and thin orchestration wrappers over `superpowers`.
+secret scanner — that run on every repo. Ships scaffolding, Git, spec-authoring, CI-fixing,
+and Flutter delivery skills (Figma-to-code, release readiness, SDK upgrades, code assessment),
+a consistency-baseline generator, and thin orchestration wrappers over `superpowers`. Each repo
+only surfaces the skills for its own stack, so backend and Flutter devs never see each other's.
 
 ## Status
 
-v0.1.0. Published at [`abed-supy-io/supy-wingspan`](https://github.com/abed-supy-io/supy-wingspan) (public).
+v0.1.1. Published at [`abed-supy-io/supy-wingspan`](https://github.com/abed-supy-io/supy-wingspan) (public).
 
 ## Install
 
@@ -45,9 +47,15 @@ procedure, the pilot exercise checklist, and known gaps.
 
 ## Usage
 
-The plugin exposes **4 slash commands** and **17 skills**. Commands are typed
+The plugin exposes **4 slash commands** and **28 skills**. Commands are typed
 directly (`/name`); skills are invoked in natural language ("run the supy-commit
 skill") — they are not slash commands.
+
+The skills are grouped below by stack. Every repo gets the **Universal** skills; the
+per-stack skills only apply in a repo of that stack — so a backend dev works with the
+backend set, a Flutter dev with the Flutter set, and neither is bothered by the other's.
+The stack is detected automatically (see the SessionStart hook), and `supy-baseline`
+writes only the Universal + this-repo's-stack skills into each repo's `CLAUDE.md`.
 
 ### Slash commands
 
@@ -60,25 +68,68 @@ skill") — they are not slash commands.
 
 ### Skills
 
+#### Universal — every Supy repo
+
 | Skill | What it does |
 |---|---|
-| `supy-review` | The review orchestration behind `/supy-review` — usable directly as a skill too. |
-| `supy-baseline` | Generates or updates the repo's `CLAUDE.md` from the canonical template + repo inspection (+ Cortex when connected). Never clobbers an existing file silently — shows a diff and asks first. |
+| `supy-review` | The review orchestration behind `/supy-review` — usable directly as a skill too. Detects the stack and dispatches the matching reviewers. |
+| `supy-baseline` | Generates or updates the repo's `CLAUDE.md` from the canonical template + repo inspection (+ Cortex when connected). Writes only the Universal + this-stack skills into the routing footer. Never clobbers an existing file silently — shows a diff and asks first. |
 | `supy-commit` | Proposes a Conventional Commits message grounded in `config/standards/commit-conventions.md`, ending with the `Co-Authored-By: Claude Opus 4.8 (1M context)` trailer. Confirmation-gated; commit-only, never pushes. |
-| `supy-create-pr` | Builds a conventional PR title + Summary/Changes/Test-evidence/Issue-refs body. Pushes via `gh` when a remote and `gh` are available; otherwise prints a ready-to-paste PR and manual instructions. |
+| `supy-create-pr` | Builds a conventional PR title + Summary/Changes/Test-evidence/Issue-refs body. Pushes via `gh` when a remote and `gh` are available; otherwise prints a ready-to-paste PR and manual instructions. Runs a Flutter pre-flight (`dart format` + `flutter analyze`) when a `pubspec.yaml` is present. |
+| `supy-rebase` | Rebases the current branch onto its base the safe way — resolves the base branch, requires a clean tree, records a `PRE_REBASE_SHA` safety ref, then rebases and resolves conflicts one commit at a time (never `--skip`). Force-pushes with `--force-with-lease` only after you confirm. |
+| `supy-hotfix` | Drives a disciplined production hotfix — cuts a `hotfix/<slug>` branch from the remote base, keeps the diff minimal, commits as `fix` (via supy-commit), reviews (via supy-review), fast-tracks the PR (via supy-create-pr), then handles back-merge and release follow-ups. |
+| `supy-debrief` | Produces a structured handoff/retrospective for the current branch from the actual commits and diff — context, what changed, why, verification, known gaps, follow-ups — as a ready-to-paste block, and optionally saves it to `docs/debriefs/`. Never auto-commits. |
+| `fix-failing-github-actions` | Finds the failing GitHub Actions checks for the branch/PR, pulls the run logs, fixes the root cause, commits + pushes (via supy-commit / supy-create-pr), then re-checks after a short wait — looping until every check is green. |
+| `supy-impl-spec` | Turns a Jira/GitHub ticket into a full implementation spec — architecture, testing strategy, implementation details — under `docs/specs/`, ready to build from. |
+| `supy-spike-spec` | Turns a ticket into a spike/research spec — research questions, options to evaluate, PoC scope, success criteria — under `docs/specs/`, for work that needs investigation before it can be planned. |
+
+#### Backend — NestJS on Nx (`nestjs-nx`)
+
+| Skill | What it does |
+|---|---|
+| `supy-clean-architecture` | The how-to for writing backend code the Supy way — Clean/Hexagonal Architecture + DDD + CQRS: aggregates with methods + `this.assign`/`this.addEvent`, value objects with state machines, factories, repository interfaces, interactors that persist atomically then side-effect, NATS controllers. Grounded in `config/standards/architecture.md` + `config/standards/backend/module-boundaries.md`; the companion to `supy-scaffold-domain`. |
+| `supy-scaffold-domain` | Scaffolds a complete Clean-Architecture/DDD bounded context via the Plop `g:domain` generator — five tagged libs (api, logic, domain/model, domain/service, data) with aggregate, value objects, state VO, factory, events, repository, schema, transformers, interactor, controller — then walks the fill-in in dependency order and prints the four manual wiring steps. Offers to install the generator if the repo lacks it. |
 | `supy-scaffold-handler` | Scaffolds a new NestJS NATS handler (RPC request or JetStream event) with a colocated DTO and test stub, following the mined Nx/NestJS layout. Prefers a repo Nx generator; else copies the nearest existing handler. Confirms planned paths before writing. |
-| `supy-clean-architecture` | (nestjs-nx) The how-to for writing backend code the Supy way — Clean/Hexagonal Architecture + DDD + CQRS: aggregates with methods + `this.assign`/`this.addEvent`, value objects with state machines, factories, repository interfaces, interactors that persist atomically then side-effect, NATS controllers. Grounded in `config/standards/architecture.md` + `config/standards/backend/module-boundaries.md`; the companion to `supy-scaffold-domain`. |
-| `supy-scaffold-domain` | (nestjs-nx) Scaffolds a complete Clean-Architecture/DDD bounded context via the Plop `g:domain` generator — five tagged libs (api, logic, domain/model, domain/service, data) with aggregate, value objects, state VO, factory, events, repository, schema, transformers, interactor, controller — then walks the fill-in in dependency order and prints the four manual wiring steps (aliases, scope constraint, `ApiModule` registration, discriminators). Offers to install the generator if the repo lacks it. |
-| `supy-scaffold-feature` | (angular-nx) Scaffolds a complete Angular NGXS feature library via the Plop generator — tagged `project.json`, models, state/actions, URI-token service, smart+dumb components, resolver, lazy routes — then walks the fill-in in dependency order and prints the three manual wiring steps (alias, scope constraint, lazy route). Offers to install the generator if the repo lacks it. |
-| `supy-angular-feature` | (angular-nx) The how-to for writing Angular the Supy way — OnPush + `inject()` components, signal I/O, NGXS state with Immer `produce()`, URI-token services, lazy routes, `--p-*` styling. Grounded in `config/standards/frontend/`; the companion to `supy-scaffold-feature`. |
-| `supy-scaffold-flutter-feature` | (flutter) Scaffolds a complete Clean-Architecture feature (domain + data + presentation + tests) from bundled `.hbs` stubs — entity, repository, usecase, freezed model + datasources, repository impl, BLoC with sealed events + freezed state, page, barrel, and two behaviour tests — then walks the fill-in in dependency order and prints the three manual wiring steps (get_it registration, go_router route, barrel export). Prefers a repo `mason`/`very_good` generator when present. |
-| `supy-flutter-feature` | (flutter) The how-to for writing Flutter the Supy way — Clean Architecture 3 layers/feature, BLoC (never Cubit) with sealed events + freezed state, go_router with `static const path`/`name`, get_it DI, dio interceptor chain, `dartz` `Either<Failure, T>` + sealed `Failure` hierarchy, `UseCase<T, Params>`, hive cache policies, design tokens, `mocktail`+`bloc_test`. Grounded in `config/standards/flutter/`; the companion to `supy-scaffold-flutter-feature`. |
-| `supy-firebase-function` | (firebase-functions) The how-to for writing Firebase Functions code in the standalone supy-firebase-functions repo the Supy way — Clean Architecture (index.ts → app interactors → data repositories → frameworks), Awilix DI, runtime-enforced auth markers (`@unauthenticated`/`@internal`/`@admin`/`@apiKey`), typed domain errors, idempotent Firestore triggers, and secrets from Secret Manager (never literals). |
-| `supy-ts-cli` | (ts-cli) The how-to for writing CLI code in the standalone supy-cli repo the Supy way — Clean Architecture (presentation commands → application scripts → infrastructure → domain), commander.js `scripts [run\|list\|info]`, the `IScript`/`ScriptDetails` self-documenting contract, env-layered config, explicit production confirmation before any prod mutation, no secrets in argv/logs, deterministic exit codes, testable use cases, and batched bulk MongoDB operations. |
-| `supy-ai-agents` | (ai-agents) Write and change code in the polyglot supy-ai-agents monorepo (Cortex/Nexus/Oculus/Gleap/PMS-AI — Node.js + Python + Cloudflare Workers, MCP tools, BullMQ, pgvector KG) so it follows the Supy ai-agents architecture & operational standard — secret hygiene, auth on exposed tools, env-driven config, validation + error handling, idempotent consumers, and non-root containers. |
-| `supy-rebase` | (git workflow) Rebases the current branch onto its base the safe way — resolves the base branch, requires a clean tree, records a `PRE_REBASE_SHA` safety ref, then rebases and resolves conflicts one commit at a time (never `--skip`). Force-pushes with `--force-with-lease` only after you confirm. |
-| `supy-hotfix` | (git workflow) Drives a disciplined production hotfix — cuts a `hotfix/<slug>` branch from the remote base, keeps the diff minimal, commits as `fix` (via supy-commit), reviews (via supy-review), fast-tracks the PR (via supy-create-pr), then handles back-merge and release follow-ups. |
-| `supy-debrief` | (git workflow) Produces a structured handoff/retrospective for the current branch from the actual commits and diff — context, what changed, why, verification, known gaps, follow-ups — as a ready-to-paste block, and optionally saves it to `docs/debriefs/`. Never auto-commits. |
+
+#### Frontend — Angular on Nx (`angular-nx`)
+
+| Skill | What it does |
+|---|---|
+| `supy-angular-feature` | The how-to for writing Angular the Supy way — OnPush + `inject()` components, signal I/O, NGXS state with Immer `produce()`, URI-token services, lazy routes, `--p-*` styling. Grounded in `config/standards/frontend/`; the companion to `supy-scaffold-feature`. |
+| `supy-scaffold-feature` | Scaffolds a complete Angular NGXS feature library via the Plop generator — tagged `project.json`, models, state/actions, URI-token service, smart+dumb components, resolver, lazy routes — then walks the fill-in in dependency order and prints the three manual wiring steps. Offers to install the generator if the repo lacks it. |
+
+#### Flutter / mobile (`flutter`)
+
+| Skill | What it does |
+|---|---|
+| `supy-flutter-feature` | The how-to for writing Flutter the Supy way — Clean Architecture 3 layers/feature, BLoC (never Cubit) with sealed events + freezed state, go_router with `static const path`/`name`, get_it DI, dio interceptor chain, `dartz` `Either<Failure, T>` + sealed `Failure` hierarchy, `UseCase<T, Params>`, hive cache policies, design tokens, `mocktail`+`bloc_test`. Grounded in `config/standards/flutter/`; the companion to `supy-scaffold-flutter-feature`. |
+| `supy-scaffold-flutter-feature` | Scaffolds a complete Clean-Architecture feature (domain + data + presentation + tests) from bundled `.hbs` stubs, then walks the fill-in and prints the three manual wiring steps (get_it registration, go_router route, barrel export). Also creates a brand-new project via `very_good create`. Prefers a repo `mason`/`very_good` generator when present. |
+| `supy-figma-implement-design` | Translates a Figma design into a production-ready Flutter widget with 1:1 fidelity via the Figma MCP — maps design tokens onto `ThemeData`/`ColorScheme`/`ThemeExtension`, places the widget in the shared UI package, validates with Alchemist goldens (+ Widgetbook use cases). |
+| `supy-figma-to-tickets` | Reads a Figma file via the Figma MCP and turns its screens/flows into dependency-ordered GitHub issues or Jira tickets, each deep-linked to its Dev Mode node. Confirms scope before creating anything. (Also useful in frontend repos.) |
+| `supy-e2e-tests` | Writes, runs, and debugs the retailer end-to-end (`integration_test`) suite against the live dev backend on the Android emulator — run command, feature-flag gates, authz-race waits, finder caveats, never-weaken-assertions. (Applies to the supy-retailer repo.) |
+| `supy-app-release-readiness` | Audits a Flutter app for release readiness across every detected platform (Android/iOS/web/macOS/Linux/Windows) by launching the six platform readiness agents in parallel, then synthesizes a unified `RELEASE_TODO.md`. |
+| `supy-flutter-upgrade` | Bumps Flutter/Dart SDK versions across every `pubspec.yaml`, `.fvmrc`, and Actions workflow, then re-runs pub get / format / analyze / fix and reviews the release notes for breaking changes. |
+| `supy-code-assessment` | A structured whole-project audit of a Flutter/Dart codebase against Supy's Flutter standards, written up as `CODE_ASSESSMENT.md` (architectural risks, scalability/testability gaps, refactoring estimate). For a single diff, use `supy-review` instead. |
+| `supy-analyze-native-codebase` | Analyzes a native iOS (Swift/Obj-C) and/or Android (Kotlin/Java) codebase to produce a Flutter migration manifest, PRD, risk register, and per-feature reports. |
+| `supy-interview-feedback` | Evaluates a candidate's Flutter take-home against Supy's architecture/BLoC/engineering standards and writes a scored `INTERVIEW_FEEDBACK.md` with a hiring recommendation. |
+
+#### Firebase Functions (`firebase-functions`)
+
+| Skill | What it does |
+|---|---|
+| `supy-firebase-function` | The how-to for writing Firebase Functions code in the standalone supy-firebase-functions repo the Supy way — Clean Architecture (index.ts → app interactors → data repositories → frameworks), Awilix DI, runtime-enforced auth markers (`@unauthenticated`/`@internal`/`@admin`/`@apiKey`), typed domain errors, idempotent Firestore triggers, and secrets from Secret Manager (never literals). |
+
+#### TypeScript CLI (`ts-cli`)
+
+| Skill | What it does |
+|---|---|
+| `supy-ts-cli` | The how-to for writing CLI code in the standalone supy-cli repo the Supy way — Clean Architecture (presentation commands → application scripts → infrastructure → domain), commander.js `scripts [run\|list\|info]`, the `IScript`/`ScriptDetails` self-documenting contract, env-layered config, explicit production confirmation before any prod mutation, no secrets in argv/logs, deterministic exit codes, testable use cases, and batched bulk MongoDB operations. |
+
+#### AI-agents monorepo (`ai-agents`)
+
+| Skill | What it does |
+|---|---|
+| `supy-ai-agents` | Write and change code in the polyglot supy-ai-agents monorepo (Cortex/Nexus/Oculus/Gleap/PMS-AI — Node.js + Python + Cloudflare Workers, MCP tools, BullMQ, pgvector KG) so it follows the Supy ai-agents architecture & operational standard — secret hygiene, auth on exposed tools, env-driven config, validation + error handling, idempotent consumers, and non-root containers. |
 
 ### SessionStart hook
 
@@ -88,12 +139,15 @@ no `CLAUDE.md`. It stays silent on unknown or mixed stacks and never fails the s
 
 ### UserPromptSubmit hook (skill routing)
 
-`skill-router.sh` reads each prompt and, when it recognizes an engineering intent
-(commit, PR, review, rebase, hotfix, debrief, baseline), injects a one-line nudge to prefer the
-matching skill over ad-hoc steps. It is a soft nudge — never blocks the prompt, never fails the
-session — and stays completely silent on prompts that match no intent, so ordinary turns are
-unaffected. `supy-baseline` also embeds the same routing table (`## Using Supy skills`) into each
-generated repo `CLAUDE.md`, so the guidance persists even without the hook.
+`skill-router.sh` reads each prompt and, when it recognizes an engineering intent, injects a
+one-line nudge to prefer the matching skill over ad-hoc steps. Universal intents (commit, PR,
+review, rebase, hotfix, debrief, baseline, failing CI, spec authoring) nudge in every repo.
+Stack-specific intents (Figma/design, whole-repo audit, release readiness, Flutter upgrade) only
+nudge in a repo of the matching stack — a lightweight `cwd` check gates them — so a backend dev
+never sees Flutter suggestions and vice-versa. It is a soft nudge — never blocks the prompt, never
+fails the session — and stays completely silent on prompts that match no intent, so ordinary turns
+are unaffected. `supy-baseline` embeds the same routing (`## Using Supy skills`), scoped to the
+repo's stack, into each generated `CLAUDE.md`, so the guidance persists even without the hook.
 
 ### Typical workflow
 
@@ -115,8 +169,8 @@ repo's `CLAUDE.md` and the mined standards under `config/standards/` — nothing
 
 ## Components
 
-- `agents/` — **11 review subagents**: backend (architecture, NATS events, tests, security), Angular (frontend), Flutter (mobile), Firebase Functions, TypeScript CLI, AI-agents monorepo, and the two stack-agnostic reviewers (commit/PR conventions + secrets) that run on every stack
-- `skills/` — **17 skills**: supy-review, supy-baseline, supy-commit, supy-create-pr; backend: supy-scaffold-handler, supy-clean-architecture, supy-scaffold-domain; frontend: supy-scaffold-feature, supy-angular-feature; mobile: supy-scaffold-flutter-feature, supy-flutter-feature; standalone: supy-firebase-function, supy-ts-cli, supy-ai-agents; git workflow: supy-rebase, supy-hotfix, supy-debrief
+- `agents/` — **17 subagents**: 11 review subagents — backend (architecture, NATS events, tests, security), Angular (frontend), Flutter (mobile), Firebase Functions, TypeScript CLI, AI-agents monorepo, and the two stack-agnostic reviewers (commit/PR conventions + secrets) that run on every stack — plus 6 Flutter release-readiness agents under `agents/app-readiness/` (Android/iOS/web/macOS/Linux/Windows), launched in parallel by `supy-app-release-readiness`
+- `skills/` — **28 skills**, grouped by stack (see [Usage](#skills)): 10 Universal (review, baseline, commit, create-pr, rebase, hotfix, debrief, fix-failing-github-actions, impl-spec, spike-spec), 3 backend, 2 frontend, 10 Flutter/mobile, and one each for firebase-functions, ts-cli, ai-agents. Every repo sees the Universal set plus only its own stack's skills
 - `commands/` — orchestration wrappers over superpowers
 - `hooks/` — stack detection on session open (nestjs-nx / angular-nx / nx / flutter / firebase-functions / ts-cli / ai-agents / k8s-config / generic) + a UserPromptSubmit skill router that nudges toward the matching workflow skill
 - `config/standards/` — mined Supy standards, source of truth for the agents. Three cross-cutting standards at root (`commit-conventions.md`, `secrets-and-config.md`, `ci-coverage-baseline.md`) plus per-stack rulebooks: backend at root + `backend/` for module boundaries, `frontend/`, `flutter/`, `firebase-functions/`, `ts-cli/`, `ai-agents/` (k8s-config has no standards subdir — it's governed by the root `secrets-and-config.md`)
