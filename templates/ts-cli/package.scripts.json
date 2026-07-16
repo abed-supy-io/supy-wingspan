@@ -1,0 +1,35 @@
+{
+  "//": "Merge these keys into the repo-root package.json. This closes the tooling gaps in the",
+  "//scripts": "remediation backlog: flat ESLint 9 (replacing ESLint 8 .eslintrc), Jest, and the",
+  "//devDependencies": "Husky/commitlint/gitleaks pre-commit chain. Keep the existing npm-bin build",
+  "//note": "(scripts/copy-shebang.js) and Prettier (100 cols). Never add a secret or URI here.",
+
+  "scripts": {
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "tsc && node scripts/copy-shebang.js",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepare": "husky"
+  },
+
+  "lint-staged": {
+    "src/**/*.ts": ["eslint --fix", "prettier --write"]
+  },
+
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "husky": "^9.1.0",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.3.0",
+    "ts-jest": "^29.2.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

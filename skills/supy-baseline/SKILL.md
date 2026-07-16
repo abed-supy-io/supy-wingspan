@@ -38,14 +38,20 @@ fi
 # Checked after flutter, before the generic fallback — mirrors detect-stack.sh / supy-review order.
 [ -z "$STACK" ] && [ -f "$REPO_ROOT/firebase.json" ] && [ -d "$REPO_ROOT/functions" ] && STACK=firebase-functions
 
+# Standalone TypeScript CLI (non-Nx): package.json declaring a `bin` and depending on commander.
+# Checked after firebase-functions, before the generic fallback — mirrors detect-stack.sh / supy-review order.
+[ -z "$STACK" ] && [ -f "$REPO_ROOT/package.json" ] \
+  && grep -q '"commander"' "$REPO_ROOT/package.json" 2>/dev/null \
+  && grep -q '"bin"' "$REPO_ROOT/package.json" 2>/dev/null && STACK=ts-cli
+
 # Generic fallback
 [ -z "$STACK" ] && STACK=generic
 ```
 
-Template generation is supported for **`nestjs-nx`** (backend), **`angular-nx`** (frontend), **`flutter`** (mobile), and **`firebase-functions`** (standalone Firebase Functions backend). For any other stack (`nx`, `generic`) this skill only emits the missing-pieces checklist (Step 4) and skips template generation. In that case print a notice:
+Template generation is supported for **`nestjs-nx`** (backend), **`angular-nx`** (frontend), **`flutter`** (mobile), **`firebase-functions`** (standalone Firebase Functions backend), and **`ts-cli`** (standalone commander.js CLI). For any other stack (`nx`, `generic`) this skill only emits the missing-pieces checklist (Step 4) and skips template generation. In that case print a notice:
 
 ```
-supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx, angular-nx, flutter, and firebase-functions repos.
+supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx, angular-nx, flutter, firebase-functions, and ts-cli repos.
 Reporting missing AI-setup pieces only.
 ```
 
@@ -62,6 +68,8 @@ elif [ "$STACK" = "flutter" ]; then
   TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/flutter/CLAUDE.md.hbs"
 elif [ "$STACK" = "firebase-functions" ]; then
   TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/firebase-functions/CLAUDE.md.hbs"
+elif [ "$STACK" = "ts-cli" ]; then
+  TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/ts-cli/CLAUDE.md.hbs"
 else
   TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.hbs"
 fi
@@ -69,7 +77,7 @@ fi
 
 Collect each placeholder value from the repo. If Cortex MCP is connected, augment with live data; otherwise fall back to static inspection. Every Cortex call is optional — never hard-fail if Cortex is absent.
 
-Every template shares `repo_name`, `one_line_purpose`, and `stack_versions`. Fill the **Backend placeholders (nestjs-nx)** block for a `nestjs-nx` repo, the **Frontend placeholders (angular-nx)** block for an `angular-nx` repo, the **Flutter placeholders (flutter)** block for a `flutter` repo, or the **Firebase Functions placeholders (firebase-functions)** block for a `firebase-functions` repo. Flutter repos have no `package.json` — every command in the flutter block reads `pubspec.yaml` and the `lib/` tree instead, with no `node`. The `nestjs-nx`, `angular-nx`, and `flutter` blocks additionally fill `key_flows`; the `firebase-functions` template omits `key_flows` and instead carries a **Remediation status** block (see its placeholder block below).
+Every template shares `repo_name`, `one_line_purpose`, and `stack_versions`. Fill the **Backend placeholders (nestjs-nx)** block for a `nestjs-nx` repo, the **Frontend placeholders (angular-nx)** block for an `angular-nx` repo, the **Flutter placeholders (flutter)** block for a `flutter` repo, the **Firebase Functions placeholders (firebase-functions)** block for a `firebase-functions` repo, or the **ts-cli placeholders (ts-cli)** block for a `ts-cli` repo. Flutter repos have no `package.json` — every command in the flutter block reads `pubspec.yaml` and the `lib/` tree instead, with no `node`. The `nestjs-nx`, `angular-nx`, and `flutter` blocks additionally fill `key_flows`; the `firebase-functions` and `ts-cli` templates omit `key_flows` and instead carry a **Remediation status** block (see their placeholder blocks below).
 
 ### Shared placeholders
 
@@ -317,11 +325,74 @@ SECRETS="gap — audit for hardcoded credentials, migrate to Secret Manager"
 
 Map `LINT → {{lint_status}}`, `TEST → {{test_status}}`, `CI → {{ci_status}}`, `PRECOMMIT → {{precommit_status}}`, `SECRETS → {{secrets_status}}`. **Never** print a secret value into any placeholder — the secrets probe deliberately reports only that an audit is needed, never a matched string.
 
+### ts-cli placeholders (ts-cli)
+
+Standalone (non-Nx) commander.js MongoDB scripts runner — a single package at the repo root (no `functions/` subdir), talking to MongoDB via Mongoose. Every command reads the repo-root `package.json` and the `src/` tree. Like `firebase-functions`, this template carries a **Remediation status** block instead of `key_flows`.
+
+#### `databases`
+
+The MongoDB databases the CLI targets. Prefer the layered-env key names, never a connection string.
+
+1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → database targets.
+2. Fallback: derive the target names from the `*_URI` env keys in `.env.example` (never read `.env`, and never echo a value):
+
+```bash
+grep -oE '^(DEV|PROD)_[A-Z0-9]+_URI' "$REPO_ROOT/.env.example" 2>/dev/null \
+  | sed -E 's/^(DEV|PROD)_//;s/_URI$//' | tr 'A-Z' 'a-z' | sort -u | paste -sd ', '
+```
+
+If nothing found, emit `"<databases>"`.
+
+#### `stack_versions`
+
+Read from the repo-root `package.json`:
+
+```bash
+node -e "
+  const p=require('$REPO_ROOT/package.json');
+  const all={...p.dependencies,...p.devDependencies};
+  console.log('| Package | Version |');
+  console.log('|---------|---------|');
+  ['commander','mongoose','inquirer','chalk','typescript','eslint'].forEach(k=>{
+    if(all[k]) console.log('| '+k+' | '+all[k]+' |');
+  });
+"
+```
+
+If `package.json` is unreadable, emit `"<stack-versions>"`.
+
+#### Remediation-status placeholders
+
+Set each status from a static probe of the repo root (no `functions/` subdir). Report factually; never overstate. If a probe is inconclusive, emit `unknown — verify`.
+
+```bash
+# lint_status: flat ESLint 9 present vs still ESLint 8 (.eslintrc)
+[ -f "$REPO_ROOT/eslint.config.mjs" ] \
+  && LINT="flat ESLint 9 configured" || LINT="gap — still ESLint 8 (.eslintrc) / no flat config"
+
+# test_status: any Jest spec present
+grep -rlsq --include='*.spec.ts' --include='*.test.ts' . "$REPO_ROOT/src" 2>/dev/null \
+  && TEST="specs present" || TEST="gap — no Jest specs found"
+
+# ci_status: a CI workflow present
+{ [ -f "$REPO_ROOT/.github/workflows/ci.yml" ] || ls "$REPO_ROOT/.github/workflows/"*.yml >/dev/null 2>&1; } \
+  && CI="workflow present" || CI="gap — no CI workflow"
+
+# precommit_status: Husky hook present
+[ -f "$REPO_ROOT/.husky/pre-commit" ] \
+  && PRECOMMIT="pre-commit hook present" || PRECOMMIT="gap — no pre-commit hook"
+
+# secrets_status: NEVER inspect or echo any secret value — only note that a manual audit is required.
+SECRETS="gap — audit for hardcoded URIs/credentials, confirm none in argv or logs, migrate to layered env"
+```
+
+Map `LINT → {{lint_status}}`, `TEST → {{test_status}}`, `CI → {{ci_status}}`, `PRECOMMIT → {{precommit_status}}`, `SECRETS → {{secrets_status}}`. **Never** print a secret value into any placeholder.
+
 ---
 
 ## Step 3 — Fill the template and compute the diff
 
-Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the values collected there. Replace every `{{placeholder}}` token (Handlebars-style) with the corresponding value. Every template uses `{{one_line_purpose}}` in two places — both must be filled identically. Fill only the placeholders the selected template actually contains (backend: `bounded_context`, `database`, `aggregates`, `nats_patterns`; frontend: `apps`, `feature_libs`; flutter: `features`, `flavors`; firebase-functions: `bounded_context`, `database`, `lint_status`, `test_status`, `ci_status`, `precommit_status`, `secrets_status`).
+Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the values collected there. Replace every `{{placeholder}}` token (Handlebars-style) with the corresponding value. Every template uses `{{one_line_purpose}}` in two places — both must be filled identically. Fill only the placeholders the selected template actually contains (backend: `bounded_context`, `database`, `aggregates`, `nats_patterns`; frontend: `apps`, `feature_libs`; flutter: `features`, `flavors`; firebase-functions: `bounded_context`, `database`, `lint_status`, `test_status`, `ci_status`, `precommit_status`, `secrets_status`; ts-cli: `databases`, `lint_status`, `test_status`, `ci_status`, `precommit_status`, `secrets_status`).
 
 Produce the candidate content as an in-memory string called `GENERATED`.
 

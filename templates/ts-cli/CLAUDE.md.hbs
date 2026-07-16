@@ -1,0 +1,98 @@
+# {{repo_name}}
+
+{{one_line_purpose}}
+
+> **Note:** This is an initial analysis of a standalone (non-Nx) commander.js CLI — a MongoDB
+> scripts runner. A single command can mutate a **production** database in bulk, so the
+> "Operational safety" and "Remediation status" sections below are as load-bearing as the
+> architecture. Contents are directional guidance, not exhaustive documentation.
+
+## Cortex MCP — Live Architecture Reference
+
+If the Cortex MCP is connected, **always use it for up-to-date architecture data** rather than
+relying solely on this file:
+
+- `get_repo_guide('{{repo_name}}')` — command surface, scripts, DB targets, dependencies
+- `trace_implementation('<script or command>')` — end-to-end chain for a scripts run
+- `search_entities('<concept>')` — find a script, use case, or domain concept
+
+If Cortex is unavailable, fall back to this file.
+
+## Product Context
+
+{{one_line_purpose}}
+
+**Databases touched**: {{databases}} (MongoDB via Mongoose)
+
+## Stack
+
+{{stack_versions}}
+
+Standalone Node/TypeScript CLI built on **commander.js**, shipped as an **npm bin** (shebang injected
+by `scripts/copy-shebang.js`). **Not** an Nx workspace. Talks to MongoDB through **Mongoose**
+directly (not the shared DB lib).
+
+## Architecture — Clean Architecture (dependencies point inward)
+
+```text
+src/
+  domain/          → interfaces (IScript, ScriptDetails) + entities. Depends on nothing.
+  application/     → use cases + the script implementations (execute(context)).
+  infrastructure/  → env config, Mongoose connections (pooled per DB), logging, chalk/inquirer UX.
+  presentation/    → commander commands: `scripts [run|list|info]`. Wire, don't compute.
+```
+
+### Layer rules (the reviewer enforces these on every diff)
+
+- Dependencies flow inward only: `presentation → application → infrastructure`, `domain` at the
+  core. A command **wires** — it parses/validates args, resolves a script, and delegates. No
+  `mongoose.connect(...)`, query, or business logic in a command action callback.
+- Import across layers via the `@domain` / `@application` / `@infrastructure` path aliases, not deep
+  relative paths.
+- New behavior is a new **script** in the application layer, not a fattened command.
+
+## Scripts — IScript + ScriptDetails
+
+Every script implements async `execute(context)` and exposes a complete `ScriptDetails` block
+(overview, inputs, databases touched, ordered steps, warnings). That metadata powers
+`supy-cli scripts info <name>` — it is the operator's only preview of what a script will do before it
+runs against a live database. A stub or missing block is a defect.
+
+## Operational safety — production confirmation
+
+A script that writes to, deletes from, or mutates a **production** database MUST gate behind an
+explicit interactive confirmation naming the target DB and the effect (inquirer), with a
+chalk-highlighted warning. A `--yes`/non-interactive flag must not silently bypass it; in a
+non-interactive/CI context the script **refuses** rather than assuming yes.
+
+## Config & secrets
+
+Connection details come from layered env (`.env` + `.env.{development,production}`,
+`MONGO_DB_USER`/`MONGO_DB_PASS`, `DEV_*`/`PROD_*` URIs) through the infrastructure config module.
+**Never** hardcode a URI/user/password, accept a connection string as a CLI argument (it leaks into
+shell history and `ps`), or log a connection string. If a secret was ever committed, removing the
+line is not enough: rotate it and purge history.
+
+## Exit codes
+
+The entrypoint wraps execution in try/catch: a failed script exits **non-zero**
+(`process.exitCode = 1`) with a clear chalk error; success exits 0. Never swallow an error so the
+process exits 0 on failure — a CI step or chained shell command reads the exit code.
+
+## Bulk operations
+
+Process many documents in bounded batches (`batchArray` / cursor chunks), reusing the pooled Mongoose
+connection per DB — never an unbounded full-collection load in memory or a connection per item.
+
+## Remediation status
+
+This repo is being brought up to Supy baseline. Current gaps (see
+`config/standards/ts-cli/architecture.md` → Remediation backlog):
+
+- **Lint**: {{lint_status}} — target is flat ESLint 9 (`eslint.config.mjs`), migrating off ESLint 8.
+- **Tests**: {{test_status}} — target is Jest covering the application-layer scripts with a fake DB context.
+- **CI**: {{ci_status}} — target is `.github/workflows/ci.yml` (lint → typecheck → test → build).
+- **Pre-commit**: {{precommit_status}} — target is Husky + gitleaks + lint-staged + commitlint.
+- **Secrets**: {{secrets_status}} — target is layered env for every credential, no literals, none in argv/logs.
+
+Fix in this order: secrets/env → lint alignment → tests + CI → pre-commit.

@@ -15,6 +15,7 @@ The skill is located at `${CLAUDE_PLUGIN_ROOT}/skills/supy-review/SKILL.md`. It:
    - **angular-nx** (frontend) → three reviewers: Angular/NGXS conventions, commit/PR hygiene, and secrets.
    - **flutter** (mobile) → three reviewers: Flutter/Clean-Architecture conventions, commit/PR hygiene, and secrets.
    - **firebase-functions** (standalone Firebase Functions backend) → three reviewers: Firebase Functions/Clean-Architecture conventions, commit/PR hygiene, and secrets.
+   - **ts-cli** (standalone commander.js CLI) → three reviewers: CLI/Clean-Architecture + operational-safety conventions, commit/PR hygiene, and secrets.
    - **k8s-config** → two reviewers: secrets and commit/PR hygiene.
    - **other** → two reviewers: commit/PR hygiene and secrets.
 

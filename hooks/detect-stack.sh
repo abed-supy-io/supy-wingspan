@@ -20,6 +20,12 @@ if [ -f "$root/pubspec.yaml" ]; then stack="flutter"; fi
 if [ -z "$stack" ] && [ -f "$root/firebase.json" ] && [ -d "$root/functions" ]; then
   stack="firebase-functions"
 fi
+# Standalone TypeScript CLI (non-Nx): package.json declaring a `bin` and depending on commander.
+# Checked after firebase-functions, before k8s-config, so an incidental Job/ConfigMap YAML in a CLI
+# repo is not misread as a k8s-config repo.
+if [ -z "$stack" ] && [ -f "$root/package.json" ] && grep -q '"commander"' "$root/package.json" && grep -q '"bin"' "$root/package.json"; then
+  stack="ts-cli"
+fi
 # Kubernetes config/manifest repo: ConfigMap/Secret YAML or a kustomization, and not an app stack.
 if [ -z "$stack" ]; then
   if [ -f "$root/kustomization.yaml" ] || grep -rlsq --include='*.yaml' -e 'kind: ConfigMap' -e 'kind: Secret' "$root" 2>/dev/null; then
@@ -33,6 +39,14 @@ if [ "$stack" = "k8s-config" ]; then
 fi
 if [ "$stack" = "firebase-functions" ]; then
   msg="supy-wingspan: detected firebase-functions repo (standalone, non-Nx) — remediation-first: prioritise secrets (Secret Manager, never literals) and runtime-enforced auth markers. Run supy-review (supy-firebase-functions-reviewer); see config/standards/firebase-functions/architecture.md."
+  if [ ! -f "$root/CLAUDE.md" ]; then
+    msg="$msg No CLAUDE.md found — run the supy-baseline skill to generate one."
+  fi
+  echo "$msg"
+  exit 0
+fi
+if [ "$stack" = "ts-cli" ]; then
+  msg="supy-wingspan: detected ts-cli repo (standalone commander.js MongoDB scripts runner) — a command can mutate a production DB in bulk, so operational safety is load-bearing: layered-env secrets (never literals/argv/logs), explicit prod-mutation confirmation, deterministic exit codes. Run supy-review (supy-ts-cli-reviewer); see config/standards/ts-cli/architecture.md."
   if [ ! -f "$root/CLAUDE.md" ]; then
     msg="$msg No CLAUDE.md found — run the supy-baseline skill to generate one."
   fi
