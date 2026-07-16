@@ -8,12 +8,15 @@ secret scanner — that run on every repo. Ships scaffolding & Git skills, a
 consistency-baseline generator, and thin orchestration wrappers over `superpowers`.
 
 ## Status
+
 v0.1.0. Published at [`abed-supy-io/supy-wingspan`](https://github.com/abed-supy-io/supy-wingspan) (public).
 
 ## Install
+
 From any supy repo (or user settings), add the marketplace and install the plugin.
 Run these as **two separate commands** — the second only after the first completes:
-```
+
+```text
 /plugin marketplace add abed-supy-io/supy-wingspan
 /plugin install supy-wingspan@supy
 ```
@@ -21,17 +24,19 @@ Run these as **two separate commands** — the second only after the first compl
 Then run `/reload-plugins` to apply — the commands and skills become available immediately.
 
 Or in one line from the terminal:
-```
+
+```text
 claude plugin marketplace add abed-supy-io/supy-wingspan && claude plugin install supy-wingspan@supy
 ```
 
 <details>
 <summary>Install from a local checkout instead</summary>
 
-```
+```text
 /plugin marketplace add ~/Projects/supy-projects/supy-wingspan
 /plugin install supy-wingspan@supy
 ```
+
 </details>
 
 See [`docs/USAGE.md`](docs/USAGE.md) for the full install / usage / deployment
@@ -40,7 +45,7 @@ procedure, the pilot exercise checklist, and known gaps.
 
 ## Usage
 
-The plugin exposes **4 slash commands** and **14 skills**. Commands are typed
+The plugin exposes **4 slash commands** and **17 skills**. Commands are typed
 directly (`/name`); skills are invoked in natural language ("run the supy-commit
 skill") — they are not slash commands.
 
@@ -71,6 +76,9 @@ skill") — they are not slash commands.
 | `supy-firebase-function` | (firebase-functions) The how-to for writing Firebase Functions code in the standalone supy-firebase-functions repo the Supy way — Clean Architecture (index.ts → app interactors → data repositories → frameworks), Awilix DI, runtime-enforced auth markers (`@unauthenticated`/`@internal`/`@admin`/`@apiKey`), typed domain errors, idempotent Firestore triggers, and secrets from Secret Manager (never literals). |
 | `supy-ts-cli` | (ts-cli) The how-to for writing CLI code in the standalone supy-cli repo the Supy way — Clean Architecture (presentation commands → application scripts → infrastructure → domain), commander.js `scripts [run\|list\|info]`, the `IScript`/`ScriptDetails` self-documenting contract, env-layered config, explicit production confirmation before any prod mutation, no secrets in argv/logs, deterministic exit codes, testable use cases, and batched bulk MongoDB operations. |
 | `supy-ai-agents` | (ai-agents) Write and change code in the polyglot supy-ai-agents monorepo (Cortex/Nexus/Oculus/Gleap/PMS-AI — Node.js + Python + Cloudflare Workers, MCP tools, BullMQ, pgvector KG) so it follows the Supy ai-agents architecture & operational standard — secret hygiene, auth on exposed tools, env-driven config, validation + error handling, idempotent consumers, and non-root containers. |
+| `supy-rebase` | (git workflow) Rebases the current branch onto its base the safe way — resolves the base branch, requires a clean tree, records a `PRE_REBASE_SHA` safety ref, then rebases and resolves conflicts one commit at a time (never `--skip`). Force-pushes with `--force-with-lease` only after you confirm. |
+| `supy-hotfix` | (git workflow) Drives a disciplined production hotfix — cuts a `hotfix/<slug>` branch from the remote base, keeps the diff minimal, commits as `fix` (via supy-commit), reviews (via supy-review), fast-tracks the PR (via supy-create-pr), then handles back-merge and release follow-ups. |
+| `supy-debrief` | (git workflow) Produces a structured handoff/retrospective for the current branch from the actual commits and diff — context, what changed, why, verification, known gaps, follow-ups — as a ready-to-paste block, and optionally saves it to `docs/debriefs/`. Never auto-commits. |
 
 ### SessionStart hook
 
@@ -78,9 +86,18 @@ On session open, `detect-stack.sh` prints one line — e.g. `supy-wingspan: dete
 nestjs-nx repo.` — and nudges you to run the `supy-baseline` skill if the repo has
 no `CLAUDE.md`. It stays silent on unknown or mixed stacks and never fails the session.
 
+### UserPromptSubmit hook (skill routing)
+
+`skill-router.sh` reads each prompt and, when it recognizes an engineering intent
+(commit, PR, review, rebase, hotfix, debrief, baseline), injects a one-line nudge to prefer the
+matching skill over ad-hoc steps. It is a soft nudge — never blocks the prompt, never fails the
+session — and stays completely silent on prompts that match no intent, so ordinary turns are
+unaffected. `supy-baseline` also embeds the same routing table (`## Using Supy skills`) into each
+generated repo `CLAUDE.md`, so the guidance persists even without the hook.
+
 ### Typical workflow
 
-```
+```text
 /supy-brainstorm add a stock-transfer approval flow   # idea → design
 /supy-plan                                            # design → phased plan
 /supy-build                                           # plan → implementation (local commits)
@@ -92,13 +109,15 @@ no `CLAUDE.md`. It stays silent on unknown or mixed stacks and never fails the s
 
 When the Cortex MCP server is connected, the review agents and `supy-baseline` use it
 as a live source of Supy architecture (entities, handler contracts, coding rules).
-When it is absent, they degrade gracefully to the repo's `CLAUDE.md` and the mined
-standards under `config/standards/` — nothing hard-fails.
+The repo ships a `.mcp.json` wiring the `cortex-kg` HTTP server, so it connects
+automatically where you have access. When it is absent, they degrade gracefully to the
+repo's `CLAUDE.md` and the mined standards under `config/standards/` — nothing hard-fails.
 
 ## Components
+
 - `agents/` — **11 review subagents**: backend (architecture, NATS events, tests, security), Angular (frontend), Flutter (mobile), Firebase Functions, TypeScript CLI, AI-agents monorepo, and the two stack-agnostic reviewers (commit/PR conventions + secrets) that run on every stack
-- `skills/` — **14 skills**: supy-review, supy-baseline, supy-commit, supy-create-pr; backend: supy-scaffold-handler, supy-clean-architecture, supy-scaffold-domain; frontend: supy-scaffold-feature, supy-angular-feature; mobile: supy-scaffold-flutter-feature, supy-flutter-feature; standalone: supy-firebase-function, supy-ts-cli, supy-ai-agents
+- `skills/` — **17 skills**: supy-review, supy-baseline, supy-commit, supy-create-pr; backend: supy-scaffold-handler, supy-clean-architecture, supy-scaffold-domain; frontend: supy-scaffold-feature, supy-angular-feature; mobile: supy-scaffold-flutter-feature, supy-flutter-feature; standalone: supy-firebase-function, supy-ts-cli, supy-ai-agents; git workflow: supy-rebase, supy-hotfix, supy-debrief
 - `commands/` — orchestration wrappers over superpowers
-- `hooks/` — stack detection (nestjs-nx / angular-nx / nx / flutter / firebase-functions / ts-cli / ai-agents / k8s-config / generic)
+- `hooks/` — stack detection on session open (nestjs-nx / angular-nx / nx / flutter / firebase-functions / ts-cli / ai-agents / k8s-config / generic) + a UserPromptSubmit skill router that nudges toward the matching workflow skill
 - `config/standards/` — mined Supy standards, source of truth for the agents. Three cross-cutting standards at root (`commit-conventions.md`, `secrets-and-config.md`, `ci-coverage-baseline.md`) plus per-stack rulebooks: backend at root + `backend/` for module boundaries, `frontend/`, `flutter/`, `firebase-functions/`, `ts-cli/`, `ai-agents/` (k8s-config has no standards subdir — it's governed by the root `secrets-and-config.md`)
 - `templates/` — canonical CLAUDE.md templates + drop-in enforcement config per stack: backend at root (+ Nx generators under `backend/`), `frontend/` (Nx generators + enforcement), `flutter/` (bundled `.hbs` feature stubs + `analysis_options.yaml`), and `firebase-functions/`, `ts-cli/`, `ai-agents/`, `k8s-config/` (CI + pre-commit + secret-scan baselines)
