@@ -336,6 +336,8 @@ SECRETS="gap — audit for hardcoded credentials, migrate to Secret Manager"
 
 Map `LINT → {{lint_status}}`, `TEST → {{test_status}}`, `CI → {{ci_status}}`, `PRECOMMIT → {{precommit_status}}`, `SECRETS → {{secrets_status}}`. **Never** print a secret value into any placeholder — the secrets probe deliberately reports only that an audit is needed, never a matched string.
 
+The floor these `ci_status` / `test_status` / `precommit_status` gaps are measured against is the cross-cutting standard `${CLAUDE_PLUGIN_ROOT}/config/standards/ci-coverage-baseline.md` (CI triggers + fail-fast ordering, coverage floor enforced as a gate, gitleaks-first pre-commit from unit 1). For the remediation-first repos (firebase-functions, ts-cli, ai-agents) these are **target-state** gaps the scaffold closes — report them, but the only always-on item is the blocking secret scan. Point fix hints at that standard rather than re-describing the baseline inline.
+
 ### ts-cli placeholders (ts-cli)
 
 Standalone (non-Nx) commander.js MongoDB scripts runner — a single package at the repo root (no `functions/` subdir), talking to MongoDB via Mongoose. Every command reads the repo-root `package.json` and the `src/` tree. Like `firebase-functions`, this template carries a **Remediation status** block instead of `key_flows`.
