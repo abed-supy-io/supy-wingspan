@@ -15,6 +15,11 @@ if [ -f "$root/nx.json" ] && [ -f "$root/package.json" ]; then
   fi
 fi
 if [ -f "$root/pubspec.yaml" ]; then stack="flutter"; fi
+# Standalone Firebase Functions backend (non-Nx): firebase.json + a functions/ package.
+# Checked before k8s-config so a Firebase repo carrying incidental YAML is not misread.
+if [ -z "$stack" ] && [ -f "$root/firebase.json" ] && [ -d "$root/functions" ]; then
+  stack="firebase-functions"
+fi
 # Kubernetes config/manifest repo: ConfigMap/Secret YAML or a kustomization, and not an app stack.
 if [ -z "$stack" ]; then
   if [ -f "$root/kustomization.yaml" ] || grep -rlsq --include='*.yaml' -e 'kind: ConfigMap' -e 'kind: Secret' "$root" 2>/dev/null; then
@@ -24,6 +29,14 @@ fi
 [ -z "$stack" ] && exit 0   # unknown/mixed: stay silent
 if [ "$stack" = "k8s-config" ]; then
   echo "supy-wingspan: detected k8s-config repo. Secrets MUST live in a Secret/external-secret, never in a ConfigMap — run supy-review (supy-secrets-reviewer) and see config/standards/secrets-and-config.md."
+  exit 0
+fi
+if [ "$stack" = "firebase-functions" ]; then
+  msg="supy-wingspan: detected firebase-functions repo (standalone, non-Nx) — remediation-first: prioritise secrets (Secret Manager, never literals) and runtime-enforced auth markers. Run supy-review (supy-firebase-functions-reviewer); see config/standards/firebase-functions/architecture.md."
+  if [ ! -f "$root/CLAUDE.md" ]; then
+    msg="$msg No CLAUDE.md found — run the supy-baseline skill to generate one."
+  fi
+  echo "$msg"
   exit 0
 fi
 msg="supy-wingspan: detected $stack repo."

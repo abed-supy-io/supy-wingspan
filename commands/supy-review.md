@@ -11,10 +11,14 @@ The skill is located at `${CLAUDE_PLUGIN_ROOT}/skills/supy-review/SKILL.md`. It:
 
 1. Resolves the diff range using `$ARGUMENTS` as the base ref (or falls back to `git merge-base HEAD origin/main` if no argument is given).
 2. Detects the repo's stack and dispatches the matching reviewer agents concurrently:
-   - **nestjs-nx** (backend) → five reviewers: architecture, NATS events, test quality, commit/PR hygiene, and security.
-   - **angular-nx** (frontend) → two reviewers: Angular/NGXS conventions and commit/PR hygiene.
-   - **flutter** (mobile) → two reviewers: Flutter/Clean-Architecture conventions and commit/PR hygiene.
-   - **other** → the stack-agnostic commit/PR reviewer only.
+   - **nestjs-nx** (backend) → six reviewers: architecture, NATS events, test quality, commit/PR hygiene, security, and secrets.
+   - **angular-nx** (frontend) → three reviewers: Angular/NGXS conventions, commit/PR hygiene, and secrets.
+   - **flutter** (mobile) → three reviewers: Flutter/Clean-Architecture conventions, commit/PR hygiene, and secrets.
+   - **firebase-functions** (standalone Firebase Functions backend) → three reviewers: Firebase Functions/Clean-Architecture conventions, commit/PR hygiene, and secrets.
+   - **k8s-config** → two reviewers: secrets and commit/PR hygiene.
+   - **other** → two reviewers: commit/PR hygiene and secrets.
+
+   The commit/PR and secrets reviewers are stack-agnostic and run on every stack — a committed secret is a merge-blocker anywhere.
 3. Consolidates findings into a severity-grouped report (high / medium / low).
 
 If the working directory is not a git repository or the diff is empty, the skill stops early and reports that there is nothing to review.

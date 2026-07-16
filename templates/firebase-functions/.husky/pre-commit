@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+# supy-firebase-functions local guardrail — mirrors CI so feedback is instant.
+# Install with: npx husky init  (then replace the generated pre-commit with this file).
+
+# 1. BLOCK committed secrets (secrets-and-config.md#rules rule 5). Non-negotiable, runs first.
+#    Requires gitleaks on PATH: `brew install gitleaks`.
+gitleaks protect --staged --redact --no-banner
+
+# 2. Lint + format only what's staged (fast).
+npx lint-staged
+
+# 3. Type-check the Functions package (the compile guarantee TSLint never gave).
+npm --prefix functions run typecheck

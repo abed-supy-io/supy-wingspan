@@ -1,0 +1,38 @@
+{
+  "//": "Merge these keys into functions/package.json. This closes the tooling gaps in the",
+  "//scripts": "remediation backlog: ESLint (replacing TSLint), Jest + firebase-functions-test,",
+  "//devDependencies": "and the Husky/commitlint/gitleaks pre-commit chain. Adjust versions to",
+  "//note": "match the Node 22 runtime and your firebase-functions major. Never add a secret here.",
+
+  "scripts": {
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "tsc",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepare": "cd .. && husky functions/.husky"
+  },
+
+  "lint-staged": {
+    "functions/src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@types/jest": "^29.5.0",
+    "eslint": "^9.0.0",
+    "firebase-functions-test": "^3.3.0",
+    "husky": "^9.1.0",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.3.0",
+    "ts-jest": "^29.2.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

@@ -1,0 +1,92 @@
+# {{repo_name}}
+
+{{one_line_purpose}}
+
+> **Note:** This is an initial analysis of a standalone (non-Nx) Firebase Functions backend. It is
+> the least-governed TypeScript repo at Supy — treat the "Remediation status" section below as the
+> live picture of what is and isn't enforced yet. Contents are directional guidance, not exhaustive
+> documentation.
+
+## Cortex MCP — Live Architecture Reference
+
+If the Cortex MCP is connected, **always use it for up-to-date architecture data** rather than
+relying solely on this file:
+
+- `get_repo_guide('{{repo_name}}')` — trigger list, interactors, data sources, dependencies
+- `trace_implementation('<trigger or flow>')` — end-to-end chain for a callable / Firestore trigger
+- `search_entities('<concept>')` — find an interactor, repository, or domain concept
+
+If Cortex is unavailable, fall back to this file.
+
+## Product Context
+
+{{one_line_purpose}}
+
+**Bounded context**: `{{bounded_context}}` | **Database**: `{{database}}` (Cloud Firestore)
+
+## Stack
+
+{{stack_versions}}
+
+Standalone Node/TypeScript on the Firebase Functions runtime. **Not** an Nx workspace — the
+Functions package lives under `functions/`. Dependency injection is **Awilix**, not NestJS DI.
+
+## Architecture — Clean Architecture (dependencies point inward)
+
+```text
+functions/src/
+  index.ts       → one export per trigger; wires trigger → interactor via the input mapper. NO logic.
+  app/           → interactors (use cases). Orchestrate domain flow; framework-agnostic.
+  data/          → repositories + data sources (Firestore access lives here, nowhere else).
+  frameworks/    → Firebase/Express/Awilix wiring, auth guards, error mapping.
+```
+
+### Layer rules (the reviewer enforces these on every diff)
+
+- Dependencies flow inward only: `frameworks → app → data`-interfaces; `index.ts` orchestrates, it
+  does not compute. No `admin.firestore()` or business logic in `index.ts` or a handler body.
+- Resolve interactors/repositories/data sources from the **Awilix container** — never `new` them in
+  application code. Per-request/env state comes from a `createScope()` scope, not module globals.
+- Firestore access is confined to `data/` repositories. Interactors depend on repository interfaces.
+
+## Auth — markers MUST be runtime-enforced
+
+Triggers are annotated `@unauthenticated` / `@internal` / `@admin` / `@apiKey`. These are **not**
+self-enforcing. Every handler carrying a marker must call the matching guard from
+`frameworks/auth/require-auth.ts` before any logic:
+
+- `@admin` → `requireAdmin(request)` (checks the admin custom claim)
+- `@apiKey` → `requireApiKey(req)` (key from injected env, never a literal)
+- `@internal` → `requireInternalOidc(req, ...)` (verifies caller's OIDC service-account identity)
+
+An `@admin` handler with no claim check is an **open endpoint** — high severity.
+
+## Errors
+
+Throw typed domain errors (`CustomError` subclasses via `ApplicationErrorFactory`) at the boundary
+and map them to the correct `HttpsError` code. Never `throw new Error(...)` from a handler.
+
+## Firestore triggers — idempotency
+
+Firestore/PubSub triggers are delivered **at least once**. A trigger that writes derived state must
+reconcile against a stable key (idempotent set/merge, processed-marker, or version check), never
+blind-append — the same event may fire twice.
+
+## Secrets
+
+**Never** hardcode a secret, API key, or token — not in `server.ts`, a handler, or a container
+registration. Secrets come from Firebase Secret Manager / injected env. If a secret was ever
+committed, removing the line is not enough: rotate it and purge history.
+
+## Remediation status
+
+This repo is being brought up to Supy baseline. Current gaps (see
+`config/standards/firebase-functions/architecture.md` → Remediation backlog):
+
+- **Lint**: {{lint_status}} — target is ESLint (`eslint.config.mjs`), migrating off deprecated TSLint.
+- **Tests**: {{test_status}} — target is Jest + `firebase-functions-test` covering interactors.
+- **CI**: {{ci_status}} — target is `.github/workflows/ci.yml` (lint → typecheck → test → build).
+- **Pre-commit**: {{precommit_status}} — target is Husky + gitleaks + lint-staged + commitlint.
+- **Secrets**: {{secrets_status}} — target is Secret Manager for every credential, no literals.
+
+Fix in this order: secrets → auth enforcement → lint → tests + CI.

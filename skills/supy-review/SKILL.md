@@ -1,6 +1,6 @@
 ---
 name: supy-review
-description: Review the current Supy diff/PR against Supy standards using the stack-appropriate review subagents in parallel, then consolidate findings by severity. Backend (nestjs-nx) dispatches six reviewers; frontend (angular-nx) and mobile (flutter) dispatch their stack reviewer plus the commit/PR reviewer; Kubernetes config (k8s-config) dispatches the secrets reviewer. The stack-agnostic commit/PR and secrets reviewers run on every stack. Use before committing or opening a PR on a supy-* repo.
+description: Review the current Supy diff/PR against Supy standards using the stack-appropriate review subagents in parallel, then consolidate findings by severity. Backend (nestjs-nx) dispatches six reviewers; frontend (angular-nx), mobile (flutter), and the standalone Firebase Functions backend (firebase-functions) dispatch their stack reviewer plus the commit/PR reviewer; Kubernetes config (k8s-config) dispatches the secrets reviewer. The stack-agnostic commit/PR and secrets reviewers run on every stack. Use before committing or opening a PR on a supy-* repo.
 ---
 
 ## Step 1 — Resolve the diff range
@@ -47,6 +47,8 @@ elif [ -f "$REPO_PATH/nx.json" ] && grep -q '"@nestjs/core"' "$REPO_PATH/package
   STACK="nestjs-nx"
 elif [ -f "$REPO_PATH/pubspec.yaml" ]; then
   STACK="flutter"
+elif [ -f "$REPO_PATH/firebase.json" ] && [ -d "$REPO_PATH/functions" ]; then
+  STACK="firebase-functions"
 elif [ -f "$REPO_PATH/kustomization.yaml" ] || grep -rlsq --include='*.yaml' -e 'kind: ConfigMap' -e 'kind: Secret' "$REPO_PATH" 2>/dev/null; then
   STACK="k8s-config"
 else
@@ -61,10 +63,11 @@ Choose the reviewer set:
 | `nestjs-nx` | `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-commit-pr-reviewer`, `supy-security-reviewer`, `supy-secrets-reviewer` (six) |
 | `angular-nx` | `supy-angular-reviewer`, `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (three) |
 | `flutter` | `supy-flutter-reviewer`, `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (three) |
+| `firebase-functions` | `supy-firebase-functions-reviewer`, `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (three) |
 | `k8s-config` | `supy-secrets-reviewer`, `supy-commit-pr-reviewer` (two) |
 | `other` | `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (two) |
 
-The `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, and `supy-security-reviewer` agents are backend-specific; `supy-angular-reviewer` is frontend-specific; `supy-flutter-reviewer` is mobile-specific. Never dispatch a stack-specific reviewer against a repo of a different stack. `supy-commit-pr-reviewer` and `supy-secrets-reviewer` are stack-agnostic and always dispatched — a committed secret is a merge-blocker in any stack, so `supy-secrets-reviewer` runs on every set (it self-limits to config/secret/credential findings and returns `PASS` when a diff has none).
+The `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, and `supy-security-reviewer` agents are backend-specific; `supy-angular-reviewer` is frontend-specific; `supy-flutter-reviewer` is mobile-specific; `supy-firebase-functions-reviewer` is specific to the standalone `supy-firebase-functions` backend. Never dispatch a stack-specific reviewer against a repo of a different stack. `supy-commit-pr-reviewer` and `supy-secrets-reviewer` are stack-agnostic and always dispatched — a committed secret is a merge-blocker in any stack, so `supy-secrets-reviewer` runs on every set (it self-limits to config/secret/credential findings and returns `PASS` when a diff has none).
 
 **In a single message, make one Agent tool call per reviewer in the selected set** so they all run in parallel. Do not make them sequentially. Passing both `DIFF_BASE` and `REPO_PATH` into each dispatch prompt is mandatory so all agents review the identical diff rather than each recomputing it independently.
 
