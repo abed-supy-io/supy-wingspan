@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Supy engineering standards
+    url: https://github.com/abed-supy-io/supy-wingspan/tree/main/config/standards
+    about: The mined standards that the review agents enforce. Read these before proposing a rule change.
+  - name: Usage guide
+    url: https://github.com/abed-supy-io/supy-wingspan/blob/main/docs/USAGE.md
+    about: Install, usage, and deployment guide.

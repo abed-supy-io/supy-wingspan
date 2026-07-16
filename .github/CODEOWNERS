@@ -1,0 +1,5 @@
+# Default owner for everything in this plugin.
+* @abed-supy-io
+
+# Standards are the source of truth for the review agents — review changes carefully.
+/config/standards/ @abed-supy-io
