@@ -54,6 +54,16 @@ for dir in "$skills_dir"/*/; do
   if [ -n "$declared" ] && [ "$declared" != "$name" ]; then
     err "$skill_file declares name '$declared' but lives in directory '$name'"
   fi
+
+  # Claude Code truncates skill descriptions past 1024 characters, and a
+  # too-short one gives the router nothing to match on.
+  description="$(grep -E '^description:' <<<"$frontmatter" | head -n 1 | sed -E 's/^description:[[:space:]]*//')"
+  desc_len=${#description}
+  if [ "$desc_len" -gt 1024 ]; then
+    err "$skill_file description is $desc_len chars (max 1024)"
+  elif [ "$desc_len" -gt 0 ] && [ "$desc_len" -lt 20 ]; then
+    err "$skill_file description is only $desc_len chars — too short to route on"
+  fi
 done
 
 if [ "$fail" -ne 0 ]; then

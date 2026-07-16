@@ -1,0 +1,4 @@
+# URL patterns lychee must not check (regex, one per line).
+# Template placeholders that are filled in when a skill instantiates the file.
+\{jira_url\}
+%7Bjira_url%7D

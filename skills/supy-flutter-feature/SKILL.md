@@ -28,7 +28,7 @@ Everything below is the concrete shape these rules take.
 
 ## Layers & folders
 
-A feature lives under `lib/features/<feature>/` split into `domain/`, `data/`, `presentation/`. Fill them in dependency order: domain first (entity → repository interface → usecases), then data (model → datasources → repository impl), then presentation (bloc → page → widgets). See [architecture.md](architecture.md) for the full tree.
+A feature lives under `lib/features/<feature>/` split into `domain/`, `data/`, `presentation/`. Fill them in dependency order: domain first (entity → repository interface → usecases), then data (model → datasources → repository impl), then presentation (bloc → page → widgets). See `${CLAUDE_PLUGIN_ROOT}/config/standards/flutter/architecture.md` for the full tree.
 
 ## Domain
 

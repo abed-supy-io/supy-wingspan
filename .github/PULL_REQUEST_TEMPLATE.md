@@ -16,6 +16,9 @@
 - [ ] `cspell --config config/cspell.json "**/*.md"` passes
 - [ ] Changed skills load and run in a real Claude Code session (name a repo/stack you tested against)
 - [ ] Changed hooks were exercised (`hooks/detect-stack.sh` on the relevant stack)
+- [ ] Changed components were exercised in a real Claude Code session via a local marketplace
+      install (`/plugin marketplace add <path>` → `/plugin install supy-wingspan@supy` →
+      `/reload-plugins`)
 
 ## Issue refs
 
