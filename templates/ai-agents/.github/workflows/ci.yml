@@ -1,0 +1,92 @@
+name: CI
+
+# Polyglot monorepo with NO root orchestration. This is a per-package CI SHAPE — copy it into the
+# package being brought up to baseline and point the paths/working-directory at that package (or, if
+# you converge on a matrix, list packages in the matrix). The three jobs below cover the three stacks
+# in the repo: Node/TS, Python, and a repo-wide secret scan.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Cancel superseded runs on the same branch to save minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Node / TypeScript packages (e.g. Cortex, Oculus). Set working-directory per package.
+  node:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: . # ← point at the Node package root (e.g. cortex, oculus)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Fail fast on the cheapest checks first: lint → types → tests → build.
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test -- --ci
+
+      - name: Build
+        run: npm run build
+
+  # Python package (e.g. Nexus — Poetry + FastAPI + MCP). Set working-directory per package.
+  python:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: . # ← point at the Python package root (e.g. nexus)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Lint (Ruff)
+        run: poetry run ruff check .
+
+      - name: Type check (mypy)
+        run: poetry run mypy .
+
+      - name: Test (pytest)
+        run: poetry run pytest
+
+  # Repo-wide: block secrets / connection strings / OAuth secrets across the whole tree.
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

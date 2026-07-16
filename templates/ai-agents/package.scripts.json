@@ -1,0 +1,31 @@
+{
+  "//": "Merge these keys into a Node/TS PACKAGE's package.json (there is no root package.json to",
+  "//scripts": "merge into). Closes the tooling gaps in the remediation backlog for that package:",
+  "//devDependencies": "flat ESLint 9, and the Husky/commitlint/gitleaks/lint-staged pre-commit chain.",
+  "//lint-staged": "lint-staged routes .ts/.js through ESLint+Prettier and .py through Ruff so a mixed",
+  "//note": "package stays clean. Keep the package's existing build/test tooling. Never add a secret here.",
+
+  "scripts": {
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test",
+    "prepare": "husky"
+  },
+
+  "lint-staged": {
+    "*.{ts,js}": ["eslint --fix", "prettier --write"],
+    "*.py": ["ruff check --fix"]
+  },
+
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.3.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

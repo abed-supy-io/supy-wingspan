@@ -39,19 +39,28 @@ fi
 [ -z "$STACK" ] && [ -f "$REPO_ROOT/firebase.json" ] && [ -d "$REPO_ROOT/functions" ] && STACK=firebase-functions
 
 # Standalone TypeScript CLI (non-Nx): package.json declaring a `bin` and depending on commander.
-# Checked after firebase-functions, before the generic fallback — mirrors detect-stack.sh / supy-review order.
+# Checked after firebase-functions, before ai-agents — mirrors detect-stack.sh / supy-review order.
 [ -z "$STACK" ] && [ -f "$REPO_ROOT/package.json" ] \
   && grep -q '"commander"' "$REPO_ROOT/package.json" 2>/dev/null \
   && grep -q '"bin"' "$REPO_ROOT/package.json" 2>/dev/null && STACK=ts-cli
+
+# Polyglot AI-agents monorepo (non-Nx, no root orchestration): a package.json anywhere in the tree
+# depends on the MCP SDK or the Claude Agent SDK. Checked after ts-cli (ts-cli inspects only the ROOT
+# package.json, and this repo has no root orchestration to misgrab) and before the generic fallback —
+# mirrors detect-stack.sh / supy-review order.
+[ -z "$STACK" ] \
+  && grep -rlsq --include='package.json' --exclude-dir='node_modules' \
+       -e '@modelcontextprotocol/sdk' -e '@anthropic-ai/claude-agent-sdk' "$REPO_ROOT" 2>/dev/null \
+  && STACK=ai-agents
 
 # Generic fallback
 [ -z "$STACK" ] && STACK=generic
 ```
 
-Template generation is supported for **`nestjs-nx`** (backend), **`angular-nx`** (frontend), **`flutter`** (mobile), **`firebase-functions`** (standalone Firebase Functions backend), and **`ts-cli`** (standalone commander.js CLI). For any other stack (`nx`, `generic`) this skill only emits the missing-pieces checklist (Step 4) and skips template generation. In that case print a notice:
+Template generation is supported for **`nestjs-nx`** (backend), **`angular-nx`** (frontend), **`flutter`** (mobile), **`firebase-functions`** (standalone Firebase Functions backend), **`ts-cli`** (standalone commander.js CLI), and **`ai-agents`** (polyglot MCP/agents monorepo). For any other stack (`nx`, `generic`) this skill only emits the missing-pieces checklist (Step 4) and skips template generation. In that case print a notice:
 
 ```
-supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx, angular-nx, flutter, firebase-functions, and ts-cli repos.
+supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx, angular-nx, flutter, firebase-functions, ts-cli, and ai-agents repos.
 Reporting missing AI-setup pieces only.
 ```
 
@@ -70,6 +79,8 @@ elif [ "$STACK" = "firebase-functions" ]; then
   TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/firebase-functions/CLAUDE.md.hbs"
 elif [ "$STACK" = "ts-cli" ]; then
   TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/ts-cli/CLAUDE.md.hbs"
+elif [ "$STACK" = "ai-agents" ]; then
+  TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/ai-agents/CLAUDE.md.hbs"
 else
   TEMPLATE="${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.hbs"
 fi
@@ -77,7 +88,7 @@ fi
 
 Collect each placeholder value from the repo. If Cortex MCP is connected, augment with live data; otherwise fall back to static inspection. Every Cortex call is optional — never hard-fail if Cortex is absent.
 
-Every template shares `repo_name`, `one_line_purpose`, and `stack_versions`. Fill the **Backend placeholders (nestjs-nx)** block for a `nestjs-nx` repo, the **Frontend placeholders (angular-nx)** block for an `angular-nx` repo, the **Flutter placeholders (flutter)** block for a `flutter` repo, the **Firebase Functions placeholders (firebase-functions)** block for a `firebase-functions` repo, or the **ts-cli placeholders (ts-cli)** block for a `ts-cli` repo. Flutter repos have no `package.json` — every command in the flutter block reads `pubspec.yaml` and the `lib/` tree instead, with no `node`. The `nestjs-nx`, `angular-nx`, and `flutter` blocks additionally fill `key_flows`; the `firebase-functions` and `ts-cli` templates omit `key_flows` and instead carry a **Remediation status** block (see their placeholder blocks below).
+Every template shares `repo_name`, `one_line_purpose`, and `stack_versions`. Fill the **Backend placeholders (nestjs-nx)** block for a `nestjs-nx` repo, the **Frontend placeholders (angular-nx)** block for an `angular-nx` repo, the **Flutter placeholders (flutter)** block for a `flutter` repo, the **Firebase Functions placeholders (firebase-functions)** block for a `firebase-functions` repo, the **ts-cli placeholders (ts-cli)** block for a `ts-cli` repo, or the **ai-agents placeholders (ai-agents)** block for an `ai-agents` repo. Flutter repos have no `package.json` — every command in the flutter block reads `pubspec.yaml` and the `lib/` tree instead, with no `node`. The `nestjs-nx`, `angular-nx`, and `flutter` blocks additionally fill `key_flows`; the `firebase-functions`, `ts-cli`, and `ai-agents` templates omit `key_flows` and instead carry a **Remediation status** block (see their placeholder blocks below).
 
 ### Shared placeholders
 
@@ -388,11 +399,87 @@ SECRETS="gap — audit for hardcoded URIs/credentials, confirm none in argv or l
 
 Map `LINT → {{lint_status}}`, `TEST → {{test_status}}`, `CI → {{ci_status}}`, `PRECOMMIT → {{precommit_status}}`, `SECRETS → {{secrets_status}}`. **Never** print a secret value into any placeholder.
 
+### ai-agents placeholders (ai-agents)
+
+Polyglot AI-agents monorepo (non-Nx, **no root orchestration**) — Node.js, Python, and Cloudflare Workers packages that are each self-contained, with per-team ownership. There is no root `package.json`, so every probe scans the tree (excluding `node_modules`). Like `firebase-functions` and `ts-cli`, this template carries a **Remediation status** block instead of `key_flows`, and it uses `{{packages}}` in place of a single `{{database}}`/`{{databases}}`.
+
+#### `packages`
+
+The independent packages that make up the monorepo (e.g. cortex, nexus, oculus, gleap, pms-ai).
+
+1. Cortex (if connected): `get_repo_guide('$REPO_NAME')` → package/module list.
+2. Fallback: list the directories that carry a package manifest one level down, excluding `node_modules` and dotfolders:
+
+```bash
+{
+  find "$REPO_ROOT" -maxdepth 3 \( -name package.json -o -name pyproject.toml -o -name wrangler.toml \) \
+    -not -path '*/node_modules/*' 2>/dev/null \
+    | sed -E "s#^$REPO_ROOT/##;s#/(package\.json|pyproject\.toml|wrangler\.toml)\$##" \
+    | grep -v '^\.' | awk -F/ '{print $1}' | sort -u | paste -sd ', '
+}
+```
+
+If nothing found, emit `"<packages>"`.
+
+#### `stack_versions`
+
+Polyglot — there is no single manifest. Emit a best-effort table of the runtimes/frameworks found across packages. Never fail if a manifest is missing; skip what is absent.
+
+```bash
+{
+  echo '| Component | Detected |'
+  echo '|-----------|----------|'
+  grep -rlsq --include='package.json' --exclude-dir='node_modules' -e '@modelcontextprotocol/sdk' "$REPO_ROOT" 2>/dev/null \
+    && echo '| MCP SDK (@modelcontextprotocol/sdk) | present |'
+  grep -rlsq --include='package.json' --exclude-dir='node_modules' -e '@anthropic-ai/claude-agent-sdk' "$REPO_ROOT" 2>/dev/null \
+    && echo '| Claude Agent SDK | present |'
+  grep -rlsq --include='package.json' --exclude-dir='node_modules' -e '"express"' "$REPO_ROOT" 2>/dev/null \
+    && echo '| Express | present |'
+  grep -rlsq --include='package.json' --exclude-dir='node_modules' -e '"bullmq"' "$REPO_ROOT" 2>/dev/null \
+    && echo '| BullMQ (Redis) | present |'
+  grep -rlsq --include='*.toml' -e 'fastapi' "$REPO_ROOT" 2>/dev/null \
+    && echo '| FastAPI (Python) | present |'
+  { [ -f "$REPO_ROOT/wrangler.toml" ] || grep -rlsq --include='wrangler.toml' -e '' "$REPO_ROOT" 2>/dev/null; } \
+    && echo '| Cloudflare Workers (wrangler) | present |'
+}
+```
+
+If the table has no rows, emit `"<stack-versions>"`.
+
+#### Remediation-status placeholders
+
+Set each status from a static probe of the whole tree (no root orchestration — probes are recursive and exclude `node_modules`). Report factually; never overstate. If a probe is inconclusive, emit `unknown — verify`.
+
+```bash
+# lint_status: a flat ESLint 9 config and/or Python Ruff config present anywhere
+{ grep -rlsq --include='eslint.config.mjs' --include='eslint.config.js' --exclude-dir='node_modules' -e '' "$REPO_ROOT" 2>/dev/null \
+  || grep -rlsq --include='ruff.toml' --include='pyproject.toml' --exclude-dir='node_modules' -e 'ruff' "$REPO_ROOT" 2>/dev/null; } \
+  && LINT="lint config present (ESLint/Ruff)" || LINT="gap — no shared ESLint/Ruff config across packages"
+
+# test_status: any test present across the polyglot tree (node --test / vitest / jest specs or pytest)
+{ grep -rlsq --include='*.test.ts' --include='*.test.js' --include='*.spec.ts' --exclude-dir='node_modules' -e '' "$REPO_ROOT" 2>/dev/null \
+  || grep -rlsq --include='test_*.py' --include='*_test.py' --exclude-dir='node_modules' -e '' "$REPO_ROOT" 2>/dev/null; } \
+  && TEST="tests present" || TEST="gap — few/no tests found"
+
+# ci_status: a CI workflow present
+{ [ -f "$REPO_ROOT/.github/workflows/ci.yml" ] || ls "$REPO_ROOT/.github/workflows/"*.yml >/dev/null 2>&1; } \
+  && CI="workflow present" || CI="gap — no CI workflow"
+
+# precommit_status: a Husky/pre-commit hook present anywhere
+{ [ -f "$REPO_ROOT/.husky/pre-commit" ] || grep -rlsq --include='pre-commit' --exclude-dir='node_modules' -e '' "$REPO_ROOT/.husky" 2>/dev/null; } \
+  && PRECOMMIT="pre-commit hook present" || PRECOMMIT="gap — no pre-commit hook / no uniform secret scan"
+
+# secrets_status: NEVER inspect or echo any secret value — only note that a manual audit is required.
+SECRETS="gap — audit for hardcoded API keys/tokens/OAuth secrets across packages, migrate to env / wrangler secrets"
+```
+
+Map `LINT → {{lint_status}}`, `TEST → {{test_status}}`, `CI → {{ci_status}}`, `PRECOMMIT → {{precommit_status}}`, `SECRETS → {{secrets_status}}`. **Never** print a secret value into any placeholder — the secrets probe deliberately reports only that an audit is needed, never a matched string.
+
 ---
 
 ## Step 3 — Fill the template and compute the diff
 
-Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the values collected there. Replace every `{{placeholder}}` token (Handlebars-style) with the corresponding value. Every template uses `{{one_line_purpose}}` in two places — both must be filled identically. Fill only the placeholders the selected template actually contains (backend: `bounded_context`, `database`, `aggregates`, `nats_patterns`; frontend: `apps`, `feature_libs`; flutter: `features`, `flavors`; firebase-functions: `bounded_context`, `database`, `lint_status`, `test_status`, `ci_status`, `precommit_status`, `secrets_status`; ts-cli: `databases`, `lint_status`, `test_status`, `ci_status`, `precommit_status`, `secrets_status`).
+Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the values collected there. Replace every `{{placeholder}}` token (Handlebars-style) with the corresponding value. Every template uses `{{one_line_purpose}}` in two places — both must be filled identically. Fill only the placeholders the selected template actually contains (backend: `bounded_context`, `database`, `aggregates`, `nats_patterns`; frontend: `apps`, `feature_libs`; flutter: `features`, `flavors`; firebase-functions: `bounded_context`, `database`, `lint_status`, `test_status`, `ci_status`, `precommit_status`, `secrets_status`; ts-cli: `databases`, `lint_status`, `test_status`, `ci_status`, `precommit_status`, `secrets_status`; ai-agents: `packages`, `lint_status`, `test_status`, `ci_status`, `precommit_status`, `secrets_status`).
 
 Produce the candidate content as an in-memory string called `GENERATED`.
 

@@ -1,0 +1,90 @@
+# {{repo_name}}
+
+{{one_line_purpose}}
+
+> **Note:** This is an initial analysis of a **polyglot AI-agents monorepo** (Node.js + Python +
+> Cloudflare Workers) with **no root workspace orchestration** — each package is owned and shipped
+> independently. Several packages expose MCP tools / HTTP endpoints, run background jobs, and hold
+> OAuth/JWT secrets, so the "Config & secrets", "Auth", and "Remediation status" sections below are as
+> load-bearing as the architecture. Contents are directional guidance, not exhaustive documentation.
+
+## Cortex MCP — Live Architecture Reference
+
+If the Cortex MCP is connected, **always use it for up-to-date architecture data** rather than
+relying solely on this file (this repo also *hosts* the Cortex MCP):
+
+- `get_repo_guide('{{repo_name}}')` — package layout, MCP tool surface, dependencies, deploy targets
+- `trace_implementation('<tool or route>')` — end-to-end chain for an MCP tool or HTTP route
+- `search_entities('<concept>')` — find a tool, handler, or domain concept
+- `get_coding_rules()` — the config singleton, auth scheme, and Redis cluster helper per package
+
+If Cortex is unavailable, fall back to this file and per-package `CLAUDE.md`.
+
+## Product Context
+
+{{one_line_purpose}}
+
+**Packages**: {{packages}}
+
+## Stack
+
+{{stack_versions}}
+
+Polyglot monorepo, **no root orchestration**. Node.js/TypeScript packages (Cortex: Claude Agent SDK +
+MCP server over SSE/HTTP, Express + BullMQ; Oculus: Turbo/npm workspaces), a Python package (Nexus:
+Poetry + FastAPI + MCP), and Cloudflare Workers/Pages (Gleap). Cortex is backed by a PostgreSQL +
+pgvector knowledge graph fed by a repo-clone → extract → inject pipeline, with Redis for BullMQ jobs.
+
+## Architecture — per-package, self-contained
+
+```text
+<package>/            → each package owns its own build, config, and deploy. No shared root.
+  MCP tools/routes    → exposed surface; every mutating/data-returning path is auth-guarded.
+  config singleton    → the ONLY place env is read; handlers import from it.
+  queue consumers     → BullMQ workers; idempotent (deterministic upsert keys), no payload logging.
+  Dockerfile          → runtime stage runs as a non-root UID (e.g. 1001).
+```
+
+### Layer rules (the reviewer enforces these on every diff)
+
+- **No cross-package reach-through.** A package must not import a sibling via `../../<other-package>/`
+  deep relative paths — there is no root workspace to police boundaries, so each package stays
+  self-contained.
+- **Config only through the singleton.** Business/handler logic reads config from the package's
+  env-driven config module, never raw `process.env` / `os.environ`.
+- New exposed surface (MCP tool, HTTP route, queue consumer) validates its input, handles its errors,
+  and — if it mutates or returns data — sits behind auth.
+
+## Auth — every exposed tool/route
+
+Every MCP tool/resource or HTTP route on a mutating or data-returning path is behind authentication
+(OAuth 2.1 / JWT / Bearer, per the package's scheme, e.g. `cortex/oauth-server.js`). A read-only or
+engineer-scoped token must never reach a write/mutating tool.
+
+## Config & secrets
+
+Secrets come from the environment or a secret store — **never** literals, `argv`, or logs. Node
+packages document keys in `.env.example` (placeholders only); Workers use `wrangler secret`;
+deployment injects env. **Never** hardcode an API key, OAuth client secret, connection string, or
+webhook URL; never pass one on `argv`; never log a secret-bearing value. If a secret was ever
+committed, removing the line is not enough — rotate it and purge history.
+
+## Jobs — BullMQ idempotency
+
+BullMQ can redeliver jobs, so every consumer keys its writes deterministically (upsert on a stable
+key, not a blind insert) and never logs `job.data` or cloned-repo content from the extract → inject
+KG pipeline. Redis/BullMQ connections use the shared cluster config with fallback, not ad-hoc
+connection literals.
+
+## Remediation status
+
+This repo is being brought up to Supy baseline. Current gaps (see
+`config/standards/ai-agents/architecture.md` → Remediation backlog):
+
+- **Lint**: {{lint_status}} — target is per-package ESLint (Node/TS) + Ruff (Python), consistent config.
+- **Tests**: {{test_status}} — target is baseline coverage per package, starting with MCP tool contracts and queue-consumer idempotency.
+- **CI**: {{ci_status}} — target is a shared polyglot CI shape per package (lint → typecheck/mypy → test → build).
+- **Pre-commit**: {{precommit_status}} — target is a blocking gitleaks secret scan uniform across all packages (not only the `deploy/` native hook).
+- **Secrets**: {{secrets_status}} — target is env / secret store for every credential, no literals, none in argv/logs.
+
+Fix in this order: secrets/env → auth on exposed tools → lint alignment → tests + CI → pre-commit.

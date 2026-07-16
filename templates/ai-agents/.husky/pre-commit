@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# supy-ai-agents local guardrail — mirrors CI so feedback is instant.
+# Install per Node package with: npx husky init  (then replace the generated pre-commit with this).
+# Goal (remediation backlog): a BLOCKING secret scan uniform across ALL packages, not only the
+# existing deploy/-scoped native hook.
+
+# 1. BLOCK committed secrets / connection strings / OAuth secrets (secrets-and-config.md#rules rule 5).
+#    Non-negotiable, runs first, scans the whole staged tree (polyglot: JS/TS/Python/TOML/YAML).
+#    Requires gitleaks on PATH: `brew install gitleaks`.
+gitleaks protect --staged --redact --no-banner
+
+# 2. Lint + format only what's staged (fast). Routes .ts/.js through ESLint+Prettier and .py through
+#    Ruff via lint-staged config (see package.scripts.json).
+npx lint-staged

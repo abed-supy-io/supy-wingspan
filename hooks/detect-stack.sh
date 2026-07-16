@@ -26,6 +26,12 @@ fi
 if [ -z "$stack" ] && [ -f "$root/package.json" ] && grep -q '"commander"' "$root/package.json" && grep -q '"bin"' "$root/package.json"; then
   stack="ts-cli"
 fi
+# Polyglot AI-agents monorepo (non-Nx, no root orchestration): a package.json anywhere in the tree
+# depends on the MCP SDK or the Claude Agent SDK. Checked after ts-cli (ts-cli inspects only the ROOT
+# package.json, and this repo has no root orchestration to misgrab) and before k8s-config.
+if [ -z "$stack" ] && grep -rlsq --include='package.json' --exclude-dir='node_modules' -e '@modelcontextprotocol/sdk' -e '@anthropic-ai/claude-agent-sdk' "$root" 2>/dev/null; then
+  stack="ai-agents"
+fi
 # Kubernetes config/manifest repo: ConfigMap/Secret YAML or a kustomization, and not an app stack.
 if [ -z "$stack" ]; then
   if [ -f "$root/kustomization.yaml" ] || grep -rlsq --include='*.yaml' -e 'kind: ConfigMap' -e 'kind: Secret' "$root" 2>/dev/null; then
@@ -47,6 +53,14 @@ if [ "$stack" = "firebase-functions" ]; then
 fi
 if [ "$stack" = "ts-cli" ]; then
   msg="supy-wingspan: detected ts-cli repo (standalone commander.js MongoDB scripts runner) — a command can mutate a production DB in bulk, so operational safety is load-bearing: layered-env secrets (never literals/argv/logs), explicit prod-mutation confirmation, deterministic exit codes. Run supy-review (supy-ts-cli-reviewer); see config/standards/ts-cli/architecture.md."
+  if [ ! -f "$root/CLAUDE.md" ]; then
+    msg="$msg No CLAUDE.md found — run the supy-baseline skill to generate one."
+  fi
+  echo "$msg"
+  exit 0
+fi
+if [ "$stack" = "ai-agents" ]; then
+  msg="supy-wingspan: detected ai-agents repo (polyglot MCP/agents monorepo, no root orchestration) — remediation-first: prioritise secret hygiene (env/secret store, never literals/argv/logs), auth on every exposed MCP tool/route, idempotent BullMQ consumers, and non-root containers. Run supy-review (supy-ai-agents-reviewer); see config/standards/ai-agents/architecture.md."
   if [ ! -f "$root/CLAUDE.md" ]; then
     msg="$msg No CLAUDE.md found — run the supy-baseline skill to generate one."
   fi
