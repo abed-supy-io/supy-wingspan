@@ -8,14 +8,32 @@ secret scanner — that run on every repo. Ships scaffolding & Git skills, a
 consistency-baseline generator, and thin orchestration wrappers over `superpowers`.
 
 ## Status
-Local-only, v0.1.0. Not yet published to a Git host.
+v0.1.0. Published at [`abed-supy-io/supy-wingspan`](https://github.com/abed-supy-io/supy-wingspan) (public).
 
-## Enable locally
-From any supy repo (or user settings), add this directory as a local marketplace:
+## Install
+From any supy repo (or user settings), add the marketplace and install the plugin.
+Run these as **two separate commands** — the second only after the first completes:
+```
+/plugin marketplace add abed-supy-io/supy-wingspan
+/plugin install supy-wingspan@supy
+```
+
+Then run `/reload-plugins` to apply — the commands and skills become available immediately.
+
+Or in one line from the terminal:
+```
+claude plugin marketplace add abed-supy-io/supy-wingspan && claude plugin install supy-wingspan@supy
+```
+
+<details>
+<summary>Install from a local checkout instead</summary>
+
 ```
 /plugin marketplace add ~/Projects/supy-projects/supy-wingspan
 /plugin install supy-wingspan@supy
 ```
+</details>
+
 See [`docs/USAGE.md`](docs/USAGE.md) for the full install / usage / deployment
 guide, and [`docs/PILOT.md`](docs/PILOT.md) for the validated enablement
 procedure, the pilot exercise checklist, and known gaps.
