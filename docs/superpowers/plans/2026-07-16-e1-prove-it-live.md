@@ -12,10 +12,9 @@
 
 Every task's requirements implicitly include this section. Values are copied verbatim from `docs/superpowers/specs/2026-07-16-enhancement-roadmap-design.md`.
 
-- **LOCAL-ONLY.** Commit locally; **NEVER push**. There is no Git host, no CI, no remote hooks.
+- **Pilot branches are local-only.** Scratch branches created inside pilot repos are throwaway and **never pushed**. This plugin repo itself lives on GitHub (PRs to `main`, CI-gated) — its own commits land through the normal PR flow.
 - **Secrets.** NEVER reproduce a secret value in any file, diff, commit message, or finding. Cite `path:line` only. (Reinforces the org security rule and `supy-secrets-reviewer`.)
-- **Conventional Commits.** `feat:` / `docs:` / `fix:` (use `fix()`, never `bug()`). Every commit ends with the trailer, exactly:
-  `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
+- **Conventional Commits.** `feat:` / `docs:` / `fix:` (use `fix()`, never `bug()`). Claude-authored commits end with the standard `Co-Authored-By: Claude <model> <noreply@anthropic.com>` trailer for the model that produced them.
 - **Token / agent budget ("stay green").** This plan uses **zero subagents** and **zero network calls** — only local file edits and one offline `bash` verifier. Keep it that way: do not dispatch Explore/review agents to execute these tasks.
 - **Human-in-the-loop.** The live `/plugin install` + `/supy-review` + `supy-commit` runs in each target repo are performed by a **human after this plan completes** — they cannot be driven headlessly. This plan authors the scaffolding; §"After This Plan" documents the handoff.
 - **Docs may use absolute paths.** Component bodies must use `${CLAUDE_PLUGIN_ROOT}`, but these are human-facing docs; prefer the portable `~/Projects/supy-projects/supy-wingspan` form for install commands.
