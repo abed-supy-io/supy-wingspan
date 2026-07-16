@@ -1,6 +1,6 @@
 ---
 name: supy-create-pr
-description: Build a conventional PR title and description from branch commits and diff, enforce Supy commit-type rules, and either open the PR via gh or output a ready-to-paste title+body for manual creation. Use after supy-review passes on a supy-* backend repo.
+description: Build a conventional PR title and description from branch commits and diff, enforce Supy commit-type rules, and either open the PR via gh or output a ready-to-paste title+body for manual creation. Use after supy-review passes on any supy repo (backend, frontend, or Flutter/mobile).
 ---
 
 ## Step 1 — Read the governing standard
@@ -60,6 +60,30 @@ Also read the full diff for context:
 git diff ${BASE_BRANCH}...HEAD --stat
 git diff ${BASE_BRANCH}...HEAD
 ```
+
+---
+
+## Step 2.5 — Flutter pre-flight (only if pubspec.yaml is present)
+
+If the repo root has a `pubspec.yaml`, no PR should open on unformatted or analyzer-dirty code. The
+`dart-lint-format.sh` PostToolUse hook keeps individually-edited files clean during the session, but
+a whole-tree pass catches anything edited outside this session (rebases, generated files, manual
+edits). Run format-check and analyze across **every** package, not just the root — monorepos (melos)
+have many:
+
+```bash
+if [ -f "$REPO_ROOT/pubspec.yaml" ]; then
+  # Format check (non-mutating) + analyze at each package that has a pubspec.yaml.
+  find "$REPO_ROOT" -name pubspec.yaml -not -path '*/.*' -not -path '*/build/*' | while read -r p; do
+    pkg="$(dirname "$p")"
+    ( cd "$pkg" && dart format --set-exit-if-changed . && flutter analyze )
+  done
+fi
+```
+
+If format-check or analyze fails, stop and report the offending package(s). Fix (run `dart format .`
+and resolve analyzer findings — see the **supy-flutter-reviewer** agent for real violations) and
+re-run before opening the PR. Skip this step entirely on non-Flutter repos.
 
 ---
 

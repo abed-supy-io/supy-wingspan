@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "cortex-kg": {
+      "type": "http",
+      "url": "https://cortex.ai.supy.io/mcp"
+    },
+    "dart": {
+      "command": "dart",
+      "args": ["mcp-server"]
+    },
+    "very-good-cli": {
+      "command": "very_good",
+      "args": ["mcp"]
+    },
+    "railway": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@railway/mcp-server"],
+      "env": {}
+    },
+    "ios-simulator": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["ios-simulator-mcp"],
+      "env": {}
+    }
+  }
+}
