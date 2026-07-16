@@ -1,6 +1,7 @@
 {
   "language": "en,en-GB",
   "words": [
+    "agentic",
     "AKIA",
     "Anson",
     "auditlog",
@@ -8,7 +9,9 @@
     "baprs",
     "bullmq",
     "Cerbos",
+    "cloudflared",
     "codegen",
+    "CODEOWNERS",
     "commitlintrc",
     "conventionalcommits",
     "creds",
@@ -27,6 +30,7 @@
     "flexi",
     "frontmatter",
     "geolocation",
+    "gitmodules",
     "Gleap",
     "grns",
     "headlessly",
@@ -46,6 +50,7 @@
     "lockfiles",
     "logto",
     "LTRB",
+    "mailgun",
     "messente",
     "mgmt",
     "misconfig",
