@@ -485,18 +485,32 @@ Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the value
 
 Produce the candidate content as an in-memory string called `GENERATED`.
 
-### Append the skill-routing footer
+### Append the skill-routing footer (stack-scoped)
 
-So the generated `CLAUDE.md` tells Claude which skill handles which engineering action in this repo,
-append the canonical routing block. Read it and append the section — everything from the
-`## Using Supy skills` heading onward — to `GENERATED`, separated by a blank line:
+So the generated `CLAUDE.md` tells Claude which skill handles which engineering action **in this
+repo** — and only the skills relevant to *this* repo's stack — append a stack-scoped slice of the
+canonical routing block. A backend dev's `CLAUDE.md` must not list Flutter skills, and vice-versa.
+
+`skills/shared/references/skill-routing.md` is structured as one **Universal** table (always applies)
+followed by per-stack blocks fenced with `<!-- STACK:<id> -->` / `<!-- /STACK:<id> -->` markers.
+Append the universal part plus **only** the block whose id equals the `$STACK` detected in Step 2,
+with the marker comment lines stripped:
 
 ```bash
-sed -n '/^## Using Supy skills/,$p' "${CLAUDE_PLUGIN_ROOT}/skills/shared/references/skill-routing.md"
+ROUTING="${CLAUDE_PLUGIN_ROOT}/skills/shared/references/skill-routing.md"
+if [ -r "$ROUTING" ]; then
+  # Universal part: from the heading up to (but not including) the first stack marker.
+  sed -n '/^## Using Supy skills/,/^<!-- STACK:/p' "$ROUTING" | sed '$d'
+  # This repo's stack block only (markers removed). Nothing emitted for nx/generic/k8s-config.
+  sed -n "/^<!-- STACK:${STACK} -->\$/,/^<!-- \/STACK:${STACK} -->\$/p" "$ROUTING" \
+    | sed '1d;$d'
+fi
 ```
 
-If the reference is missing or unreadable, skip this append rather than failing — the rest of the
-generated file is still valid. Keep this block in sync with `hooks/skill-router.sh`.
+Append that combined output to `GENERATED`, separated by a blank line. If the reference is missing or
+unreadable, skip this append rather than failing — the rest of the generated file is still valid.
+Stacks without a block (`nx`, `generic`, `k8s-config`) get the universal table only. Keep the routing
+file's intents in sync with `hooks/skill-router.sh`.
 
 ### Overwrite gate
 

@@ -6,7 +6,7 @@
     {
       "name": "supy-wingspan",
       "source": "./",
-      "description": "Supy engineering best-practices plugin (backend-first)."
+      "description": "Supy engineering best-practices plugin — stack-scoped review, scaffolding, and delivery skills for backend, frontend, Flutter, and more."
     }
   ]
 }

@@ -3,6 +3,34 @@ name: supy-scaffold-flutter-feature
 description: Scaffold a complete Clean Architecture feature (domain + data + presentation + tests) in a supy Flutter repo from bundled stubs, then fill it in the Supy way and print the manual wiring (get_it registration, go_router route, barrel export). Use when adding a new feature to a flutter supy repo.
 ---
 
+## Creating a brand-new project (not a feature)
+
+This skill scaffolds a **feature inside an existing** Supy Flutter repo. If instead you need to
+create a **whole new project** from scratch, use `very_good_cli` rather than hand-creating the
+project layout — it produces the flavored, tested, CI-ready skeleton Supy expects:
+
+```bash
+command -v very_good >/dev/null 2>&1 || dart pub global activate very_good_cli
+very_good create <template> <project_name>
+```
+
+The `<template>` is one of the seven `very_good create` subcommands:
+
+| Subcommand | Produces |
+| --- | --- |
+| `flutter_app` | A Flutter application (the default for a new app). |
+| `flutter_package` | A shared Flutter package. |
+| `flutter_plugin` | A federated Flutter plugin (add `--platforms` for the targets). |
+| `dart_package` | A pure-Dart package. |
+| `dart_cli` | A Dart command-line application. |
+| `docs_site` | A documentation site. |
+| `flame_game` | A Flame game. |
+
+Once the project exists, come back to this skill to scaffold features into it. The rest of this
+document assumes an existing repo.
+
+---
+
 ## Step 0 — Scaffold first, never hand-create
 
 A Clean Architecture feature is ~14 files across three layers (`domain/`, `data/`, `presentation/`) plus tests, in a fixed layout. Hand-creating them drifts from convention and skips the boundaries the reviewer relies on. **Always lay down the skeleton, then fill it in.** Flutter is not Nx — there is no Plop and no lint-enforced boundary graph, so this skill copies bundled `.hbs` stubs (substituting placeholders by hand) and then walks the fill-in in dependency order.
