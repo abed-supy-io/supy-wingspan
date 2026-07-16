@@ -1,0 +1,17 @@
+<!-- Reference snippet — `supy-pagination` bound to NGXS metadata (angular-conventions rule 21). -->
+<div class="catalog-list">
+  <app-catalog-grid [rowData]="selectors.rows()" />
+
+  <div class="catalog-list__pagination">
+    <supy-pagination
+      [pageIndex]="selectors.requestMetadata().page"
+      [previousDisabled]="selectors.requestMetadata().page === 0"
+      [nextDisabled]="
+        (selectors.requestMetadata().page + 1) * selectors.requestMetadata().limit >=
+        selectors.responseMetadata().total
+      "
+      [totalRecords]="selectors.responseMetadata().total"
+      (indexChange)="onPageChange($event)"
+    />
+  </div>
+</div>

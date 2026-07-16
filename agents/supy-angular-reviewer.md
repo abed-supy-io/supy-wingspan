@@ -56,10 +56,11 @@ For each changed file, check:
 10. **Services** (rules 12–13): extend `BaseHttpService`, inject a URI `InjectionToken` (never a hardcoded URL string); typed observable returns, no `any`.
 11. **Routing** (rules 14–15): feature state lazy-loaded via `provideStates([...])` in route `providers`, not at root; functional `inject()` guards/resolvers.
 12. **Styling** (rule 20): PrimeNG `--p-*` tokens; no `::ng-deep`, no hardcoded hex, no raw `px` for spacing.
-13. **Imports/TS** (rules 22–23): `simple-import-sort` group order; no `any` without a justification comment; `import type` for type-only imports.
-14. **Module boundaries** (module-boundaries rules 1–5): every touched lib has `type:` + `scope:` tags; layer direction respected (`ui` never depends on `data-access`; `util` only on `util`); one domain never imports another domain's internals — cross-domain goes through a `scope:shared` lib; imports use the `@supy/*` alias, never a relative path across a library boundary.
-15. **New feature wiring** (module-boundaries rule 6): a new lib has its `@supy/*` alias in `tsconfig.base.json` and its scope constraint in `eslint.config.mjs`.
-16. **Red flags** listed in both files' `## Red flags` sections.
+13. **Filter state / URL sync** (rule 24): filter actions (`*PatchFilters`, `*ResetFilters`, …) dispatched from inside a dialog/drawer pass `{ saveToUrl: false }` — otherwise the overlay closes on `NavigationEnd`. Main-page filter dispatches omit the option so state persists in the URL.
+14. **Imports/TS** (rules 22–23): `simple-import-sort` group order; no `any` without a justification comment; `import type` for type-only imports.
+15. **Module boundaries** (module-boundaries rules 1–5): every touched lib has `type:` + `scope:` tags; layer direction respected (`ui` never depends on `data-access`; `util` only on `util`); one domain never imports another domain's internals — cross-domain goes through a `scope:shared` lib; imports use the `@supy/*` alias, never a relative path across a library boundary.
+16. **New feature wiring** (module-boundaries rule 6): a new lib has its `@supy/*` alias in `tsconfig.base.json` and its scope constraint in `eslint.config.mjs`.
+17. **Red flags** listed in both files' `## Red flags` sections.
 
 ---
 

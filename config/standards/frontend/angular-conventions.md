@@ -1,6 +1,6 @@
 ---
-source: angular-frontend-starter-kit/CLAUDE.md, angular-frontend-starter-kit/eslint.config.mjs, angular-frontend-starter-kit/.stylelintrc.json
-mined_on: 2026-07-15
+source: angular-frontend-starter-kit/CLAUDE.md, angular-frontend-starter-kit/eslint.config.mjs, angular-frontend-starter-kit/.stylelintrc.json, supy-frontend/CLAUDE.md, supy-frontend/libs/common/src/lib/store/state/entity-list.state.ts
+mined_on: 2026-07-16
 confidence: high
 ---
 
@@ -65,6 +65,10 @@ Supy frontend apps are **Angular 21 + Nx + NGXS (+ Immer) + PrimeNG 21 + AG Grid
 
 22. **Import order** (auto-fixed by `simple-import-sort`): (1) side-effect imports → (2) third-party (`@angular/*`, `@ngxs/store`, …) → (3) scoped project imports (`@supy/*`) → (4) relative (`./…`).
 23. `strict: true`. No `any` without a justification comment — prefer generics or `unknown` + narrowing. `verbatimModuleSyntax` on — use `import type` for type-only imports. Unused params prefixed with `_`.
+
+### Filter state & URL sync
+
+24. **Pass `{ saveToUrl: false }` when dispatching filter actions from inside a dialog or drawer.** Filter actions on `EntityListState` (`*PatchFilters`, `*ResetFilters`, `*InitFilters`, …) take an optional `FilterActionsOptions` second argument. `saveToUrl` **defaults to `true`**, which persists the filter state to the URL via `router.navigate()`. `DialogService` closes the active overlay on any `NavigationEnd` event, so dispatching a filter action with the default from within a dialog/drawer **immediately closes it**. Pass `{ saveToUrl: false }` inside any overlay; **omit** the option on main-page filters so state persists in the URL and survives reload/back-forward. `FilterActionsOptions` is defined in `libs/common/src/lib/store/state/entity-list.state.ts`.
 
 ## Examples
 
@@ -157,6 +161,21 @@ export const ORDER_ROUTES: Routes = [
 }
 ```
 
+### Good — filter action dispatched from inside a dialog/drawer
+
+```ts
+// Inside an overlay: suppress URL sync so DialogService doesn't close it on NavigationEnd.
+this.#store.dispatch(
+  new GroupedByPslChannelItemsPatchFilters(
+    { branchId, pslIds, retailerItemIds },
+    { saveToUrl: false },
+  ),
+);
+
+// On the main page: omit the option so filters persist in the URL.
+this.#store.dispatch(new OrdersPatchFilters({ status }));
+```
+
 ## Red flags
 
 These are auto-reject in review — each maps to the fix on its right:
@@ -173,6 +192,7 @@ These are auto-reject in review — each maps to the fix on its right:
 - `any` without a justification comment → proper types (generics / `unknown` + narrowing).
 - Subscription without teardown → `takeUntilDestroyed()`.
 - Template-driven form for non-trivial input → reactive typed `FormBuilder` form.
+- Filter action dispatched from a dialog/drawer without `{ saveToUrl: false }` → the overlay closes on `NavigationEnd`; pass `{ saveToUrl: false }` inside overlays.
 
 ## Source
 
@@ -180,3 +200,4 @@ These are auto-reject in review — each maps to the fix on its right:
 - `angular-frontend-starter-kit/eslint.config.mjs` — `@nx/enforce-module-boundaries`, `prefer-on-push-component-change-detection`, `no-restricted-syntax` banning `@Input`/`@Output`/`@Select`, `no-explicit-any`, `consistent-type-imports`, `simple-import-sort` groups, template `prefer-control-flow` / `no-negated-async`
 - `angular-frontend-starter-kit/.stylelintrc.json` — `color-no-hex`, `selector-disallowed-list` (`::ng-deep`), `declaration-property-unit-disallowed-list` (no `px` on spacing)
 - Alias note: the starter kit ships the `@app/*` path prefix; Supy repos use `@supy/*`. All rules and examples here use `@supy/*` (the swap is applied in the drop-in assets under `templates/frontend/`).
+- Rule 24 (`saveToUrl` / URL-synced filter state) is verified against the live `supy-frontend` repo — `CLAUDE.md` §"State Management" documents the `DialogService`/`NavigationEnd` overlay-close mechanism, and `FilterActionsOptions` (default `{ saveToUrl: true }`) is defined in `libs/common/src/lib/store/state/entity-list.state.ts`. Not present in the starter kit; mined from the real codebase.
