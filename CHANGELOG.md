@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.1...supy-wingspan-v0.1.2) (2026-07-16)
+
+
+### Features
+
+* migrate supy-mobile AI-coding skills into the plugin, stack-scoped ([#9](https://github.com/abed-supy-io/supy-wingspan/issues/9)) ([824a5b4](https://github.com/abed-supy-io/supy-wingspan/commit/824a5b4e631d83d6d97fc0ec37b1a16384ff9438))
+
 ## [0.1.1](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.0...supy-wingspan-v0.1.1) (2026-07-16)
 
 
