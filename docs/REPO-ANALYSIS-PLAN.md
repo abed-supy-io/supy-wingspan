@@ -146,3 +146,35 @@ _(updated as waves complete)_
   - Execution order set (value×blast-radius): secrets → flutter split → backend enrich +
     cerbos → new stacks → frontend → CI/coverage/pre-commit.
 - 2026-07-15: → checkpoint before **Phase 3 (Enrich)** — offer the local `docs:` commit first.
+- 2026-07-16: **Phases 3–6 complete — enrich → create → wire → validate.** Executed in the
+  value×blast-radius order set in Phase 2. Deliverables (task IDs #17–#23):
+  - **🔒 Secrets (BLOCKING, #17):** authored `config/standards/secrets-and-config.md`
+    (secret/config separation) + `agents/supy-secrets-reviewer.md` (stack-agnostic, runs on
+    every stack); wired into `commands/supy-review.md` dispatch and `detect-stack.sh`
+    `k8s-config` branch. Reinforces the org "never commit secrets" rule.
+  - **Flutter split (#18):** `config/standards/flutter/` split into **Profile A** (`dartz`/`Either`)
+    vs **Profile B** (`PageState`/`throwAppException`), plus scanner-plugin and
+    flutter-packages/melos sub-profiles; `supy-flutter-reviewer` + both flutter skills made
+    profile-aware.
+  - **Backend enrich + cerbos (#19):** added decimal-money, consumer idempotency, adapter/ACL,
+    webhook signature-stacking, Cerbos policy-factory rules; reconciled `supy-api-common`
+    shared-lib + `supy-mailgun-webhooks` webhook-ingress profiles; deepened security-cerbos
+    (derived roles, CEL, `*_test.yaml`, pre-commit compile).
+  - **New stacks (#20):** authored full asset sets for **firebase-functions**, **ts-cli**, and
+    **ai-agents** — one `config/standards/<stack>/` rulebook, one `agents/supy-<stack>-reviewer.md`,
+    one how-to skill (`supy-firebase-function` / `supy-ts-cli` / `supy-ai-agents`), and a
+    `templates/<stack>/` baseline each; added ordered detection branches (ts-cli BEFORE
+    ai-agents, both `package.json`-based).
+  - **Frontend (#21):** `templates/frontend/` + `supy-angular-reviewer` reinforcement (no new
+    rules — highest-confidence existing match).
+  - **Cross-cutting (#22):** authored `config/standards/ci-coverage-baseline.md` (coverage bars
+    ≥80% flutter apps / ≥85% melos pkgs / ≥70% plugin; Node/TS `coverageThreshold`; pre-commit
+    baselines) + per-stack CI/pre-commit/secret-scan templates.
+  - **Wire-up + validate (#23):** `plugin-dev:plugin-validator` re-run → **VALID** at
+    11 agents / 14 skills / 4 commands / 9-way ordered detection; `shellcheck detect-stack.sh`
+    clean; removed 5 leftover `.gitkeep` markers (the only finding). Refreshed `README.md`,
+    `docs/USAGE.md`, and `docs/PILOT.md` to the current counts (7→11 agents, 11→14 skills,
+    3→7 stacks) and this progress log.
+  - Final state: **7 stacks, 11 review agents, 14 skills, 4 commands, 9-way stack detection.**
+    All validation passing; live per-stack `/plugin install` + core-loop pilots remain the only
+    outstanding item (cannot be driven headlessly — see `docs/PILOT.md`).

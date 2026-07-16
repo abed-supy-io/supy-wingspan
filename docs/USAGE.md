@@ -4,9 +4,12 @@ Everything you need to install, use, deploy, and maintain `supy-wingspan` — Su
 internal Claude Code plugin that makes every `supy-*` repo follow Supy engineering
 best practices through AI.
 
-- **What it is:** stack-aware review agents (NestJS backend + Angular frontend +
-  Flutter mobile), scaffolding & Git skills, a consistency-baseline generator, and
-  thin orchestration wrappers over the `superpowers` plugin.
+- **What it is:** stack-aware review agents (NestJS backend, Angular frontend,
+  Flutter mobile, Firebase Functions, TypeScript CLI, the polyglot AI-agents
+  monorepo, and Kubernetes config) plus two stack-agnostic reviewers — commit/PR
+  conventions and a secret scanner — that run on every repo; scaffolding & Git
+  skills; a consistency-baseline generator; and thin orchestration wrappers over
+  the `superpowers` plugin.
 - **Status:** local-only, `v0.1.0`. **Not published to any Git host.** It is
   distributed as a **local Claude Code marketplace** — you point Claude Code at
   this directory on disk.
@@ -23,7 +26,7 @@ best practices through AI.
 3. [Verify the install](#3-verify-the-install)
 4. [What you get after install](#4-what-you-get-after-install)
 5. [Everyday usage](#5-everyday-usage)
-6. [The three stacks & how detection works](#6-the-three-stacks--how-detection-works)
+6. [The stacks & how detection works](#6-the-stacks--how-detection-works)
 7. [Deploying to a team (persist across sessions)](#7-deploying-to-a-team-persist-across-sessions)
 8. [Updating the plugin](#8-updating-the-plugin)
 9. [Uninstall](#9-uninstall)
@@ -88,7 +91,8 @@ That's the whole deployment. There is nothing to push, publish, or host — the
    ```
    supy-wingspan: detected nestjs-nx repo.
    ```
-   (One of `nestjs-nx`, `angular-nx`, `nx`, `flutter`, `generic`.) If the repo
+   (One of `nestjs-nx`, `angular-nx`, `nx`, `flutter`, `firebase-functions`,
+   `ts-cli`, `ai-agents`, `k8s-config`, or silent for unknown/mixed.) If the repo
    has no `CLAUDE.md`, it also nudges you to run `supy-baseline`.
 
 2. **Commands are present.** Type `/` and confirm you see `/supy-brainstorm`,
@@ -112,7 +116,7 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 | `/supy-build [plan]` | Plan → implementation, task by task. Wraps `superpowers:executing-plans` / `subagent-driven-development`; fallback runs the plan with **local-only** commits (never pushes). |
 | `/supy-review [base-ref]` | Reviews the current branch diff. Detects the stack and dispatches the matching review subagents in parallel, then consolidates a severity-grouped report. |
 
-**11 skills** (invoked in natural language — *not* slash commands; say e.g.
+**14 skills** (invoked in natural language — *not* slash commands; say e.g.
 "run the supy-commit skill"):
 
 | Skill | Stack | Purpose |
@@ -128,13 +132,26 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 | `supy-angular-feature` | angular-nx | How-to for writing Angular the Supy way (OnPush, `inject()`, NGXS, `--p-*`). |
 | `supy-scaffold-flutter-feature` | flutter | Scaffolds a Clean-Architecture feature from bundled `.hbs` stubs (domain + data + presentation + tests). |
 | `supy-flutter-feature` | flutter | How-to for writing Flutter the Supy way (Clean Arch, BLoC, go_router, get_it, dio, dartz). |
+| `supy-firebase-function` | firebase-functions | How-to for the standalone supy-firebase-functions repo — Clean Architecture (index → interactors → repositories → frameworks), Awilix DI, runtime-enforced auth markers, typed domain errors, idempotent Firestore triggers, secrets from Secret Manager. |
+| `supy-ts-cli` | ts-cli | How-to for the standalone supy-cli repo — Clean Architecture, commander.js `scripts [run\|list\|info]`, the `IScript`/`ScriptDetails` contract, env-layered config, explicit prod confirmation, no secrets in argv/logs, deterministic exit codes, batched bulk MongoDB ops. |
+| `supy-ai-agents` | ai-agents | Write/change code in the polyglot supy-ai-agents monorepo (Node + Python + Cloudflare Workers, MCP tools, BullMQ, pgvector KG) — secret hygiene, auth on exposed tools, env-driven config, validation + error handling, idempotent consumers, non-root containers. |
 
-**7 review agents** (dispatched internally by `/supy-review`, per detected stack):
-- Backend (`nestjs-nx`): `supy-architecture-reviewer`, `supy-nats-event-reviewer`,
-  `supy-test-quality-reviewer`, `supy-security-reviewer` + the shared commit/PR reviewer.
-- Frontend (`angular-nx`): `supy-angular-reviewer` + the shared commit/PR reviewer.
-- Mobile (`flutter`): `supy-flutter-reviewer` + the shared commit/PR reviewer.
-- Any stack: `supy-commit-pr-reviewer`.
+**11 review agents** (dispatched internally by `/supy-review`, per detected stack).
+Two are stack-agnostic and run on **every** stack: `supy-commit-pr-reviewer`
+(commit/PR conventions) and `supy-secrets-reviewer` (committed secrets + config/secret
+separation). The rest are stack-specific:
+- Backend (`nestjs-nx`) → 6: `supy-architecture-reviewer`, `supy-nats-event-reviewer`,
+  `supy-test-quality-reviewer`, `supy-security-reviewer` + commit/PR + secrets.
+- Frontend (`angular-nx`) → 3: `supy-angular-reviewer` + commit/PR + secrets.
+- Mobile (`flutter`) → 3: `supy-flutter-reviewer` + commit/PR + secrets.
+- Firebase Functions (`firebase-functions`) → 3: `supy-firebase-functions-reviewer`
+  + commit/PR + secrets.
+- CLI (`ts-cli`) → 3: `supy-ts-cli-reviewer` (architecture + operational safety)
+  + commit/PR + secrets.
+- AI-agents (`ai-agents`) → 3: `supy-ai-agents-reviewer` (architecture + operational
+  safety) + commit/PR + secrets.
+- K8s config (`k8s-config`) → 2: secrets + commit/PR.
+- Any other stack → 2: commit/PR + secrets.
 
 **SessionStart hook:** `hooks/detect-stack.sh` prints the detected-stack line and
 never fails the session.
@@ -195,22 +212,32 @@ overwriting** an existing `CLAUDE.md` — it never clobbers silently.
 
 ---
 
-## 6. The three stacks & how detection works
+## 6. The stacks & how detection works
 
 `hooks/detect-stack.sh` runs at session start and is also the basis for how
-`/supy-review` and `supy-baseline` branch:
+`/supy-review` and `supy-baseline` branch. Detection is **ordered** — the first
+matching rule wins — so more specific stacks are tested before generic ones:
 
-| Stack | Detected by | Gets |
+| Stack | Detected by (in order) | Gets (beyond the two stack-agnostic reviewers) |
 |---|---|---|
-| `nestjs-nx` | `package.json` (NestJS on Nx) | 4 backend reviewers + commit/PR reviewer; backend skills + template |
-| `angular-nx` | `package.json` (Angular on Nx) | Angular reviewer + commit/PR reviewer; Angular skills + template |
-| `flutter` | **`pubspec.yaml`** (no `package.json`/node) | Flutter reviewer + commit/PR reviewer; Flutter skills + template |
-| `nx` / `generic` | Nx workspace / anything else | commit/PR reviewer only |
+| `angular-nx` | `nx.json` + `package.json` with `@angular/core` | Angular reviewer; Angular skills + template |
+| `nestjs-nx` | `nx.json` + `package.json` with `@nestjs/core` | 4 backend reviewers; backend skills + template |
+| `nx` | `nx.json` alone (no Angular/Nest marker) | — (stack-agnostic reviewers only) |
+| `flutter` | **`pubspec.yaml`** (no `package.json`/node) | Flutter reviewer; Flutter skills + template |
+| `firebase-functions` | `firebase.json` + a `functions/` dir | Firebase Functions reviewer; `supy-firebase-function` skill + template |
+| `ts-cli` | root `package.json` with `commander` + a `bin` entry | CLI reviewer (+ operational safety); `supy-ts-cli` skill + template |
+| `ai-agents` | any `package.json` (excl. `node_modules`) depending on `@modelcontextprotocol/sdk` or `@anthropic-ai/claude-agent-sdk` | AI-agents reviewer (+ operational safety); `supy-ai-agents` skill + template |
+| `k8s-config` | `kustomization.yaml`, or YAML with `kind: ConfigMap`/`kind: Secret` | — (secrets + commit/PR only) |
+| _unknown / mixed_ | anything else | — (stays silent; stack-agnostic reviewers only) |
 
-Each repo therefore gets **only its stack's** agents, skills, and CLAUDE.md
-template. Flutter enforcement is `very_good_analysis` + `bloc_lint` via
-`analysis_options.yaml` (not ESLint). React/Next.js are intentionally out of
-scope for `v0.1.0`.
+Ordering invariants: `angular-nx`/`nestjs-nx` are tested before bare `nx`;
+`ai-agents` is tested **after** `ts-cli` and **before** `k8s-config`. The
+**commit/PR reviewer** and the **secrets reviewer** are stack-agnostic and run on
+**every** repo — so even an unknown/mixed repo still gets a secret scan and
+commit/PR review. Each repo otherwise gets **only its stack's** agents, skills,
+and CLAUDE.md template. Flutter enforcement is `very_good_analysis` + `bloc_lint`
+via `analysis_options.yaml` (not ESLint). React/Next.js frontends are
+intentionally out of scope for `v0.1.0`.
 
 ---
 
@@ -303,20 +330,30 @@ supy-wingspan/
 ├── .claude-plugin/
 │   ├── plugin.json         # name, version, description, keywords
 │   └── marketplace.json    # marketplace "supy" → this plugin
-├── agents/                 # 7 review subagents (Markdown w/ frontmatter)
-├── skills/                 # 11 skills, one dir each w/ SKILL.md
+├── agents/                 # 11 review subagents (Markdown w/ frontmatter)
+├── skills/                 # 14 skills, one dir each w/ SKILL.md
 ├── commands/               # 4 slash-command wrappers over superpowers
 ├── hooks/
 │   ├── hooks.json          # SessionStart → detect-stack.sh
-│   └── detect-stack.sh     # stack detection (executable)
+│   └── detect-stack.sh     # stack detection (executable, 9-way ordered)
 ├── config/standards/       # mined Supy standards (source of truth for agents)
-│   ├── *.md                # backend (root) + backend/ for module boundaries
+│   ├── *.md                # cross-cutting: commit-conventions, secrets-and-config,
+│   │                       #   ci-coverage-baseline + backend (root)
+│   ├── backend/            # nestjs-nx module boundaries
 │   ├── frontend/           # angular-nx conventions + module boundaries
-│   └── flutter/            # architecture.md + flutter-conventions.md
+│   ├── flutter/            # architecture.md + flutter-conventions.md
+│   ├── firebase-functions/ # architecture.md (+ remediation backlog)
+│   ├── ts-cli/             # architecture.md (+ remediation backlog)
+│   └── ai-agents/          # architecture.md (+ remediation backlog)
+│                           # (k8s-config has no subdir — governed by root secrets-and-config.md)
 ├── templates/              # canonical CLAUDE.md templates + generators
 │   ├── backend/            # CLAUDE.md.hbs + Plop g:domain generator
 │   ├── frontend/           # CLAUDE.md.hbs + Plop feature generator
-│   └── flutter/            # CLAUDE.md.hbs + analysis_options.yaml + .hbs stubs
+│   ├── flutter/            # CLAUDE.md.hbs + analysis_options.yaml + .hbs stubs
+│   ├── firebase-functions/ # CLAUDE.md.hbs + CI + pre-commit + secret-scan
+│   ├── ts-cli/             # CLAUDE.md.hbs + CI + pre-commit + secret-scan
+│   ├── ai-agents/          # CLAUDE.md.hbs + CI + pre-commit + secret-scan
+│   └── k8s-config/         # CLAUDE.md.hbs + .pre-commit-config.yaml (gitleaks)
 ├── docs/
 │   ├── PILOT.md            # validation record + live pilot checklist
 │   └── USAGE.md            # this file
@@ -331,7 +368,8 @@ supy-wingspan/
   H2 anchor (`## Rules`, `## Red flags`, `## Source`, …). When Supy conventions
   change, update the standards file first; the agents follow.
 - **Keep counts in sync.** README, `plugin.json`, `config/standards/README.md`,
-  and `docs/PILOT.md` all state agent/skill counts. Update them together.
+  `docs/PILOT.md`, and this file (`docs/USAGE.md`) all state agent/skill counts.
+  Update them together.
 - **Commit convention:** Conventional Commits, `feat:` for features. Every commit
   ends with the trailer
   `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
