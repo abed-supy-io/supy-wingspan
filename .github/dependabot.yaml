@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # This plugin ships no runtime npm dependencies; the only moving parts are the
+  # GitHub Actions pinned in .github/workflows. Keep those current.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - ci
+    commit-message:
+      prefix: ci

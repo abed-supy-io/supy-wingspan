@@ -59,7 +59,7 @@ For each changed file, check:
 
 Return findings in **exactly** this shape (Task 4's `supy-review` skill parses this format — do not deviate):
 
-```
+```text
 ## supy-test-quality-reviewer — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
 ```

@@ -29,7 +29,7 @@ Supy backend repos use `@supy/commitlint-config/conventional`, which extends `@c
 
 ### Good
 
-```
+```text
 feat(ledger): add stock-movement RPC handler
 
 Adds a new MessagePattern handler for ledger.items.stock-movement.
@@ -38,21 +38,21 @@ Delegates to GetStockMovementInteractor.
 closes #42
 ```
 
-```
+```text
 fix(item): correct unit conversion in output transformer
 ```
 
-```
+```text
 chore(ci): upgrade Node to 24.10.0
 ```
 
-```
+```text
 refactor(recipe,wastage): migrate write side to CQRS commands layer
 ```
 
 ### Bad
 
-```
+```text
 bug(ledger): fix null pointer                  ← REJECTED: 'bug' is not a valid type
 Fix: correct query                             ← REJECTED: missing type prefix
 Feat(item): Add new handler                   ← REJECTED: type not lower-case, subject starts capital

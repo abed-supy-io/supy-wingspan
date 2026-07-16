@@ -80,7 +80,7 @@ capabilities (E3) build on a deepened, trusted review core. Broadening to new
 stacks (E4) comes last: it reuses the now-proven Phase 3–6 authoring pattern and
 should not dilute effort until the core is solid.
 
-```
+```text
 E1 Prove it live ──▶ E2 Deepen review + local hooks ──▶ E3 New capabilities ──▶ E4 Broaden stacks
      (evidence)          (quality + enforcement)            (self-maintaining)       (reuse pattern)
 ```

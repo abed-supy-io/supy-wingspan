@@ -6,6 +6,13 @@
           { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/detect-stack.sh" }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/skill-router.sh" }
+        ]
+      }
     ]
   }
 }

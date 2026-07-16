@@ -1,8 +1,23 @@
 {
-  "MD009": false,
-  "MD013": false,
-  "MD032": false,
-  "MD033": false,
-  "MD036": false,
-  "MD060": false
+  // Line/whitespace rules that fight prose authored for terminals.
+  "MD009": false, // trailing spaces — allowed for hard line breaks
+  "MD013": false, // line length — prose is wrapped by intent, not by column
+
+  // Structural rules relaxed to match this repo's house style.
+  "MD032": false, // blanks around lists — dense reference lists are intentional
+  "MD033": false, // inline HTML — <details> and tables in README/docs are intentional
+  "MD036": false, // emphasis-as-heading — used deliberately in a few skills
+  "MD060": false, // table column padding — compact tables are intentional
+
+  // Agents, skills, commands, and mined docs are identified by YAML frontmatter
+  // or a leading H2, not an H1. An H1 would be redundant with the frontmatter name.
+  "MD041": false, // first line need not be a top-level heading
+
+  // Ordered lists deliberately mix "1." sequences and lazy "1." numbering across
+  // the standards and skill steps; both are readable and intentional.
+  "MD029": false,
+
+  // Section names like "Output Contract" or "When this applies" recur across
+  // different parent headings by design; only forbid true sibling duplicates.
+  "MD024": { "siblings_only": true }
 }

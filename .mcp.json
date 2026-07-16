@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cortex-kg": {
+      "type": "http",
+      "url": "https://cortex.ai.supy.io/mcp/sse"
+    }
+  }
+}

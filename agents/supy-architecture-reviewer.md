@@ -79,7 +79,7 @@ import { ITransferRepository } from '@supy/transfer/domain/model';
 
 No layer violations, no cross-domain import bypassing context-map, value objects used, `@UseFilters` present. Output:
 
-```
+```text
 ## supy-architecture-reviewer — PASS
 ```
 
@@ -101,7 +101,7 @@ async findById(id: string): Promise<Transfer | null> {
 
 Output:
 
-```
+```text
 ## supy-architecture-reviewer — ISSUES FOUND
 - **[severity: high]** libs/ledger/api/src/ledger.rpc.controller.ts:3 — api layer directly imports data layer `@supy/transfer/data` → import `ITransferRepository` from `@supy/transfer/domain/model` and inject via DI (rule: architecture.md#rules rule 3)
 - **[severity: high]** libs/transfer/data/src/lib/repositories/transfer.repository.ts:12 — `.find()` without `.lean()` on a read query causes Mongoose to return hydrated documents → append `.lean()` to the query chain (rule: architecture.md#rules rule 10)
@@ -129,7 +129,7 @@ public submit(): void {
 
 Output:
 
-```
+```text
 ## supy-architecture-reviewer — ISSUES FOUND
 - **[severity: high]** libs/transfer/logic/src/lib/interactors/submit-transfer.interactor.ts:8 — aggregate constructed with `new Transfer(...)` in application code → build it through `TransferFactory.createNew(...)` / `createFromExisting(...)` (rule: architecture.md#ddd-building-blocks rule 6)
 - **[severity: high]** libs/transfer/logic/src/lib/interactors/submit-transfer.interactor.ts:9 — aggregate state mutated from outside via `transfer.props.state = ...` → call an intention-revealing method (`transfer.submit()`) that uses `this.assign('state', ...)` (rule: architecture.md#ddd-building-blocks rule 1)
@@ -143,7 +143,7 @@ Output:
 
 Return findings in **exactly** this shape (Task 4's `supy-review` skill parses this format — do not deviate):
 
-```
+```text
 ## supy-architecture-reviewer — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
 ```

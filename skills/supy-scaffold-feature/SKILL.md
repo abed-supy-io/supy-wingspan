@@ -24,7 +24,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 If `git rev-parse` fails, stop and print:
 
-```
+```text
 supy-scaffold-feature: not inside a git repository — nothing to scaffold
 ```
 
@@ -37,7 +37,7 @@ ls "$REPO_ROOT/tools/generators/plopfile.js" 2>/dev/null && \
 
 If the generator is **not** present, the repo has not yet adopted the frontend drop-in assets. Offer to install them from the plugin (do not copy silently — show the list and ask first):
 
-```
+```text
 supy-scaffold-feature: this repo has no feature generator yet. The plugin ships one under:
   ${CLAUDE_PLUGIN_ROOT}/templates/frontend/tools/generators/
 
@@ -56,7 +56,7 @@ On `y`, copy the files, run `npm install` (or note it), and continue. On anythin
 
 Ask for the two generator inputs (parse from `$ARGUMENTS` in order if present: feature, entity):
 
-```
+```text
 supy-scaffold-feature needs two names:
   1. Feature name — plural, kebab-case (e.g. orders)   → becomes @supy/orders, scope:orders
   2. Entity name  — singular, PascalCase (e.g. Order)   → becomes the model/entity type
@@ -111,14 +111,19 @@ Ensure `src/index.ts` re-exports the public surface (routes, state token, models
 These three cannot be auto-wired safely — do them by hand:
 
 1. **Path alias** — add to `tsconfig.base.json` `paths`:
+
    ```jsonc
    "@supy/<feature>": ["libs/<feature>/src/index.ts"]
    ```
+
 2. **Boundary constraint** — append to `eslint.config.mjs` `depConstraints`:
+
    ```js
    { sourceTag: 'scope:<feature>', onlyDependOnLibsWithTags: ['scope:<feature>', 'scope:shared'] },
    ```
+
 3. **Lazy route** — register in the app routing:
+
    ```ts
    { path: '<feature>', loadChildren: () => import('@supy/<feature>').then(m => m.<FEATURE>_ROUTES) }
    ```

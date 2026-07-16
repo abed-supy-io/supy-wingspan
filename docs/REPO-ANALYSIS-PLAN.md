@@ -24,7 +24,7 @@ bodies use `${CLAUDE_PLUGIN_ROOT}`, never hardcoded absolute paths.
 
 Every Explore agent returns exactly this, ≤45 lines, citing file paths:
 
-```
+```text
 ## <repo> — <confirmed stack>
 - Purpose: <one line>
 - Structure: <apps/libs or key top-level dirs>
@@ -42,6 +42,7 @@ Every Explore agent returns exactly this, ≤45 lines, citing file paths:
 ## The repos, grouped by stack
 
 ### Group A — Backend · NestJS-on-Nx (13) — *deepen existing `nestjs-nx` stack*
+
 - [x] `supy-api` (core domain)
 - [x] `supy-api-admin`
 - [x] `supy-api-authorization`
@@ -57,15 +58,18 @@ Every Explore agent returns exactly this, ≤45 lines, citing file paths:
 - [x] `supy-service-settlements`
 
 ### Group B — Frontend · Angular-on-Nx (1) — *deepen existing `angular-nx` stack*
+
 - [x] `supy-frontend`
 
 ### Group C — Mobile · Flutter (4) — *deepen existing `flutter` stack*
+
 - [x] `supy-mobile` (main app) — **diverges**: `PageState<T>` sealed union + `throwAppException()` (not dartz Either)
 - [x] `supy-scanner` — federated native plugin; versioned MethodChannel; distinct sub-profile
 - [x] `checklist` (already mined — re-verify) — canonical flutter reference (Either + sealed failures + hive)
 - [x] `supy-flutter-packages.` (melos multi-package monorepo — variant) — melos, 6 pkgs, 85% coverage
 
 ### Group D — New/uncovered stacks & infra (9) — *candidate NEW stacks*
+
 - [x] `supy-firebase-functions` (Firebase Cloud Functions, Node) — candidate NEW stack (remediation-first)
 - [x] `supy-cli` (TypeScript CLI) — candidate NEW stack (ts-cli)
 - [x] `supy-jsreport-templates` (jsreport server + templates) — infra/policy-only
@@ -116,7 +120,7 @@ Every Explore agent returns exactly this, ≤45 lines, citing file paths:
 
 ## Progress log
 
-_(updated as waves complete)_
+*(updated as waves complete)*
 - 2026-07-15: Phase 0 triage complete; plan written; Wave A dispatched.
 - 2026-07-15: **Phase 1 complete — 26/27 repos analyzed** (`supy-core` empty → skipped);
   all `docs/analysis/*.md` written. Stack roll-up:

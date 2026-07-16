@@ -31,7 +31,7 @@ If there is no `pubspec.yaml`, stop — this is not a Flutter repo.
 
 Ask for the two names (parse from `$ARGUMENTS` in order if present: feature, entity):
 
-```
+```text
 supy-scaffold-flutter-feature needs two names:
   1. Feature name — plural, snake_case (e.g. tasks)   → becomes lib/features/tasks/, TasksBloc, /tasks route
   2. Entity name  — singular, PascalCase (e.g. Task)   → becomes the domain entity type
@@ -73,7 +73,7 @@ If a repo generator is present, run it (e.g. `mason make feature -o lib/features
 
 Otherwise, lay down the skeleton from the plugin's bundled stubs. The stubs live at:
 
-```
+```text
 ${CLAUDE_PLUGIN_ROOT}/templates/flutter/tools/feature/
 ```
 
@@ -130,6 +130,7 @@ Never hand-edit the resulting `*.g.dart` / `*.freezed.dart`.
 These three cannot be auto-wired safely — print them and do them by hand:
 
 1. **DI registration** — in `lib/app/injection_container.dart`, register datasources / repository / usecases as singletons and the BLoC as a factory:
+
    ```dart
    sl
      ..registerLazySingleton<{{Feature}}RemoteDatasource>(() => {{Feature}}RemoteDatasourceImpl(sl()))
@@ -137,10 +138,13 @@ These three cannot be auto-wired safely — print them and do them by hand:
      ..registerLazySingleton(() => Get{{Feature}}(sl()))
      ..registerFactory(() => {{Feature}}Bloc(get{{Feature}}: sl()));
    ```
+
 2. **Route** — in the `go_router` config, register the page with its `path` constant:
+
    ```dart
    GoRoute(path: {{Feature}}Page.path, name: {{Feature}}Page.name, builder: (_, __) => const {{Feature}}Page()),
    ```
+
 3. **Barrel** — ensure `lib/features/$FEATURE/{{feature}}.dart` re-exports the public surface (page, bloc, domain entity/usecases meant for reuse) and nothing internal to `data/`.
 
 ## Step 7 — Tests

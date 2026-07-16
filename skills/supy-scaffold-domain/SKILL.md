@@ -24,7 +24,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 If `git rev-parse` fails, stop and print:
 
-```
+```text
 supy-scaffold-domain: not inside a git repository — nothing to scaffold
 ```
 
@@ -37,7 +37,7 @@ ls "$REPO_ROOT/tools/generators/plopfile.js" 2>/dev/null && \
 
 If the generator is **not** present, the repo has not yet adopted the backend drop-in assets. Offer to install them from the plugin (do not copy silently — show the list and ask first):
 
-```
+```text
 supy-scaffold-domain: this repo has no domain generator yet. The plugin ships one under:
   ${CLAUDE_PLUGIN_ROOT}/templates/backend/tools/generators/
 
@@ -56,7 +56,7 @@ On `y`, copy the files, run `npm install` (or note it), and continue. On anythin
 
 Ask for the single generator input (parse from `$ARGUMENTS` if present):
 
-```
+```text
 supy-scaffold-domain needs one name:
   Domain name — singular, kebab-case (e.g. transfer, stock-count)
     → becomes libs/<name>/, the @supy/<name>/* aliases, and scope:<name>
@@ -104,6 +104,7 @@ Ensure each lib's `src/index.ts` barrel re-exports the public surface (aggregate
 These four cannot be auto-wired safely — do them by hand:
 
 1. **Path aliases** — add one entry per lib to `tsconfig.base.json` `paths`, each pointing at the lib's `src/index.ts`:
+
    ```jsonc
    "@supy/<domain>/domain/model":   ["libs/<domain>/domain/model/src/index.ts"],
    "@supy/<domain>/domain/service": ["libs/<domain>/domain/service/src/index.ts"],
@@ -111,10 +112,13 @@ These four cannot be auto-wired safely — do them by hand:
    "@supy/<domain>/logic":          ["libs/<domain>/logic/src/index.ts"],
    "@supy/<domain>/api":            ["libs/<domain>/api/src/index.ts"]
    ```
+
 2. **Scope constraint** — append to `eslint.config.mjs` `depConstraints` so the domain may only depend on itself and shared:
+
    ```js
    { sourceTag: 'scope:<domain>', onlyDependOnLibsWithTags: ['scope:<domain>', 'scope:shared'] },
    ```
+
 3. **Register the API module** — add `<Domain>ApiModule.register({ capability })` to `apps/api/src/app/app.module.ts`.
 4. **Register event discriminators** — add each domain event to `apps/api/src/app/domain-events.discriminators.ts`, or the events will not deserialise on the worker side.
 

@@ -9,9 +9,11 @@ Determine the diff range using the following logic (in order):
 
 1. If `$ARGUMENTS` names a base ref (e.g., `origin/main`, a commit SHA, or a branch name), use that ref directly as the range base.
 2. Otherwise, resolve the merge base against the main branch:
+
    ```bash
    git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main
    ```
+
 3. If neither yields a valid ref (e.g., not a git repo or no common ancestor), fall back to `HEAD~1`.
 
 Capture the resolved base ref as `DIFF_BASE`. Then verify the diff is non-empty:
@@ -22,7 +24,7 @@ git diff ${DIFF_BASE}...HEAD --stat
 
 If the diff is empty (no output), or if the working directory is not a git repository, stop immediately and print:
 
-```
+```text
 No changes to review — supy-review needs a non-empty diff
 ```
 
@@ -38,48 +40,25 @@ REPO_PATH=$(git rev-parse --show-toplevel)
 
 ## Step 2 — Select the reviewer set for the repo's stack
 
-Different stacks have different governing standards, so dispatch only the reviewers that apply. Detect the stack from `REPO_PATH`:
+Different stacks have different governing standards, so dispatch only the reviewers that apply. The canonical detection logic and the stack→reviewer-set matrix live in one shared reference (the same source the SessionStart hook follows). Read it now and apply it:
 
 ```bash
-if [ -f "$REPO_PATH/nx.json" ] && grep -q '"@angular/core"' "$REPO_PATH/package.json" 2>/dev/null; then
-  STACK="angular-nx"
-elif [ -f "$REPO_PATH/nx.json" ] && grep -q '"@nestjs/core"' "$REPO_PATH/package.json" 2>/dev/null; then
-  STACK="nestjs-nx"
-elif [ -f "$REPO_PATH/pubspec.yaml" ]; then
-  STACK="flutter"
-elif [ -f "$REPO_PATH/firebase.json" ] && [ -d "$REPO_PATH/functions" ]; then
-  STACK="firebase-functions"
-elif [ -f "$REPO_PATH/package.json" ] && grep -q '"commander"' "$REPO_PATH/package.json" 2>/dev/null && grep -q '"bin"' "$REPO_PATH/package.json" 2>/dev/null; then
-  STACK="ts-cli"
-elif grep -rlsq --include='package.json' --exclude-dir='node_modules' -e '@modelcontextprotocol/sdk' -e '@anthropic-ai/claude-agent-sdk' "$REPO_PATH" 2>/dev/null; then
-  STACK="ai-agents"
-elif [ -f "$REPO_PATH/kustomization.yaml" ] || grep -rlsq --include='*.yaml' -e 'kind: ConfigMap' -e 'kind: Secret' "$REPO_PATH" 2>/dev/null; then
-  STACK="k8s-config"
-else
-  STACK="other"
-fi
+cat "${CLAUDE_PLUGIN_ROOT}/skills/shared/references/stack-detection.md"
 ```
 
-Choose the reviewer set:
+From that reference:
 
-| Stack | Reviewer agents to dispatch |
-|---|---|
-| `nestjs-nx` | `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, `supy-commit-pr-reviewer`, `supy-security-reviewer`, `supy-secrets-reviewer` (six) |
-| `angular-nx` | `supy-angular-reviewer`, `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (three) |
-| `flutter` | `supy-flutter-reviewer`, `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (three) |
-| `firebase-functions` | `supy-firebase-functions-reviewer`, `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (three) |
-| `ts-cli` | `supy-ts-cli-reviewer`, `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (three) |
-| `ai-agents` | `supy-ai-agents-reviewer`, `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (three) |
-| `k8s-config` | `supy-secrets-reviewer`, `supy-commit-pr-reviewer` (two) |
-| `other` | `supy-commit-pr-reviewer`, `supy-secrets-reviewer` (two) |
+1. Run the detection procedure against `REPO_PATH` (in order — first match wins) to resolve `STACK`.
+2. Look up `STACK` in the "Stack → reviewer set" table to get the exact set of reviewer agents to dispatch.
+3. Honour the "Which reviewers are stack-specific" rule: never dispatch a stack-specific reviewer against a repo of a different stack. `supy-commit-pr-reviewer` and `supy-secrets-reviewer` are stack-agnostic and run on every set.
 
-The `supy-architecture-reviewer`, `supy-nats-event-reviewer`, `supy-test-quality-reviewer`, and `supy-security-reviewer` agents are backend-specific; `supy-angular-reviewer` is frontend-specific; `supy-flutter-reviewer` is mobile-specific; `supy-firebase-functions-reviewer` is specific to the standalone `supy-firebase-functions` backend; `supy-ts-cli-reviewer` is specific to the standalone commander.js CLI (`supy-cli`); `supy-ai-agents-reviewer` is specific to the polyglot AI-agents monorepo (`supy-ai-agents`). Never dispatch a stack-specific reviewer against a repo of a different stack. `supy-commit-pr-reviewer` and `supy-secrets-reviewer` are stack-agnostic and always dispatched — a committed secret is a merge-blocker in any stack, so `supy-secrets-reviewer` runs on every set (it self-limits to config/secret/credential findings and returns `PASS` when a diff has none).
+If the reference is unreadable, fall back to dispatching only the two stack-agnostic reviewers (`supy-commit-pr-reviewer`, `supy-secrets-reviewer`) rather than aborting.
 
 **In a single message, make one Agent tool call per reviewer in the selected set** so they all run in parallel. Do not make them sequentially. Passing both `DIFF_BASE` and `REPO_PATH` into each dispatch prompt is mandatory so all agents review the identical diff rather than each recomputing it independently.
 
 For each Agent call, use this dispatch prompt template (substituting the actual values of `DIFF_BASE` and `REPO_PATH`):
 
-```
+```text
 Repo: <REPO_PATH>
 Diff range: <DIFF_BASE>...HEAD
 
@@ -94,7 +73,7 @@ Return findings in the fixed output shape defined in your Output Contract.
 
 Wait for all dispatched agents to complete. Each agent returns a fixed-shape output:
 
-```
+```text
 ## <reviewer name> — <PASS | ISSUES FOUND>
 - **[severity: high|med|low]** <file>:<line> — <problem> → <concrete fix> (rule: <standards anchor>)
 ```
@@ -136,9 +115,11 @@ Rules for building the report:
 - If no reviewers were skipped, omit the `## Skipped` section entirely.
 - If no reviewers returned PASS, write `(none)` under `## Clean`.
 - Prefix each finding line with the reviewer name in parentheses for traceability, e.g.:
-  ```
+
+  ```text
   - (supy-architecture-reviewer) **[severity: high]** libs/ledger/api/src/ledger.rpc.controller.ts:3 — ...
   ```
+
 - Sort findings within each section by file path, then line number, for readability.
 - A single failed or skipped reviewer must never cause the whole report to fail — always emit a complete report with whatever findings were successfully collected.
 

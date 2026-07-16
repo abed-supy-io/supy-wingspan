@@ -1,0 +1,25 @@
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      # Maintains a rolling "release" PR from Conventional Commits. Merging it
+      # tags the release, updates CHANGELOG.md, and bumps the version in
+      # .claude-plugin/plugin.json (see release-please-config.json).
+      #
+      # Uses the default GITHUB_TOKEN. If you later want the release tag/PR to
+      # trigger other workflows (e.g. a publish job), swap this for a PAT or a
+      # GitHub App token — the default token intentionally does not re-trigger.
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

@@ -61,7 +61,7 @@ Services that accept **external HTTP webhooks** (email providers, payment provid
 
 ### Good — layer layout for bounded context `transfer`
 
-```
+```text
 libs/transfer/
   domain/model/   → TransferAggregate, TransferId, ITransferRepository, TransferSubmittedEvent
   domain/service/ → TransferDomainService (cross-aggregate coordination)
@@ -76,7 +76,7 @@ libs/transfer/
 
 ### Good — context map for `catalog` service
 
-```
+```text
 libs/context-maps/catalog/
   model/    → RetailerItemValueObject (translates external data into inventory domain language)
   proxy/    → CatalogProxy (@Injectable NATS client, encapsulates all sendAsync calls)

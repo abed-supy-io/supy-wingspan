@@ -64,7 +64,7 @@ Open a Claude Code session **inside the repo you want to work in** (e.g.
 `supy-service-inventory`, or any `supy-*` repo), then run these two slash
 commands:
 
-```
+```text
 /plugin marketplace add ~/Projects/supy-projects/supy-wingspan
 /plugin install supy-wingspan@supy
 ```
@@ -88,9 +88,11 @@ That's the whole deployment. There is nothing to push, publish, or host — the
 
 1. **Session-start line.** Open a fresh session in a supy repo. Near the top you
    should see one line from the `detect-stack.sh` SessionStart hook, e.g.:
-   ```
+
+   ```text
    supy-wingspan: detected nestjs-nx repo.
    ```
+
    (One of `nestjs-nx`, `angular-nx`, `nx`, `flutter`, `firebase-functions`,
    `ts-cli`, `ai-agents`, `k8s-config`, or silent for unknown/mixed.) If the repo
    has no `CLAUDE.md`, it also nudges you to run `supy-baseline`.
@@ -145,9 +147,9 @@ separation). The rest are stack-specific:
 - Frontend (`angular-nx`) → 3: `supy-angular-reviewer` + commit/PR + secrets.
 - Mobile (`flutter`) → 3: `supy-flutter-reviewer` + commit/PR + secrets.
 - Firebase Functions (`firebase-functions`) → 3: `supy-firebase-functions-reviewer`
-  + commit/PR + secrets.
+  - commit/PR + secrets.
 - CLI (`ts-cli`) → 3: `supy-ts-cli-reviewer` (architecture + operational safety)
-  + commit/PR + secrets.
+  - commit/PR + secrets.
 - AI-agents (`ai-agents`) → 3: `supy-ai-agents-reviewer` (architecture + operational
   safety) + commit/PR + secrets.
 - K8s config (`k8s-config`) → 2: secrets + commit/PR.
@@ -162,7 +164,7 @@ never fails the session.
 
 ### The core loop
 
-```
+```text
 /supy-brainstorm add a stock-transfer approval flow   # idea → design
 /supy-plan                                            # design → phased plan
 /supy-build                                           # plan → implementation (local commits)
@@ -195,9 +197,11 @@ overwriting** an existing `CLAUDE.md` — it never clobbers silently.
 ### Committing & PRs
 
 - `supy-commit` writes a Conventional Commits message ending with:
-  ```
+
+  ```text
   Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
   ```
+
   It is **commit-only** and never pushes.
 - `supy-create-pr` builds the PR title/body; it pushes via `gh` **only** if a
   remote and `gh` exist, otherwise it prints a paste-ready PR.
@@ -228,7 +232,7 @@ matching rule wins — so more specific stacks are tested before generic ones:
 | `ts-cli` | root `package.json` with `commander` + a `bin` entry | CLI reviewer (+ operational safety); `supy-ts-cli` skill + template |
 | `ai-agents` | any `package.json` (excl. `node_modules`) depending on `@modelcontextprotocol/sdk` or `@anthropic-ai/claude-agent-sdk` | AI-agents reviewer (+ operational safety); `supy-ai-agents` skill + template |
 | `k8s-config` | `kustomization.yaml`, or YAML with `kind: ConfigMap`/`kind: Secret` | — (secrets + commit/PR only) |
-| _unknown / mixed_ | anything else | — (stays silent; stack-agnostic reviewers only) |
+| *unknown / mixed* | anything else | — (stays silent; stack-agnostic reviewers only) |
 
 Ordering invariants: `angular-nx`/`nestjs-nx` are tested before bare `nx`;
 `ai-agents` is tested **after** `ts-cli` and **before** `k8s-config`. The
@@ -296,9 +300,11 @@ refreshing Claude Code's view of the marketplace:
 
 1. Edit the plugin files (or `git pull` if you keep it under version control).
 2. In a session, refresh the marketplace:
-   ```
+
+   ```text
    /plugin marketplace update supy
    ```
+
    (or remove & re-add: `/plugin marketplace remove supy` then
    `/plugin marketplace add ~/Projects/supy-projects/supy-wingspan`).
 3. Start a new session so the SessionStart hook and reloaded components take
@@ -310,7 +316,7 @@ Bump `version` in `.claude-plugin/plugin.json` when you ship a meaningful change
 
 ## 9. Uninstall
 
-```
+```text
 /plugin uninstall supy-wingspan@supy
 /plugin marketplace remove supy
 ```
@@ -325,7 +331,7 @@ directory on disk also effectively disables it (the marketplace source vanishes)
 
 ### Repository layout
 
-```
+```text
 supy-wingspan/
 ├── .claude-plugin/
 │   ├── plugin.json         # name, version, description, keywords
