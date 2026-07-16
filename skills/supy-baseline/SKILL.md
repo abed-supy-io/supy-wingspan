@@ -14,7 +14,7 @@ REPO_NAME=$(basename "$REPO_ROOT")
 
 If `git rev-parse` fails (not a git repo), stop immediately and print:
 
-```
+```text
 supy-baseline: not inside a git repository — nothing to do
 ```
 
@@ -59,7 +59,7 @@ fi
 
 Template generation is supported for **`nestjs-nx`** (backend), **`angular-nx`** (frontend), **`flutter`** (mobile), **`firebase-functions`** (standalone Firebase Functions backend), **`ts-cli`** (standalone commander.js CLI), and **`ai-agents`** (polyglot MCP/agents monorepo). For any other stack (`nx`, `generic`) this skill only emits the missing-pieces checklist (Step 4) and skips template generation. In that case print a notice:
 
-```
+```text
 supy-baseline: stack detected as <STACK>; template generation is only supported for nestjs-nx, angular-nx, flutter, firebase-functions, ts-cli, and ai-agents repos.
 Reporting missing AI-setup pieces only.
 ```
@@ -485,6 +485,19 @@ Substitute each placeholder in the `$TEMPLATE` selected in Step 2 with the value
 
 Produce the candidate content as an in-memory string called `GENERATED`.
 
+### Append the skill-routing footer
+
+So the generated `CLAUDE.md` tells Claude which skill handles which engineering action in this repo,
+append the canonical routing block. Read it and append the section — everything from the
+`## Using Supy skills` heading onward — to `GENERATED`, separated by a blank line:
+
+```bash
+sed -n '/^## Using Supy skills/,$p' "${CLAUDE_PLUGIN_ROOT}/skills/shared/references/skill-routing.md"
+```
+
+If the reference is missing or unreadable, skip this append rather than failing — the rest of the
+generated file is still valid. Keep this block in sync with `hooks/skill-router.sh`.
+
 ### Overwrite gate
 
 Check whether `CLAUDE.md` already exists in the repo root:
@@ -504,7 +517,7 @@ diff --unified "$REPO_ROOT/CLAUDE.md" /tmp/supy-baseline-generated.md
 
 3. **Ask the user** before proceeding:
 
-```
+```text
 supy-baseline: CLAUDE.md already exists at <REPO_ROOT>/CLAUDE.md.
 The diff above shows what would change.
 Overwrite? [y/N]
@@ -520,7 +533,7 @@ Write `GENERATED` directly to `$REPO_ROOT/CLAUDE.md`.
 
 Print a confirmation:
 
-```
+```text
 supy-baseline: wrote CLAUDE.md → <REPO_ROOT>/CLAUDE.md
 ```
 
@@ -575,7 +588,7 @@ If `CORTEX_CONFIGURED=false`, flag as missing.
 
 Print the report in this format:
 
-```
+```text
 ## supy-baseline — AI Setup Checklist for <REPO_NAME>
 
 - [x/☐] Cortex MCP configured         (settings.json / settings.local.json)
@@ -589,7 +602,7 @@ Use `[x]` for items that are present/passing and `[☐]` for items that are miss
 
 If any items are missing, append fix hints:
 
-```
+```text
 ### Fix hints
 
 - **Cortex MCP**: add the Cortex MCP server block to .claude/settings.json — see ${CLAUDE_PLUGIN_ROOT}/config/standards/architecture.md for the required structure.
@@ -610,7 +623,7 @@ Only emit hints for items that are actually missing.
 - **No lib files found** (empty or non-standard repo): use the `"<placeholder>"` default for every value that could not be resolved (`"<aggregates>"`, `"<feature-libs>"`, etc.) and continue.
 - **Template file absent** (the `$TEMPLATE` selected in Step 2 not found): stop generation and print:
 
-```
+```text
 supy-baseline: template not found at $TEMPLATE — cannot generate CLAUDE.md.
 Reporting missing-pieces checklist only.
 ```
