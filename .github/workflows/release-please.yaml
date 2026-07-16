@@ -19,7 +19,7 @@ jobs:
       # Uses the default GITHUB_TOKEN. If you later want the release tag/PR to
       # trigger other workflows (e.g. a publish job), swap this for a PAT or a
       # GitHub App token — the default token intentionally does not re-trigger.
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
