@@ -78,6 +78,14 @@ jobs:
       - name: Validate agent structure
         run: bash scripts/validate-agents.sh
 
+  commands:
+    name: Command structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate command structure
+        run: bash scripts/validate-commands.sh
+
   xrefs:
     name: Cross-references
     runs-on: ubuntu-latest
