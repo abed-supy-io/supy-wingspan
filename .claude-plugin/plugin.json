@@ -1,6 +1,6 @@
 {
   "name": "supy-wingspan",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "AI-assisted engineering standards for Supy repos: stack-aware review agents (NestJS backend + Angular frontend + Flutter mobile + standalone Firebase Functions backend + standalone commander.js CLI + polyglot AI-agents monorepo + Kubernetes config), a stack-agnostic secrets reviewer that blocks committed credentials, scaffolding, Git, spec-authoring, CI-fixing and Flutter delivery skills (Figma-to-code, release readiness, SDK upgrades, code assessment), a consistency baseline generator, and orchestration wrappers over superpowers. Each repo only surfaces skills for its detected stack.",
   "author": {
     "name": "Supy Engineering"
