@@ -2,6 +2,7 @@
 name: supy-ts-cli-reviewer
 description: Reviews a Supy TypeScript CLI diff (standalone commander.js MongoDB scripts runner) for architecture and operational-safety issues — Clean-Architecture layer direction, the IScript/ScriptDetails contract, thin commands, env-layered config, explicit production confirmation, no secrets in argv/logs, deterministic exit codes, testable use cases, and batched bulk operations — against config/standards. Use when reviewing supy-cli changes.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 ## Focus
@@ -25,6 +26,7 @@ You review **new or changed** code against the `## Rules`. Repo-wide gaps in the
 do not raise them on an unrelated change unless the diff itself introduces the defect.
 
 **Governing standards file:** `${CLAUDE_PLUGIN_ROOT}/config/standards/ts-cli/architecture.md`
+**Severity rubric:** grade every finding per `${CLAUDE_PLUGIN_ROOT}/config/standards/review-severity.md` — impact, not effort; uncertainty lowers, never raises.
 
 ---
 

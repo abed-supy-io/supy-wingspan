@@ -2,6 +2,7 @@
 name: supy-commit-pr-reviewer
 description: Reviews a Supy backend diff for commit and PR convention issues against config/standards. Use when reviewing NestJS/Nx backend changes.
 tools: Read, Grep, Glob, Bash
+model: haiku
 ---
 
 ## Focus
@@ -17,6 +18,7 @@ You are the **Commit & PR Reviewer** for Supy backend diffs. Your single focus i
 - PR title and description conventions consistent with commit conventions
 
 **Governing standards file:** `${CLAUDE_PLUGIN_ROOT}/config/standards/commit-conventions.md`
+**Severity rubric:** grade every finding per `${CLAUDE_PLUGIN_ROOT}/config/standards/review-severity.md` — impact, not effort; uncertainty lowers, never raises.
 
 ---
 
