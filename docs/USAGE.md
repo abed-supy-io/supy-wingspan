@@ -127,7 +127,7 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 | `/supy-onboard [focus]` | Onboards or refreshes the repo's Supy AI setup. Wraps `supy-baseline` and adds a section-level `CLAUDE.md` drift check against the stack template; pass `drift only` to report without regenerating. |
 | `/supy-release [action]` | Reports the release-please state of this plugin repo — pending release PR, unreleased commits since the last tag, implied version bump, consumer impact. Read-only unless passed `ship`, which merges the release PR after confirmation. Degrades to a local-git-only report without `gh`. |
 
-**28 skills** (invoked in natural language — *not* slash commands; say e.g.
+**29 skills** (invoked in natural language — *not* slash commands; say e.g.
 "run the supy-commit skill"). The stack column mirrors
 `skills/shared/references/skill-routing.md` — the routing hook only surfaces a
 skill in repos of its stack:
@@ -373,7 +373,7 @@ supy-wingspan/
 │   ├── plugin.json         # name, version, description, keywords
 │   └── marketplace.json    # marketplace "supy" → this plugin
 ├── agents/                 # 11 review subagents (Markdown w/ frontmatter)
-├── skills/                 # 28 skills, one dir each w/ SKILL.md (+ skills/shared/)
+├── skills/                 # 29 skills, one dir each w/ SKILL.md (+ skills/shared/)
 ├── commands/               # 6 slash-command wrappers over skills/superpowers
 ├── hooks/
 │   ├── hooks.json          # wires the three hooks below to their events
