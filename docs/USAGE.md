@@ -98,7 +98,7 @@ That's the whole deployment. There is nothing to push, publish, or host — the
    has no `CLAUDE.md`, it also nudges you to run `supy-baseline`.
 
 2. **Commands are present.** Type `/` and confirm you see `/supy-brainstorm`,
-   `/supy-plan`, `/supy-build`, `/supy-review`.
+   `/supy-plan`, `/supy-build`, `/supy-review`, `/supy-onboard`.
 
 3. **Skills load.** Ask Claude to "run the supy-baseline skill" (or any skill) —
    it should resolve without a "skill not found" error.
@@ -109,7 +109,7 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 
 ## 4. What you get after install
 
-**4 slash commands** (typed directly with `/`):
+**5 slash commands** (typed directly with `/`):
 
 | Command | Purpose |
 |---|---|
@@ -117,6 +117,7 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 | `/supy-plan [feature]` | Design → phased implementation plan. Wraps `superpowers:writing-plans`; fallback writes a domain→application→infrastructure→testing task list to `docs/superpowers/plans/`. |
 | `/supy-build [plan]` | Plan → implementation, task by task. Wraps `superpowers:executing-plans` / `subagent-driven-development`; fallback runs the plan with **local-only** commits (never pushes). |
 | `/supy-review [base-ref]` | Reviews the current branch diff. Detects the stack and dispatches the matching review subagents in parallel, then consolidates a severity-grouped report. |
+| `/supy-onboard [focus]` | Onboards or refreshes the repo's Supy AI setup. Wraps `supy-baseline` and adds a section-level `CLAUDE.md` drift check against the stack template; pass `drift only` to report without regenerating. |
 
 **14 skills** (invoked in natural language — *not* slash commands; say e.g.
 "run the supy-commit skill"):
@@ -338,7 +339,7 @@ supy-wingspan/
 │   └── marketplace.json    # marketplace "supy" → this plugin
 ├── agents/                 # 11 review subagents (Markdown w/ frontmatter)
 ├── skills/                 # 14 skills, one dir each w/ SKILL.md
-├── commands/               # 4 slash-command wrappers over superpowers
+├── commands/               # 5 slash-command wrappers over skills/superpowers
 ├── hooks/
 │   ├── hooks.json          # SessionStart → detect-stack.sh
 │   └── detect-stack.sh     # stack detection (executable, 9-way ordered)
