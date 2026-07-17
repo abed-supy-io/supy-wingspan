@@ -19,6 +19,18 @@ while IFS= read -r f; do
 done < <(git diff --cached --name-only --diff-filter=ACMR -- '*.md')
 
 if [ "${#staged_md[@]}" -gt 0 ]; then
+  # markdownlint-cli2 and cspell need Node >= 20 (their string-width dep uses the
+  # regex /v flag). A GUI/IDE commit can put an older system Node on PATH than
+  # your interactive shell's — fail with a clear message, not a cryptic
+  # SyntaxError from deep inside node_modules.
+  node_major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
+  if [ "${node_major:-0}" -lt 20 ]; then
+    echo "pre-commit: Node $(node -v 2>/dev/null || echo '?') is too old for the markdown tooling (need >= 20)." >&2
+    echo "pre-commit: your shell may have a newer Node than this commit environment (e.g. via nvm)." >&2
+    echo "pre-commit: commit from a Node >= 20 shell, or bypass with --no-verify." >&2
+    exit 1
+  fi
+
   echo "pre-commit: markdownlint on ${#staged_md[@]} staged markdown file(s)"
   npx markdownlint-cli2 --config config/custom.markdownlint.jsonc "${staged_md[@]}" || {
     echo "pre-commit: markdownlint failed — fix or bypass with --no-verify"
