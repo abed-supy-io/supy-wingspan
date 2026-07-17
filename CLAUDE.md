@@ -39,7 +39,14 @@ snippet.
 
 ## Before committing
 
-Run the same checks CI runs:
+Enable the repo-local pre-commit hook once per clone — it runs markdownlint, cspell, and
+shellcheck on **staged files only**, mirroring CI:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Or run the full checks CI runs by hand:
 
 ```bash
 npx markdownlint-cli2 --config config/custom.markdownlint.jsonc "**/*.md" "!CHANGELOG.md"

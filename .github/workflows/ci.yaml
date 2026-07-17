@@ -47,7 +47,7 @@ jobs:
       - name: Shellcheck all shell scripts
         run: |
           shopt -s nullglob
-          shellcheck hooks/*.sh scripts/*.sh skills/*/scripts/*.sh
+          shellcheck hooks/*.sh scripts/*.sh skills/*/scripts/*.sh .githooks/*
 
   manifests:
     name: JSON manifests

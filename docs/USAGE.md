@@ -444,13 +444,20 @@ Mirror what backend/frontend/flutter already do:
 
 ### Validate after any change
 
-Run the same checks CI runs:
+Enable the repo-local pre-commit hook once per clone — it runs markdownlint,
+cspell, and shellcheck on staged files automatically:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Or run the same checks CI runs, in full:
 
 ```bash
 npx markdownlint-cli2 --config config/custom.markdownlint.jsonc "**/*.md" "!CHANGELOG.md"
 npx cspell --config config/cspell.json "**/*.md"
-shellcheck hooks/*.sh scripts/*.sh templates/*/hooks/* templates/*/scripts/*
-for v in scripts/validate-*.sh scripts/test-*.sh scripts/verify-*.sh; do "$v"; done
+shellcheck hooks/*.sh scripts/*.sh .githooks/* templates/*/hooks/* templates/*/scripts/*
+for v in scripts/validate-*.sh scripts/test-*.sh scripts/check-*.sh; do "$v"; done
 ```
 
 Expect: zero errors, `${CLAUDE_PLUGIN_ROOT}` throughout component bodies, no
