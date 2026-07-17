@@ -4,6 +4,8 @@
 #   - the frontmatter declares both `name:` and `description:`
 #   - the declared `name:` matches the filename (app-readiness agents may
 #     carry an `-agent` filename suffix that the declared name drops)
+#   - a `model:` key, when present, names a real tier (haiku|sonnet|opus|inherit) —
+#     a typo here silently falls back to the default model at dispatch time
 #   - top-level review agents contain an `Output Contract` section
 #
 # Run from the repo root:  bash scripts/validate-agents.sh
@@ -39,6 +41,15 @@ check_frontmatter() {
   declared="$(grep -E '^name:' <<<"$frontmatter" | head -n 1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]*$//')"
   if [ -n "$declared" ] && [ "$declared" != "$expected_name" ]; then
     err "$file declares name '$declared' but expected '$expected_name' from the filename"
+  fi
+
+  if grep -qE '^model:' <<<"$frontmatter"; then
+    local model
+    model="$(grep -E '^model:' <<<"$frontmatter" | head -n 1 | sed -E 's/^model:[[:space:]]*//; s/[[:space:]]*$//')"
+    case "$model" in
+      haiku|sonnet|opus|inherit) ;;
+      *) err "$file declares unknown model '$model' (expected haiku, sonnet, opus, or inherit)" ;;
+    esac
   fi
 }
 
