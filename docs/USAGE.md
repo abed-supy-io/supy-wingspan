@@ -10,9 +10,11 @@ best practices through AI.
   conventions and a secret scanner — that run on every repo; scaffolding & Git
   skills; a consistency-baseline generator; and thin orchestration wrappers over
   the `superpowers` plugin.
-- **Status:** local-only, `v0.1.0`. **Not published to any Git host.** It is
-  distributed as a **local Claude Code marketplace** — you point Claude Code at
-  this directory on disk.
+- **Status:** published on GitHub at `abed-supy-io/supy-wingspan`; releases are
+  automated with **release-please** (see [§11](#11-cutting-a-release)). The
+  current version lives in `.claude-plugin/plugin.json`. It is distributed as a
+  **Claude Code marketplace** — point Claude Code at the GitHub repo (or a local
+  clone while developing the plugin itself).
 
 > Prefer reading `docs/PILOT.md` alongside this file. PILOT.md is the validation
 > record and the live pilot checklist; this file is the how-to.
@@ -22,7 +24,7 @@ best practices through AI.
 ## Table of contents
 
 1. [Prerequisites](#1-prerequisites)
-2. [Install (deploy locally)](#2-install-deploy-locally)
+2. [Install](#2-install)
 3. [Verify the install](#3-verify-the-install)
 4. [What you get after install](#4-what-you-get-after-install)
 5. [Everyday usage](#5-everyday-usage)
@@ -31,7 +33,7 @@ best practices through AI.
 8. [Updating the plugin](#8-updating-the-plugin)
 9. [Uninstall](#9-uninstall)
 10. [Maintaining & extending the plugin](#10-maintaining--extending-the-plugin)
-11. [Cutting a release (local-only)](#11-cutting-a-release-local-only)
+11. [Cutting a release](#11-cutting-a-release)
 12. [Troubleshooting](#12-troubleshooting)
 
 ---
@@ -40,8 +42,9 @@ best practices through AI.
 
 - **Claude Code** (CLI, desktop, web, or an IDE extension) — any recent version
   that supports `/plugin` and local marketplaces.
-- The plugin lives at `~/Projects/supy-projects/supy-wingspan` on this machine.
-  Adjust the paths below if yours differs.
+- The plugin source is `github.com/abed-supy-io/supy-wingspan`. For plugin
+  development, a local clone (e.g. `~/Projects/supy-projects/supy-wingspan`)
+  works as a marketplace source too — adjust the paths below if yours differs.
 - **Optional but recommended:**
   - The **`superpowers`** plugin. `/supy-brainstorm`, `/supy-plan`, and
     `/supy-build` wrap it. If it's absent, each command degrades to a built-in
@@ -51,36 +54,40 @@ best practices through AI.
     they fall back to the repo's `CLAUDE.md` and the mined standards under
     `config/standards/`.
   - `git` — the review/commit/PR skills operate on a git diff.
-  - `gh` (GitHub CLI) — only `supy-create-pr` uses it, and only if you have a
-    remote. Not required for the local-only workflow.
+  - `gh` (GitHub CLI) — used by `supy-create-pr` and
+    `fix-failing-github-actions`; both degrade gracefully without it.
 
-No `npm install`, no build step. The plugin is plain Markdown + one shell hook.
+No `npm install`, no build step. The plugin is plain Markdown + a few shell hooks.
 
 ---
 
-## 2. Install (deploy locally)
+## 2. Install
 
 Open a Claude Code session **inside the repo you want to work in** (e.g.
 `supy-service-inventory`, or any `supy-*` repo), then run these two slash
 commands:
 
 ```text
-/plugin marketplace add ~/Projects/supy-projects/supy-wingspan
+/plugin marketplace add abed-supy-io/supy-wingspan
 /plugin install supy-wingspan@supy
 ```
 
 What each does:
 
-- `marketplace add <path>` registers this directory as a local marketplace named
-  **`supy`** (the name comes from `.claude-plugin/marketplace.json`). The `~`
-  form is portable across machines; a fully-qualified path
-  (`/Users/<you>/Projects/supy-projects/supy-wingspan`) also works.
-- `install supy-wingspan@supy` installs the plugin. The `@supy` suffix is the
-  marketplace name; `supy-wingspan` is the plugin name from
-  `.claude-plugin/plugin.json`.
+- `marketplace add abed-supy-io/supy-wingspan` clones the GitHub repo and
+  registers it as a marketplace named **`supy`** (the name comes from
+  `.claude-plugin/marketplace.json`).
+- `install supy-wingspan@supy` installs the plugin as a **pinned snapshot** of
+  the marketplace's current version. The `@supy` suffix is the marketplace name;
+  `supy-wingspan` is the plugin name from `.claude-plugin/plugin.json`.
 
-That's the whole deployment. There is nothing to push, publish, or host — the
-"deploy" is registering the local directory as a marketplace.
+**Developing the plugin itself?** Use a local clone as the marketplace source
+instead — changes are picked up on marketplace refresh without a release:
+
+```text
+/plugin marketplace add ~/Projects/supy-projects/supy-wingspan
+/plugin install supy-wingspan@supy
+```
 
 ---
 
@@ -98,7 +105,7 @@ That's the whole deployment. There is nothing to push, publish, or host — the
    has no `CLAUDE.md`, it also nudges you to run `supy-baseline`.
 
 2. **Commands are present.** Type `/` and confirm you see `/supy-brainstorm`,
-   `/supy-plan`, `/supy-build`, `/supy-review`.
+   `/supy-plan`, `/supy-build`, `/supy-review`, `/supy-onboard`.
 
 3. **Skills load.** Ask Claude to "run the supy-baseline skill" (or any skill) —
    it should resolve without a "skill not found" error.
@@ -109,7 +116,7 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 
 ## 4. What you get after install
 
-**4 slash commands** (typed directly with `/`):
+**6 slash commands** (typed directly with `/`):
 
 | Command | Purpose |
 |---|---|
@@ -117,9 +124,13 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 | `/supy-plan [feature]` | Design → phased implementation plan. Wraps `superpowers:writing-plans`; fallback writes a domain→application→infrastructure→testing task list to `docs/superpowers/plans/`. |
 | `/supy-build [plan]` | Plan → implementation, task by task. Wraps `superpowers:executing-plans` / `subagent-driven-development`; fallback runs the plan with **local-only** commits (never pushes). |
 | `/supy-review [base-ref]` | Reviews the current branch diff. Detects the stack and dispatches the matching review subagents in parallel, then consolidates a severity-grouped report. |
+| `/supy-onboard [focus]` | Onboards or refreshes the repo's Supy AI setup. Wraps `supy-baseline` and adds a section-level `CLAUDE.md` drift check against the stack template; pass `drift only` to report without regenerating. |
+| `/supy-release [action]` | Reports the release-please state of this plugin repo — pending release PR, unreleased commits since the last tag, implied version bump, consumer impact. Read-only unless passed `ship`, which merges the release PR after confirmation. Degrades to a local-git-only report without `gh`. |
 
-**14 skills** (invoked in natural language — *not* slash commands; say e.g.
-"run the supy-commit skill"):
+**28 skills** (invoked in natural language — *not* slash commands; say e.g.
+"run the supy-commit skill"). The stack column mirrors
+`skills/shared/references/skill-routing.md` — the routing hook only surfaces a
+skill in repos of its stack:
 
 | Skill | Stack | Purpose |
 |---|---|---|
@@ -127,13 +138,27 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 | `supy-baseline` | any | Generates/updates the repo's `CLAUDE.md` from the canonical template + repo inspection (+ Cortex). Shows a diff and asks before overwriting. |
 | `supy-commit` | any | Proposes a Conventional Commits message grounded in `config/standards/commit-conventions.md`, ending with the `Co-Authored-By` trailer. Confirmation-gated; commit-only, never pushes. |
 | `supy-create-pr` | any | Builds a conventional PR title + body. Pushes via `gh` when a remote is available; otherwise prints a ready-to-paste PR. |
-| `supy-scaffold-handler` | nestjs-nx | Scaffolds a NestJS NATS handler (RPC or JetStream event) with DTO + test stub. |
+| `supy-rebase` | any | Safely rebases the current branch onto its base — safety ref first, conflicts walked one commit at a time, no force-push without confirmation. |
+| `supy-hotfix` | any | Drives an urgent production fix end to end — minimal diff, conventional `fix` commit, review, fast-tracked PR. |
+| `supy-debrief` | any | Produces a structured handoff/retrospective for the branch from actual commits and diff. |
+| `fix-failing-github-actions` | any | Finds failing GitHub Actions checks, fixes the root cause, and loops until every check is green. |
+| `supy-impl-spec` | any | Turns a Jira ticket into a full implementation specification before code is written. |
+| `supy-spike-spec` | any | Turns a Jira ticket into a spike/research spec — questions, options, PoC scope — saved to `docs/specs/`. |
 | `supy-clean-architecture` | nestjs-nx | How-to for backend Clean/Hexagonal + DDD + CQRS. |
 | `supy-scaffold-domain` | nestjs-nx | Scaffolds a full DDD bounded context via the Plop `g:domain` generator. |
-| `supy-scaffold-feature` | angular-nx | Scaffolds a complete Angular NGXS feature library via the Plop generator. |
+| `supy-scaffold-handler` | nestjs-nx | Scaffolds a NestJS NATS handler (RPC or JetStream event) with DTO + test stub. |
 | `supy-angular-feature` | angular-nx | How-to for writing Angular the Supy way (OnPush, `inject()`, NGXS, `--p-*`). |
-| `supy-scaffold-flutter-feature` | flutter | Scaffolds a Clean-Architecture feature from bundled `.hbs` stubs (domain + data + presentation + tests). |
+| `supy-scaffold-feature` | angular-nx | Scaffolds a complete Angular NGXS feature library via the Plop generator. |
+| `supy-figma-to-tickets` | angular-nx, flutter | Turns a Figma file's screens and flows into dependency-ordered GitHub/Jira tickets deep-linked to Dev Mode nodes. |
 | `supy-flutter-feature` | flutter | How-to for writing Flutter the Supy way (Clean Arch, BLoC, go_router, get_it, dio, dartz). |
+| `supy-scaffold-flutter-feature` | flutter | Scaffolds a Clean-Architecture feature from bundled `.hbs` stubs (domain + data + presentation + tests). |
+| `supy-figma-implement-design` | flutter | Translates a Figma design into a production Flutter widget with 1:1 fidelity, mapped onto the theme and validated with golden tests. |
+| `supy-e2e-tests` | flutter | Writes, runs, and debugs supy-retailer `integration_test` e2e tests against the live dev backend. |
+| `supy-app-release-readiness` | flutter | Audits a Flutter app for release readiness across all detected platforms and synthesizes a release todo list. |
+| `supy-flutter-upgrade` | flutter | Bumps Flutter/Dart SDK versions across every `pubspec.yaml`, `.fvmrc`, and workflow, then runs pub get/format/analyze/fix. |
+| `supy-code-assessment` | flutter | Whole-project audit of a Flutter codebase against Supy standards; writes `CODE_ASSESSMENT.md`. |
+| `supy-analyze-native-codebase` | flutter | Analyzes an iOS/Android native codebase and generates a Flutter migration manifest, PRD, and risk register. |
+| `supy-interview-feedback` | flutter | Grades a candidate's Flutter take-home against Supy standards; writes a scored `INTERVIEW_FEEDBACK.md`. |
 | `supy-firebase-function` | firebase-functions | How-to for the standalone supy-firebase-functions repo — Clean Architecture (index → interactors → repositories → frameworks), Awilix DI, runtime-enforced auth markers, typed domain errors, idempotent Firestore triggers, secrets from Secret Manager. |
 | `supy-ts-cli` | ts-cli | How-to for the standalone supy-cli repo — Clean Architecture, commander.js `scripts [run\|list\|info]`, the `IScript`/`ScriptDetails` contract, env-layered config, explicit prod confirmation, no secrets in argv/logs, deterministic exit codes, batched bulk MongoDB ops. |
 | `supy-ai-agents` | ai-agents | Write/change code in the polyglot supy-ai-agents monorepo (Node + Python + Cloudflare Workers, MCP tools, BullMQ, pgvector KG) — secret hygiene, auth on exposed tools, env-driven config, validation + error handling, idempotent consumers, non-root containers. |
@@ -155,8 +180,14 @@ separation). The rest are stack-specific:
 - K8s config (`k8s-config`) → 2: secrets + commit/PR.
 - Any other stack → 2: commit/PR + secrets.
 
-**SessionStart hook:** `hooks/detect-stack.sh` prints the detected-stack line and
-never fails the session.
+**3 hooks** (wired in `hooks/hooks.json`; none can fail a session):
+
+- **SessionStart** → `detect-stack.sh` prints the detected-stack line (and a
+  `supy-baseline` nudge when `CLAUDE.md` is missing).
+- **UserPromptSubmit** → `skill-router.sh` suggests the matching `supy-*` skill
+  for the prompt, scoped to the detected stack.
+- **PostToolUse (Edit|Write)** → `dart-lint-format.sh` formats/analyzes touched
+  Dart files in Flutter repos.
 
 ---
 
@@ -199,7 +230,7 @@ overwriting** an existing `CLAUDE.md` — it never clobbers silently.
 - `supy-commit` writes a Conventional Commits message ending with:
 
   ```text
-  Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+  Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
   ```
 
   It is **commit-only** and never pushes.
@@ -259,7 +290,7 @@ In the target repo, add (or merge) a `.claude/settings.json`:
 {
   "plugins": {
     "marketplaces": {
-      "supy": "~/Projects/supy-projects/supy-wingspan"
+      "supy": "abed-supy-io/supy-wingspan"
     },
     "installed": ["supy-wingspan@supy"]
   }
@@ -278,39 +309,44 @@ automatically on session open.
 Put the same `plugins` block in your user-level `~/.claude/settings.json` instead
 of a repo file.
 
-### Important: the path must exist on each machine
+### GitHub source vs. local clone
 
-Because this is a **local** marketplace, every teammate must have the
-`supy-wingspan` directory at the path you reference. Two options:
-
-1. Everyone clones `supy-wingspan` to the **same relative-to-home path**
-   (`~/Projects/supy-projects/supy-wingspan`) and you use the `~` form above.
-2. Keep it in a shared location and standardize that path in settings.
-
-There is **no remote marketplace** — that's the local-only constraint. If Supy
-later adopts a Git host, publishing becomes: push this repo, then teammates
-`marketplace add <git-url>` instead of a local path. Nothing else changes.
+Because the marketplace source is the GitHub repo, teammates need read access to
+`abed-supy-io/supy-wingspan` — nothing has to exist at a particular path on
+their machine. Reserve local-path marketplaces (`~/Projects/...`) for developing
+the plugin itself; don't commit a machine-specific path into a shared
+`.claude/settings.json`.
 
 ---
 
 ## 8. Updating the plugin
 
-Since the source is a local directory, "updating" is just changing the files and
-refreshing Claude Code's view of the marketplace:
+An install is a **pinned snapshot** — pushing commits to GitHub does *not*
+change what anyone already has installed. Updates are keyed on the `version` in
+`.claude-plugin/plugin.json`, which only release-please bumps. The full path of
+a change to a teammate's machine:
 
-1. Edit the plugin files (or `git pull` if you keep it under version control).
-2. In a session, refresh the marketplace:
+1. A `feat:`/`fix:` PR merges to `main`.
+2. The rolling **release PR** (opened by release-please) is merged — this tags
+   the release and bumps `version` in `.claude-plugin/plugin.json`.
+3. On each machine, the marketplace refreshes — either automatically (Claude
+   Code refreshes marketplaces periodically) or on demand:
 
    ```text
    /plugin marketplace update supy
    ```
 
-   (or remove & re-add: `/plugin marketplace remove supy` then
-   `/plugin marketplace add ~/Projects/supy-projects/supy-wingspan`).
-3. Start a new session so the SessionStart hook and reloaded components take
-   effect.
+   Seeing a newer version than the installed one, Claude Code updates the
+   plugin.
+4. Already-open sessions keep the old snapshot — start a new session (or run
+   `/reload-plugins`) to pick up the new components.
 
-Bump `version` in `.claude-plugin/plugin.json` when you ship a meaningful change.
+So: **no release-PR merge, no update** — merging a feature PR alone leaves every
+install where it was.
+
+> Housekeeping: old snapshots accumulate under
+> `~/.claude/plugins/cache/supy/supy-wingspan/<version>/`; it's safe to delete
+> versions you're no longer on.
 
 ---
 
@@ -337,11 +373,14 @@ supy-wingspan/
 │   ├── plugin.json         # name, version, description, keywords
 │   └── marketplace.json    # marketplace "supy" → this plugin
 ├── agents/                 # 11 review subagents (Markdown w/ frontmatter)
-├── skills/                 # 14 skills, one dir each w/ SKILL.md
-├── commands/               # 4 slash-command wrappers over superpowers
+├── skills/                 # 28 skills, one dir each w/ SKILL.md (+ skills/shared/)
+├── commands/               # 6 slash-command wrappers over skills/superpowers
 ├── hooks/
-│   ├── hooks.json          # SessionStart → detect-stack.sh
-│   └── detect-stack.sh     # stack detection (executable, 9-way ordered)
+│   ├── hooks.json          # wires the three hooks below to their events
+│   ├── detect-stack.sh     # SessionStart: stack detection (9-way ordered)
+│   ├── skill-router.sh     # UserPromptSubmit: stack-scoped skill suggestions
+│   └── dart-lint-format.sh # PostToolUse: format/analyze touched Dart files
+├── scripts/                # repo validators (xrefs, manifests, skills, agents…) — CI runs these
 ├── config/standards/       # mined Supy standards (source of truth for agents)
 │   ├── *.md                # cross-cutting: commit-conventions, secrets-and-config,
 │   │                       #   ci-coverage-baseline + backend (root)
@@ -362,6 +401,7 @@ supy-wingspan/
 │   └── k8s-config/         # CLAUDE.md.hbs + .pre-commit-config.yaml (gitleaks)
 ├── docs/
 │   ├── PILOT.md            # validation record + live pilot checklist
+│   ├── pilots/             # pilot runbook, results template, triage protocol
 │   └── USAGE.md            # this file
 └── README.md
 ```
@@ -376,10 +416,10 @@ supy-wingspan/
 - **Keep counts in sync.** README, `plugin.json`, `config/standards/README.md`,
   `docs/PILOT.md`, and this file (`docs/USAGE.md`) all state agent/skill counts.
   Update them together.
-- **Commit convention:** Conventional Commits, `feat:` for features. Every commit
+- **Commit convention:** Conventional Commits, `feat:` for features — release-please
+  generates releases and the changelog from history, so types matter. Every commit
   ends with the trailer
-  `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
-  **Local-only: commit, never push.**
+  `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
 
 ### Adding a new stack (the established pattern)
 
@@ -396,32 +436,46 @@ Mirror what backend/frontend/flutter already do:
 
 ### Validate after any change
 
-Run the `plugin-dev:plugin-validator` agent against the tree, and shellcheck the
-hook:
+Enable the repo-local pre-commit hook once per clone — it runs markdownlint,
+cspell, and shellcheck on staged files automatically:
 
 ```bash
-shellcheck hooks/detect-stack.sh
+git config core.hooksPath .githooks
 ```
 
-Expect: VALID, zero critical errors, `${CLAUDE_PLUGIN_ROOT}` throughout, no empty
-template stubs.
+Or run the same checks CI runs, in full:
+
+```bash
+npx markdownlint-cli2 --config config/custom.markdownlint.jsonc "**/*.md" "!CHANGELOG.md"
+npx cspell --config config/cspell.json "**/*.md"
+shellcheck hooks/*.sh scripts/*.sh .githooks/* templates/*/hooks/* templates/*/scripts/*
+for v in scripts/validate-*.sh scripts/test-*.sh scripts/check-*.sh; do "$v"; done
+```
+
+Expect: zero errors, `${CLAUDE_PLUGIN_ROOT}` throughout component bodies, no
+empty template stubs. The `plugin-dev:plugin-validator` agent is a good final
+sweep before a release.
 
 ---
 
-## 11. Cutting a release (local-only)
+## 11. Cutting a release
 
-There is no remote, so a "release" is a validated local commit:
+Releases are fully automated by **release-please**
+(`.github/workflows/release-please.yaml`); nobody bumps a version by hand:
 
-1. Bump `version` in `.claude-plugin/plugin.json`.
-2. Update counts/docs (README, PILOT, standards README) if components changed.
-3. Validate (plugin-validator + shellcheck).
-4. Commit with a `feat:`/`fix:`/`chore:` message and the required trailer.
-   **Do not push.**
-5. Teammates pick it up by `git pull` (if shared) + `/plugin marketplace update supy`.
+1. Land changes on `main` via PRs with Conventional Commit titles
+   (`feat:`/`fix:`/`docs:`/`chore:`).
+2. release-please keeps a rolling **release PR** open, accumulating the pending
+   changelog. Merging a `feat:` bumps the minor version, a `fix:` the patch
+   (pre-1.0 `bump-minor-pre-major` rules).
+3. When you want to ship, **merge the release PR**. That tags the release
+   (`vX.Y.Z`), updates `CHANGELOG.md`, and syncs `version` in
+   `.claude-plugin/plugin.json` (via the config's `extra-files` entry).
+4. Installs pick the new version up per [§8](#8-updating-the-plugin).
 
-If/when Supy adopts a Git host: push the repo, switch the marketplace source in
-teammates' settings from a local path to the Git URL, and tag the release. The
-plugin contents don't change.
+Manual steps that remain yours: keep component counts in docs in sync when
+components change, and make sure CI is green before merging (it blocks the PR
+anyway).
 
 ---
 
@@ -435,8 +489,8 @@ plugin contents don't change.
 | `/supy-review` says "No changes to review" | Empty diff vs. the base ref | Make/stage a change, or pass an explicit base ref |
 | Brainstorm/plan/build behave differently than the docs | `superpowers` plugin absent | Expected — you're on the built-in fallback path. Install `superpowers` for the full flow. |
 | Review agents seem to ignore live architecture | Cortex MCP not connected | Expected — agents fall back to `CLAUDE.md` + `config/standards/`. Connect Cortex for live data. |
-| `supy-create-pr` won't push | No git remote / no `gh` | Expected under local-only; it prints a paste-ready PR instead |
-| Marketplace path not found on a teammate's machine | Local path differs per machine | Standardize the clone path, or use the `~`-relative form (see §7) |
+| `supy-create-pr` won't push | No git remote / no `gh` | Expected — it prints a paste-ready PR instead |
+| Installed plugin is behind what's on GitHub | Installs are pinned snapshots; only a release-PR merge bumps the version | Merge the pending release PR, then `/plugin marketplace update supy` and start a new session (see §8) |
 
 ---
 

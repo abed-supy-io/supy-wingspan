@@ -2,6 +2,7 @@
 name: supy-firebase-functions-reviewer
 description: Reviews a Supy Firebase Functions diff (standalone Node/TypeScript serverless backend) for architecture issues — clean-architecture layer direction, Awilix DI, runtime-enforced auth decorators, typed domain errors, hardcoded secrets, and Firestore-trigger idempotency — against config/standards. Use when reviewing supy-firebase-functions changes.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 ## Focus
@@ -25,6 +26,7 @@ You review **new or changed** code against the `## Rules`. Repo-wide migrations 
 do not raise them on an unrelated change unless the diff itself introduces the defect.
 
 **Governing standards file:** `${CLAUDE_PLUGIN_ROOT}/config/standards/firebase-functions/architecture.md`
+**Severity rubric:** grade every finding per `${CLAUDE_PLUGIN_ROOT}/config/standards/review-severity.md` — impact, not effort; uncertainty lowers, never raises.
 
 ---
 

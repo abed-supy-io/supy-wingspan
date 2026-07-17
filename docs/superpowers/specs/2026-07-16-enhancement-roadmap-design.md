@@ -28,14 +28,19 @@ agent/token budget per operation**.
 
 ## 3. Binding constraints (carried from the project)
 
-1. **LOCAL-ONLY.** There is no Git host. Every phase commits locally and
-   **NEVER pushes**. No CI service, no PR platform, no remote hooks.
+1. **Git host reality.** This plugin repo lives on GitHub: changes land via
+   PRs to `main`, CI (markdownlint, cspell, skill/agent/xref validation,
+   shellcheck) gates merges, and release-please cuts releases. **Pilot repos
+   are different:** pilot scratch branches in target repos are throwaway and
+   are **never pushed** — the pilot exercise stays local to the operator's
+   machine.
 2. **Secrets.** NEVER reproduce a secret value in any file, diff, commit
    message, or review finding. Cite `path:line` only. (Reinforces the org
    security rule and the plugin's own `supy-secrets-reviewer`.)
 3. **Conventional Commits.** `feat:` / `docs:` / `fix:` (use `fix()`, never
-   `bug()`). Every commit ends with the trailer
-   `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
+   `bug()`). Commits authored with Claude end with the standard
+   `Co-Authored-By: Claude <model> <noreply@anthropic.com>` trailer for the
+   model that produced them.
 4. **Component bodies** use `${CLAUDE_PLUGIN_ROOT}`, never hardcoded absolute
    paths. Absolute paths are allowed only in human-facing docs.
 5. **Human-in-the-loop for live pilots.** E1 pilots require a human to run
@@ -152,13 +157,15 @@ doc-writing plus small, targeted asset edits — no large fan-out.
 - **More mined rules:** re-mine divergences the E1 pilots surfaced; add them to
   the relevant `config/standards/` file + reviewer coverage.
 
-**Enforcement — LOCAL HOOKS ONLY (per the user's explicit choice):**
+**Enforcement — local hooks first (per the user's explicit choice):**
 
 - `pre-commit` config + local git hooks that run offline: secret-scan,
   commit-message lint (Conventional Commits + trailer), and the coverage-bar
   check from `ci-coverage-baseline.md`.
-- **NO CI service, NO Git-host hooks, NO remote anything.** Everything runs on
-  the developer's machine before the local commit lands.
+- Local hooks are the enforcement layer shipped to **target repos** — they
+  run on the developer's machine before a commit lands, with no dependence
+  on any CI service. (This plugin repo itself is separately gated by its own
+  GitHub CI; see §3.1.)
 - Templates land under `templates/<stack>/` (extending the existing per-stack
   CI/pre-commit/secret-scan baselines).
 
@@ -205,7 +212,8 @@ pilot (per E1's pattern) run on the first real repo of that stack.
 
 ## 10. Decisions locked in
 
-- **Automation = local hooks only** (no CI, no Git host).
+- **Enforcement shipped to target repos = local hooks** (offline, no CI
+  dependence). The plugin repo itself remains CI-gated on GitHub.
 - **Pilot repos = one per stack, maintainer-picked** (table in §6), plus a
   recommended second flutter pilot for Profile A.
 - **Phase order = E1 → E2 → E3 → E4** (prove before deepen before extend before
@@ -215,7 +223,8 @@ pilot (per E1's pattern) run on the first real repo of that stack.
 
 ## 11. Out of scope (YAGNI)
 
-- Anything requiring a Git host, CI service, or network deployment.
+- Enforcement in target repos that depends on a CI service or Git-host hooks
+  (local pre-commit hooks are the chosen mechanism).
 - Speculative new stacks with no live repo (deferred to E4-on-demand).
 - Reproducing or handling secret *values* anywhere — only `path:line` citations.
 

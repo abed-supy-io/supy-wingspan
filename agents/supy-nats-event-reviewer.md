@@ -2,6 +2,7 @@
 name: supy-nats-event-reviewer
 description: Reviews a Supy backend diff for NATS event pattern issues (subject naming, exception filters, payload validation, business-logic isolation, context-map routing, domain-event emission, consumer idempotency) against config/standards. Use when reviewing NestJS/Nx backend changes.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 ## Focus
@@ -19,6 +20,7 @@ You are the **NATS Event Reviewer** for Supy backend diffs. Your single focus is
 - Consumer idempotency — handlers on redeliverable input must reconcile, not blindly insert (rule 13)
 
 **Governing standards file:** `${CLAUDE_PLUGIN_ROOT}/config/standards/nats-event-patterns.md`
+**Severity rubric:** grade every finding per `${CLAUDE_PLUGIN_ROOT}/config/standards/review-severity.md` — impact, not effort; uncertainty lowers, never raises.
 
 ---
 

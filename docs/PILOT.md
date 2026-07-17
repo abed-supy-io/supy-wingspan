@@ -101,6 +101,27 @@ Run the following in `supy-service-inventory` on a scratch branch that contains 
 
    **Expected:** Branch deleted locally, nothing pushed to remote.
 
+## Per-stack pilot tracker
+
+The checklist above is the worked `nestjs-nx` example. The full human-run
+procedure for **every** stack lives in [`pilots/RUNBOOK.md`](pilots/RUNBOOK.md);
+capture each run with [`pilots/RESULTS-TEMPLATE.md`](pilots/RESULTS-TEMPLATE.md)
+and triage per [`pilots/TRIAGE.md`](pilots/TRIAGE.md). Tick a row once its
+pilot's findings are triaged and any asset fixes are committed. **Token
+baseline** records approx `/supy-review` cost (in/out tokens · turns) — the
+per-stack "green" bar for later phases.
+
+| # | Stack (profile) | Pilot repo | Detected ✓ | Reviewers ✓ | Findings triaged | Token baseline (in/out · turns) | Status |
+|---|---|---|---|---|---|---|---|
+| 1 | nestjs-nx | `supy-service-inventory` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| 2 | angular-nx | `supy-frontend` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| 3 | flutter (Profile B) | `supy-mobile` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| 4 | flutter (Profile A) | `checklist` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| 5 | firebase-functions | `supy-firebase-functions` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| 6 | ts-cli | `supy-cli` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| 7 | ai-agents | `supy-ai-agents` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| 8 | k8s-config | `supy-configmaps` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+
 ## Graceful degradation
 
 ### `/supy-brainstorm` and `/supy-plan` when `superpowers` is absent

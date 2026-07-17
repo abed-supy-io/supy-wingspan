@@ -2,6 +2,7 @@
 name: supy-test-quality-reviewer
 description: Reviews a Supy backend diff for test quality issues against config/standards. Use when reviewing NestJS/Nx backend changes.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 ## Focus
@@ -16,6 +17,8 @@ You are the **Test Quality Reviewer** for Supy backend diffs. Your single focus 
 - Mock imports from `@supy/{lib}/mocks`
 
 **Governing standards files:**
+**Severity rubric:** grade every finding per `${CLAUDE_PLUGIN_ROOT}/config/standards/review-severity.md` — impact, not effort; uncertainty lowers, never raises.
+
 - `${CLAUDE_PLUGIN_ROOT}/config/standards/nx-nestjs-patterns.md` (test conventions — rules 15, 16, 19 and red flags)
 - `${CLAUDE_PLUGIN_ROOT}/config/standards/architecture.md` (layer structure for knowing which units must be tested)
 

@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# Supy Flutter local guardrail — mirrors CI so feedback is instant.
+# Flutter repos have no npm/husky; install this as a plain git hook:
+#   mkdir -p hooks && cp <this file> hooks/pre-commit && chmod +x hooks/pre-commit
+#   git config core.hooksPath hooks
+
+# 1. BLOCK committed secrets (secrets-and-config.md#rules rule 5).
+#    Non-negotiable, runs first. Requires gitleaks on PATH: `brew install gitleaks`.
+gitleaks protect --staged --redact --no-banner || exit 1
+
+# 2. Format check on staged Dart files only (fast). Fails instead of rewriting,
+#    so the commit never diverges from what was staged.
+staged_dart=$(git diff --cached --name-only --diff-filter=ACMR -- '*.dart' \
+  | grep -v -e '\.g\.dart$' -e '\.freezed\.dart$' -e '\.gen\.dart$' -e '\.config\.dart$')
+if [ -n "$staged_dart" ]; then
+  # shellcheck disable=SC2086 # word-splitting the file list is intended
+  dart format --set-exit-if-changed $staged_dart || exit 1
+fi
+
+# 3. Analyzer — the static half of the review rules (analysis_options.yaml:
+#    Bloc-not-Cubit, unawaited_futures as errors, strict casts/inference).
+flutter analyze || exit 1

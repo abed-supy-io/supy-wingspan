@@ -2,6 +2,7 @@
 name: supy-secrets-reviewer
 description: Reviews any Supy diff for committed secrets and config/secret separation against config/standards/secrets-and-config.md. Stack-agnostic — runs on every stack. Use whenever reviewing changes that touch config, manifests, .env, CI YAML, or source that might embed credentials.
 tools: Read, Grep, Glob, Bash
+model: haiku
 ---
 
 ## Focus
@@ -18,6 +19,7 @@ credential. Your single focus is:
 - Hardcoded secret fallbacks in application code; secrets in logs/errors/URLs
 
 **Governing standards file:** `${CLAUDE_PLUGIN_ROOT}/config/standards/secrets-and-config.md`
+**Severity rubric:** grade every finding per `${CLAUDE_PLUGIN_ROOT}/config/standards/review-severity.md` — impact, not effort; uncertainty lowers, never raises.
 
 > **Never reproduce a secret value.** Report the **file path and line only**. Do not echo the
 > secret into your findings, and never paste a secret into any external tool. This enforces the

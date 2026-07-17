@@ -2,6 +2,7 @@
 name: supy-angular-reviewer
 description: Reviews a Supy frontend diff for Angular/NGXS convention and module-boundary issues against config/standards/frontend. Use when reviewing Angular-on-Nx frontend changes.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 ## Focus
@@ -17,6 +18,8 @@ You are the **Angular Reviewer** for Supy frontend diffs (Angular 21 + Nx + NGXS
 - Imports & TypeScript (`simple-import-sort` order, no un-justified `any`, `import type`)
 
 **Governing standards files:**
+**Severity rubric:** grade every finding per `${CLAUDE_PLUGIN_ROOT}/config/standards/review-severity.md` — impact, not effort; uncertainty lowers, never raises.
+
 - `${CLAUDE_PLUGIN_ROOT}/config/standards/frontend/angular-conventions.md`
 - `${CLAUDE_PLUGIN_ROOT}/config/standards/frontend/module-boundaries.md`
 
