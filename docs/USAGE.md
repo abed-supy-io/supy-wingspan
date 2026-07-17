@@ -18,10 +18,6 @@ best practices through AI.
 
 > Prefer reading `docs/PILOT.md` alongside this file. PILOT.md is the validation
 > record and the live pilot checklist; this file is the how-to.
->
-> **Want copy-paste recipes per repo?** See [docs/EXAMPLES.md](./EXAMPLES.md) — a
-> cookbook of *"I'm in this repo, I want to do X → type this"* examples for every
-> stack. Start there if the plugin feels abstract.
 
 ---
 
@@ -196,9 +192,6 @@ separation). The rest are stack-specific:
 ---
 
 ## 5. Everyday usage
-
-> For concrete, per-repo *"I want to X → type this"* recipes, jump to
-> [docs/EXAMPLES.md](./EXAMPLES.md). The rest of this section is the quick tour.
 
 ### The core loop
 
@@ -409,7 +402,6 @@ supy-wingspan/
 ├── docs/
 │   ├── PILOT.md            # validation record + live pilot checklist
 │   ├── pilots/             # pilot runbook, results template, triage protocol
-│   ├── EXAMPLES.md         # per-repo copy-paste usage recipes
 │   └── USAGE.md            # this file
 └── README.md
 ```
