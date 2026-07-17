@@ -47,7 +47,7 @@ procedure, the pilot exercise checklist, and known gaps.
 
 ## Usage
 
-The plugin exposes **4 slash commands** and **28 skills**. Commands are typed
+The plugin exposes **5 slash commands** and **28 skills**. Commands are typed
 directly (`/name`); skills are invoked in natural language ("run the supy-commit
 skill") — they are not slash commands.
 
@@ -64,6 +64,7 @@ writes only the Universal + this-repo's-stack skills into each repo's `CLAUDE.md
 | `/supy-brainstorm [idea]` | Turns a rough idea into a design, wrapping `superpowers:brainstorming` with Supy stack context. Falls back to a built-in one-question-at-a-time clarification (purpose → constraints → success criteria) when `superpowers` is absent. |
 | `/supy-plan [feature]` | Produces a phased implementation plan from a feature/task description, wrapping `superpowers:writing-plans`. Fallback writes a domain → application → infrastructure → testing task list to `docs/superpowers/plans/`. |
 | `/supy-build [plan]` | Executes a plan task-by-task, wrapping `superpowers:executing-plans` / `subagent-driven-development`. Fallback runs the plan with **local-only** commits (never pushes). |
+| `/supy-onboard [focus]` | Onboards or refreshes a repo's Supy AI setup — a thin wrapper over the `supy-baseline` skill, plus a section-level CLAUDE.md drift check against the stack's template. Reports drift before offering regeneration. |
 | `/supy-review [base-ref]` | Reviews the current branch diff. Detects the repo stack and dispatches the matching review subagents in parallel, then consolidates their findings into one severity-grouped report. Dispatch by stack: `nestjs-nx` → 6 (architecture, NATS events, test quality, commit/PR, security, secrets); `angular-nx` → 3 (Angular/NGXS, commit/PR, secrets); `flutter` → 3 (Flutter/Clean-Arch, commit/PR, secrets); `firebase-functions` → 3 (Firebase Functions/Clean-Arch, commit/PR, secrets); `ts-cli` → 3 (CLI/Clean-Arch + operational-safety, commit/PR, secrets); `ai-agents` → 3 (AI-agents architecture + operational-safety, commit/PR, secrets); `k8s-config` → 2 (secrets, commit/PR); any other stack → 2 (commit/PR, secrets). The commit/PR and secrets reviewers are stack-agnostic and run on every stack. Optional arg overrides the diff base (defaults to the merge-base with `origin/main`/`main`, then `HEAD~1`). |
 
 ### Skills
