@@ -110,6 +110,14 @@ jobs:
       - name: Run detect-stack fixture tests
         run: bash scripts/test-detect-stack.sh
 
+  skill-router:
+    name: Skill router tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run skill-router fixture tests
+        run: bash scripts/test-skill-router.sh
+
   links:
     name: Markdown links
     runs-on: ubuntu-latest
