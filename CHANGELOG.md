@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.1.3](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.2...supy-wingspan-v0.1.3) (2026-07-17)
+
+
+### Features
+
+* add /supy-onboard command with CLAUDE.md drift check ([f0d77bf](https://github.com/abed-supy-io/supy-wingspan/commit/f0d77bf539b2e9ccf784018a59b65dc64accbe4c))
+* add /supy-release command for release-please status ([41acf3e](https://github.com/abed-supy-io/supy-wingspan/commit/41acf3e8a62deba49e18952ae43db6c83d6160bc))
+* add examples documentation and supy-kg skill configuration ([21db562](https://github.com/abed-supy-io/supy-wingspan/commit/21db562b381528be10b211ae039d189fb9278608))
+* add severity rubric, reviewer model tiering, flutter pre-commit gate ([4433620](https://github.com/abed-supy-io/supy-wingspan/commit/44336204b9fab5bac47af24519da787800820ac8))
+* enhancement batch — CI gates, skill-router tests, /supy-release, pre-commit hook, docs refresh ([5825c8a](https://github.com/abed-supy-io/supy-wingspan/commit/5825c8af1efbb69c0d4beb52a2189d751e6d6320))
+* enhancement batch — CI gates, skill-router tests, /supy-release, pre-commit hook, docs refresh ([#12](https://github.com/abed-supy-io/supy-wingspan/issues/12)) ([5825c8a](https://github.com/abed-supy-io/supy-wingspan/commit/5825c8af1efbb69c0d4beb52a2189d751e6d6320))
+
+
+### Bug Fixes
+
+* **docs:** count supy-kg — 29 skills ([8df4d32](https://github.com/abed-supy-io/supy-wingspan/commit/8df4d32a28139d9cb1488cf1f8a8f854811c1ff4))
+* **docs:** drop dangling EXAMPLES.md links until the file lands ([d316b56](https://github.com/abed-supy-io/supy-wingspan/commit/d316b561ec644f555ad7a2ae7c5d82b633eb1a68))
+
+
+### Documentation
+
+* add E1 pilot results-capture template ([4192c30](https://github.com/abed-supy-io/supy-wingspan/commit/4192c30aa2f77313f2fb7391b311205ccdea770a))
+* add E1 pilot verifier + per-stack runbook ([5e0b6e7](https://github.com/abed-supy-io/supy-wingspan/commit/5e0b6e731c140562aab1a11a2a03fb78affe5ffb))
+* add per-stack pilot tracker to PILOT.md ([88d92d8](https://github.com/abed-supy-io/supy-wingspan/commit/88d92d85a669f32b7c0dd4c6a2b130e3ea8ad4e6))
+* add pilot triage protocol + finalize E1 verifier ([9c3692b](https://github.com/abed-supy-io/supy-wingspan/commit/9c3692bd307b741c92622a464c3254ba0cba817d))
+* reconcile roadmap spec with the repo's actual GitHub workflow ([74cd0f7](https://github.com/abed-supy-io/supy-wingspan/commit/74cd0f7b3912f28213a934be8248750824f26345))
+* refresh USAGE for GitHub distribution and current inventory ([567041d](https://github.com/abed-supy-io/supy-wingspan/commit/567041d6e9c92ae9013d40194a07817dffbd3b34))
+
 ## [0.1.2](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.1...supy-wingspan-v0.1.2) (2026-07-16)
 
 
