@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.7](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.6...supy-wingspan-v0.1.7) (2026-07-21)
+
+
+### Features
+
+* **flutter:** correct cross-feature Api rule; add design-token + reuse rules ([73af66b](https://github.com/abed-supy-io/supy-wingspan/commit/73af66b05c5aa6909152260347ac5564ee9ef49e))
+* **flutter:** cross-feature calls go through the owning feature's Api (+ design-system rules) ([dea9a67](https://github.com/abed-supy-io/supy-wingspan/commit/dea9a67d2bae2947716568f4c836abd63ca70051))
+* **flutter:** cross-feature endpoints go through the owning API class ([414bf3e](https://github.com/abed-supy-io/supy-wingspan/commit/414bf3ecc4d8cc944daeacf1b5419539c0694158))
+
 ## [0.1.6](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.5...supy-wingspan-v0.1.6) (2026-07-21)
 
 
