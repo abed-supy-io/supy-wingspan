@@ -65,7 +65,7 @@ Rules 10–12 have a **Profile A** variant (`dartz`/`Either`) and a **Profile B*
 
 18. **Colors come from the design system, never literals.** Use `context.supyColors` (primitives) / `context.colors` (semantic `ColorTokens`). Never `Color(0xFF…)` and never `Colors.*`.
 19. **Spacing and radius come from tokens.** Use the spacing scale (`xxs`=2 … `lg`=14 … `giant`=56) and `SupyRadius` — never raw numeric `EdgeInsets`/`SizedBox` values, and never `EdgeInsets.fromLTRB(...)`.
-20. **Typography comes from the theme.** Use `context.textTheme` / `SupyTypography` — never construct a `TextStyle(...)` inline.
+20. **Typography comes from the theme.** Use `context.textTheme` / `SupyTypography` — never construct a `TextStyle(...)` inline. Two corollaries: (a) when a needed color, spacing, radius, or typography value has no token, add the token to the design system and use it — never hardcode a literal as a workaround; (b) when the same widget/UI is duplicated across features, extract it into a reusable component in the shared design system (`packages/design` / `shared/presentation/design_system/`) and reuse it — never copy-paste the widget.
 
 ### Testing
 
@@ -296,6 +296,8 @@ These are auto-reject in review — each maps to the fix on its right:
 - Hand-edited `*.g.dart` / `*.freezed.dart` → regenerate with `dart run build_runner build --delete-conflicting-outputs`.
 - `Color(0xFF…)` / `Colors.*` → `context.supyColors` / `context.colors`.
 - Raw numeric spacing, `EdgeInsets.fromLTRB(...)`, or inline `TextStyle(...)` → spacing tokens / `SupyRadius` / `context.textTheme`.
+- A missing design token worked around with a hardcoded literal → add the color/spacing/radius/typography token to the design system and use it.
+- The same widget/UI copy-pasted across features → extract a reusable component into the shared design system (`packages/design` / `shared/presentation/design_system/`) and reuse it.
 - Mocking the class under test → mock the datasource/repository boundary only.
 - A token, credential, or PII in a log or Sentry breadcrumb → sanitize; secrets live in `flutter_secure_storage`.
 - A hardcoded environment value (base URL, DSN) in feature code → read it from `FlavorConfig`.
