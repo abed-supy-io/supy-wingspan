@@ -107,6 +107,21 @@ For **each** confirmed repo, in turn:
    aggregate/interactor phases for nestjs-nx; NGXS feature phases for angular-nx; Clean
    Architecture + Bloc phases for flutter). Each task names the library/module it touches.
 
+   **Every per-repo plan MUST end in a testing phase — no exceptions.** A slice without tests
+   is an incomplete plan. Phrase the testing phase in that stack's tooling and name its
+   coverage gate (per `${CLAUDE_PLUGIN_ROOT}/config/standards/ci-coverage-baseline.md`):
+
+   | Stack | Testing phase must specify |
+   | --- | --- |
+   | nestjs-nx / angular-nx | Jest unit + integration tests (`test --ci --coverage`), mocking at the boundary |
+   | flutter (app) | `mocktail` + `bloc_test` + `pumpApp` widget tests (+ goldens for UI) — **≥ 80%** |
+   | flutter (melos package) | `very_good_coverage` — **≥ 85% per package** |
+   | flutter (plugin) | Dart lcov **≥ 70%** + Robolectric/XCTest native tests |
+   | firebase-functions / ts-cli / ai-agents | Jest/pytest on the new code (target-state; add the suite if absent) |
+
+   If a repo has no test suite yet (a remediation-first repo), the testing phase says so and
+   scaffolds the minimum suite for this feature's code rather than skipping tests.
+
 3. **Record the cross-repo contract.** If the feature crosses repos via an event, an API, or a
    payload, every plan must name the shared contract identically (e.g. the NATS subject
    `user.sessions-revoked`, or the endpoint path). This is what keeps the slices consistent —

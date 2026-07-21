@@ -17,6 +17,12 @@ on every side.
 > The point: **you install the plugin once.** In each repo it detects the stack, gives you
 > that stack's skills, and enforces the same commit/secret/review rules — so the feature lands
 > consistently everywhere without anyone copying agent files between repos.
+>
+> **Tests are part of every slice.** Each repo below ships the feature *with* its tests — the
+> plan's final phase — to that stack's coverage gate (Jest for backend/frontend; `bloc_test` +
+> `pumpApp` + goldens at ≥ 80% for Flutter). `supy-review`'s test-quality reviewer flags thin
+> or missing tests before the PR opens. See
+> [`config/standards/ci-coverage-baseline.md`](../config/standards/ci-coverage-baseline.md).
 
 ---
 
@@ -191,6 +197,7 @@ Across four different stacks, **the same plugin**, installed once, gave every re
 
 - the **right skills** for its stack (backend never saw Flutter's, and vice-versa),
 - the **same review discipline** — the commit/PR and **secrets** reviewers ran on all four,
+- **tests shipped with the feature in every repo**, each to its stack's coverage gate,
 - **consistent conventional commits** and PR bodies,
 - one shared event contract (`user.sessions-revoked`) honored on every side.
 

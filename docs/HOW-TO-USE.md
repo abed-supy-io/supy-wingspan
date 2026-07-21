@@ -51,6 +51,21 @@ The core loop. Works in any repo; the plugin swaps in your stack's skills automa
 You can also just write code yourself and jump in at step 4 — review → commit → PR works
 standalone.
 
+> **Tests ship with the feature — not later.** Every plan ends in a **testing phase**, and no
+> feature is "done" until it has tests, in **every** repo it touches. The bars are enforced in
+> CI (see [`config/standards/ci-coverage-baseline.md`](../config/standards/ci-coverage-baseline.md)):
+>
+> | Stack | Test with | Coverage gate |
+> | --- | --- | --- |
+> | nestjs-nx / angular-nx | Jest (`test --ci --coverage`) | runner threshold |
+> | flutter (app) | `mocktail` + `bloc_test`, `pumpApp` widget tests, goldens | ≥ 80% |
+> | flutter (melos package) | `very_good_coverage` | ≥ 85% |
+> | flutter (plugin) | Dart lcov + Robolectric / XCTest | ≥ 70% Dart + native |
+> | firebase-functions / ts-cli / ai-agents | Jest / pytest | runner threshold (target-state) |
+>
+> `supy-review` runs the **test-quality reviewer** so thin or missing tests are flagged before
+> you push — mock at the boundary (datasource/repository), never the class under test.
+
 ### Scaffolding shortcuts (optional)
 
 If you're adding a whole new module, scaffold it first, then fill it in:
