@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.6](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.5...supy-wingspan-v0.1.6) (2026-07-21)
+
+
+### Features
+
+* add /supy-feedback command wrapper ([941aac3](https://github.com/abed-supy-io/supy-wingspan/commit/941aac30b4e0daddb69fdfcf3326055a04e154cd))
+* add supy-feedback skill ([1c98785](https://github.com/abed-supy-io/supy-wingspan/commit/1c98785e83140e1e3ef76824b965ac730cdd073a))
+
+
+### Documentation
+
+* add supy-feedback implementation plan ([62b4736](https://github.com/abed-supy-io/supy-wingspan/commit/62b4736eeef055f43662972268b3d570a7dad0c2))
+* add supy-feedback skill design spec ([0bf2deb](https://github.com/abed-supy-io/supy-wingspan/commit/0bf2debcee494c91da7aea9e22d1c7926e8717c1))
+* correct stack-detection reference in supy-feedback skill ([50f05b3](https://github.com/abed-supy-io/supy-wingspan/commit/50f05b3c31cf92333eff3f28447a24ec710ae5c5))
+* document /supy-feedback and sync component counts ([f1bd773](https://github.com/abed-supy-io/supy-wingspan/commit/f1bd773cbf5f5a7260d818bfda08a8c901b1fed7))
+* enhance feature walkthrough and usage guide with testing phase details ([41300ad](https://github.com/abed-supy-io/supy-wingspan/commit/41300ad1ef8ee8d3ee9e3f18d604d4acf649cef8))
+* harden supy-feedback skill (shell-path robustness, accuracy, secrets caution) ([bfe4d92](https://github.com/abed-supy-io/supy-wingspan/commit/bfe4d920e4c36a475d2ffe6dc67401c2bbb2eb88))
+* reconcile command and skill tables in README and USAGE ([50c70fd](https://github.com/abed-supy-io/supy-wingspan/commit/50c70fd3ee37fc7a97018eed9f9fcee8b5366e44))
+* **supy-feedback:** make degraded path explicit via SRC source dir ([3579e2b](https://github.com/abed-supy-io/supy-wingspan/commit/3579e2b932c6ae62f43af9c539ae2d57ff725a24))
+
 ## [0.1.5](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.4...supy-wingspan-v0.1.5) (2026-07-21)
 
 
