@@ -50,7 +50,7 @@ procedure, the pilot exercise checklist, and known gaps.
 
 ## Usage
 
-The plugin exposes **7 slash commands** and **30 skills**. Commands are typed
+The plugin exposes **8 slash commands** and **31 skills**. Commands are typed
 directly (`/name`); skills are invoked in natural language ("run the supy-commit
 skill") — they are not slash commands.
 
@@ -258,7 +258,7 @@ repo's `CLAUDE.md` and the mined standards under `config/standards/` — nothing
 ## Components
 
 - `agents/` — **17 subagents**: 11 review subagents — backend (architecture, NATS events, tests, security), Angular (frontend), Flutter (mobile), Firebase Functions, TypeScript CLI, AI-agents monorepo, and the two stack-agnostic reviewers (commit/PR conventions + secrets) that run on every stack — plus 6 Flutter release-readiness agents under `agents/app-readiness/` (Android/iOS/web/macOS/Linux/Windows), launched in parallel by `supy-app-release-readiness`
-- `skills/` — **30 skills**, grouped by stack (see [Usage](#skills)): 12 Universal (review, baseline, commit, create-pr, rebase, hotfix, debrief, fix-failing-github-actions, impl-spec, spike-spec, feature-fanout, kg), 3 backend, 2 frontend, 10 Flutter/mobile, and one each for firebase-functions, ts-cli, ai-agents. Every repo sees the Universal set plus only its own stack's skills
+- `skills/` — **31 skills**, grouped by stack (see [Usage](#skills)): 13 Universal (review, baseline, commit, create-pr, rebase, hotfix, debrief, fix-failing-github-actions, impl-spec, spike-spec, feature-fanout, feedback, kg), 3 backend, 2 frontend, 10 Flutter/mobile, and one each for firebase-functions, ts-cli, ai-agents. Every repo sees the Universal set plus only its own stack's skills
 - `commands/` — orchestration wrappers over superpowers
 - `hooks/` — stack detection on session open (nestjs-nx / angular-nx / nx / flutter / firebase-functions / ts-cli / ai-agents / k8s-config / generic) + a UserPromptSubmit skill router that nudges toward the matching workflow skill
 - `config/standards/` — mined Supy standards, source of truth for the agents. Three cross-cutting standards at root (`commit-conventions.md`, `secrets-and-config.md`, `ci-coverage-baseline.md`) plus per-stack rulebooks: backend at root + `backend/` for module boundaries, `frontend/`, `flutter/`, `firebase-functions/`, `ts-cli/`, `ai-agents/` (k8s-config has no standards subdir — it's governed by the root `secrets-and-config.md`)

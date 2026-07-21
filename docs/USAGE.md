@@ -116,7 +116,7 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 
 ## 4. What you get after install
 
-**6 slash commands** (typed directly with `/`):
+**8 slash commands** (typed directly with `/`):
 
 | Command | Purpose |
 |---|---|
@@ -125,9 +125,10 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 | `/supy-build [plan]` | Plan → implementation, task by task. Wraps `superpowers:executing-plans` / `subagent-driven-development`; fallback runs the plan with **local-only** commits (never pushes). |
 | `/supy-review [base-ref]` | Reviews the current branch diff. Detects the stack and dispatches the matching review subagents in parallel, then consolidates a severity-grouped report. |
 | `/supy-onboard [focus]` | Onboards or refreshes the repo's Supy AI setup. Wraps `supy-baseline` and adds a section-level `CLAUDE.md` drift check against the stack template; pass `drift only` to report without regenerating. |
+| `/supy-feedback [feedback]` | Files feedback about a Supy standard as a PR against supy-wingspan (standards-first, with provenance). |
 | `/supy-release [action]` | Reports the release-please state of this plugin repo — pending release PR, unreleased commits since the last tag, implied version bump, consumer impact. Read-only unless passed `ship`, which merges the release PR after confirmation. Degrades to a local-git-only report without `gh`. |
 
-**29 skills** (invoked in natural language — *not* slash commands; say e.g.
+**31 skills** (invoked in natural language — *not* slash commands; say e.g.
 "run the supy-commit skill"). The stack column mirrors
 `skills/shared/references/skill-routing.md` — the routing hook only surfaces a
 skill in repos of its stack:
@@ -373,8 +374,8 @@ supy-wingspan/
 │   ├── plugin.json         # name, version, description, keywords
 │   └── marketplace.json    # marketplace "supy" → this plugin
 ├── agents/                 # 11 review subagents (Markdown w/ frontmatter)
-├── skills/                 # 29 skills, one dir each w/ SKILL.md (+ skills/shared/)
-├── commands/               # 6 slash-command wrappers over skills/superpowers
+├── skills/                 # 31 skills, one dir each w/ SKILL.md (+ skills/shared/)
+├── commands/               # 8 slash-command wrappers over skills/superpowers
 ├── hooks/
 │   ├── hooks.json          # wires the three hooks below to their events
 │   ├── detect-stack.sh     # SessionStart: stack detection (9-way ordered)
