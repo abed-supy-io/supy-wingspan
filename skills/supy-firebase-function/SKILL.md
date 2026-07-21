@@ -1,6 +1,6 @@
 ---
 name: supy-firebase-function
-description: How to write Firebase Functions code in the standalone supy-firebase-functions repo the Supy way — Clean Architecture (index.ts → app interactors → data repositories → frameworks), Awilix DI, runtime-enforced auth markers (@unauthenticated/@internal/@admin/@apiKey), typed domain errors, idempotent Firestore triggers, and secrets from Secret Manager (never literals). Use whenever writing or editing code in the supy-firebase-functions repo, or adding a trigger.
+description: '[firebase] How to write Firebase Functions code in the standalone supy-firebase-functions repo the Supy way — Clean Architecture (index.ts → app interactors → data repositories → frameworks), Awilix DI, runtime-enforced auth markers (@unauthenticated/@internal/@admin/@apiKey), typed domain errors, idempotent Firestore triggers, and secrets from Secret Manager (never literals). Use whenever writing or editing code in the supy-firebase-functions repo, or adding a trigger.'
 ---
 
 ## When this applies

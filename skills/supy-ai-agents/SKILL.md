@@ -1,6 +1,6 @@
 ---
 name: supy-ai-agents
-description: Write and change code in the polyglot supy-ai-agents monorepo (Cortex/Nexus/Oculus/Gleap/PMS-AI — Node.js + Python + Cloudflare Workers, MCP tools, BullMQ, pgvector KG) so it follows the Supy ai-agents architecture & operational standard. Use when adding an MCP tool, HTTP route, or queue consumer; touching config/secrets; wiring Redis/BullMQ; or writing a Dockerfile in an ai-agents repo. Enforces secret hygiene, auth on exposed tools, env-driven config, validation + error handling, idempotent consumers, and non-root containers.
+description: '[ai-agents] Write and change code in the polyglot supy-ai-agents monorepo (Cortex/Nexus/Oculus/Gleap/PMS-AI — Node.js + Python + Cloudflare Workers, MCP tools, BullMQ, pgvector KG) so it follows the Supy ai-agents architecture & operational standard. Use when adding an MCP tool, HTTP route, or queue consumer; touching config/secrets; wiring Redis/BullMQ; or writing a Dockerfile in an ai-agents repo. Enforces secret hygiene, auth on exposed tools, env-driven config, validation + error handling, idempotent consumers, and non-root containers.'
 ---
 
 ## When this applies

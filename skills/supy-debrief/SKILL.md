@@ -1,6 +1,6 @@
 ---
 name: supy-debrief
-description: Produce a structured handoff/retrospective for the current branch or work session — what changed, why, how it was verified, what's still open, and follow-ups — from the actual commits and diff. Outputs a ready-to-paste debrief and optionally saves it. Use to wrap up a branch before handing off, after a hotfix, or to capture decisions before context is lost on any supy-* repo.
+description: '[any] Produce a structured handoff/retrospective for the current branch or work session — what changed, why, how it was verified, what''s still open, and follow-ups — from the actual commits and diff. Outputs a ready-to-paste debrief and optionally saves it. Use to wrap up a branch before handing off, after a hotfix, or to capture decisions before context is lost on any supy-* repo.'
 ---
 
 ## Step 1 — Resolve what to debrief

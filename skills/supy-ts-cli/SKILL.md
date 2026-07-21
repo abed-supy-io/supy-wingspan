@@ -1,6 +1,6 @@
 ---
 name: supy-ts-cli
-description: How to write CLI code in the standalone supy-cli repo the Supy way — Clean Architecture (presentation commands → application scripts → infrastructure → domain), commander.js `scripts [run|list|info]`, the IScript/ScriptDetails self-documenting contract, env-layered config, explicit production confirmation before any prod mutation, no secrets in argv/logs, deterministic exit codes, testable use cases, and batched bulk MongoDB operations. Use whenever writing or editing code in the supy-cli repo, or adding a script.
+description: '[ts-cli] How to write CLI code in the standalone supy-cli repo the Supy way — Clean Architecture (presentation commands → application scripts → infrastructure → domain), commander.js `scripts [run|list|info]`, the IScript/ScriptDetails self-documenting contract, env-layered config, explicit production confirmation before any prod mutation, no secrets in argv/logs, deterministic exit codes, testable use cases, and batched bulk MongoDB operations. Use whenever writing or editing code in the supy-cli repo, or adding a script.'
 ---
 
 ## When this applies

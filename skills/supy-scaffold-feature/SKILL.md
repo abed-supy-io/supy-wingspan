@@ -1,6 +1,6 @@
 ---
 name: supy-scaffold-feature
-description: Scaffold a complete Angular NGXS feature library in a supy frontend repo (models, state, service, smart+dumb components, resolver, routes — tagged and wired) using the Plop generator, then fill it in the Supy way. Use when adding a new feature/domain to an angular-nx supy repo.
+description: '[frontend] Scaffold a complete Angular NGXS feature library in a supy frontend repo (models, state, service, smart+dumb components, resolver, routes — tagged and wired) using the Plop generator, then fill it in the Supy way. Use when adding a new feature/domain to an angular-nx supy repo.'
 ---
 
 ## Step 0 — Scaffold first, never hand-create

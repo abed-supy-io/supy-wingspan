@@ -1,6 +1,6 @@
 ---
 name: supy-flutter-feature
-description: How to write Flutter code in a supy mobile repo the Supy way — Clean Architecture layers, Bloc (never Cubit), go_router context.go, get_it DI, dartz Either/Failure, design tokens. Use whenever writing or editing Dart/Flutter code under lib/ in a flutter supy repo.
+description: '[flutter] How to write Flutter code in a supy mobile repo the Supy way — Clean Architecture layers, Bloc (never Cubit), go_router context.go, get_it DI, dartz Either/Failure, design tokens. Use whenever writing or editing Dart/Flutter code under lib/ in a flutter supy repo.'
 ---
 
 ## When this applies

@@ -1,6 +1,6 @@
 ---
 name: supy-figma-implement-design
-description: Translate a Figma design into a production-ready Flutter widget with 1:1 visual fidelity, using the Figma MCP server. Maps design tokens onto the project's ThemeData/ColorScheme/ThemeExtension, places the widget in the shared UI package, and validates it with Alchemist golden tests (and Widgetbook use cases, if present). Use when a user provides a Figma URL (or a selected Figma-desktop node) and asks to implement it as Flutter widgets, in a flutter supy repo. Requires a working Figma MCP server connection.
+description: '[flutter] Translate a Figma design into a production-ready Flutter widget with 1:1 visual fidelity, using the Figma MCP server. Maps design tokens onto the project''s ThemeData/ColorScheme/ThemeExtension, places the widget in the shared UI package, and validates it with Alchemist golden tests (and Widgetbook use cases, if present). Use when a user provides a Figma URL (or a selected Figma-desktop node) and asks to implement it as Flutter widgets, in a flutter supy repo. Requires a working Figma MCP server connection.'
 ---
 
 ## When this applies

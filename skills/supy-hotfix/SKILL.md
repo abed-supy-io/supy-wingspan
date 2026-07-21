@@ -1,6 +1,6 @@
 ---
 name: supy-hotfix
-description: Drive an urgent production fix end to end — branch from the up-to-date base, make the smallest possible change, commit it as a conventional `fix`, run the review reviewers, and fast-track a PR. Enforces hotfix discipline (minimal diff, no scope creep, no banned `hotfix` commit type). Use when a production defect needs a targeted fix now on any supy-* repo.
+description: '[any] Drive an urgent production fix end to end — branch from the up-to-date base, make the smallest possible change, commit it as a conventional `fix`, run the review reviewers, and fast-track a PR. Enforces hotfix discipline (minimal diff, no scope creep, no banned `hotfix` commit type). Use when a production defect needs a targeted fix now on any supy-* repo.'
 ---
 
 ## Step 0 — Hotfix discipline

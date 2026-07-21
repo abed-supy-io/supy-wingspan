@@ -1,6 +1,6 @@
 ---
 name: supy-e2e-tests
-description: Write, run, and debug Supy retailer end-to-end (integration_test) tests against the live dev backend on the Android emulator. Flutter/retailer-specific — applies only to the supy-retailer mobile repo, not other Supy Flutter apps. Use when adding e2e coverage, fixing failing e2e tests, or auditing whether created values are actually asserted. Encodes the run command, feature-flag gates, authz-race waiting patterns, finder caveats, and the never-weaken-assertions policy.
+description: '[flutter] Write, run, and debug Supy retailer end-to-end (integration_test) tests against the live dev backend on the Android emulator. Flutter/retailer-specific — applies only to the supy-retailer mobile repo, not other Supy Flutter apps. Use when adding e2e coverage, fixing failing e2e tests, or auditing whether created values are actually asserted. Encodes the run command, feature-flag gates, authz-race waiting patterns, finder caveats, and the never-weaken-assertions policy.'
 ---
 
 ## When this applies
