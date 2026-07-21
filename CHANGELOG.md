@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.3...supy-wingspan-v0.1.4) (2026-07-21)
+
+
+### Features
+
+* **evals:** add behavioral eval harness for the secrets reviewer ([bf452b9](https://github.com/abed-supy-io/supy-wingspan/commit/bf452b905db258973aaa87e64527e12cbfb167bc))
+* **evals:** add behavioral eval harness for the secrets reviewer ([e582183](https://github.com/abed-supy-io/supy-wingspan/commit/e582183bfa857f7e4cbac3fa9fca9e7bff84e299))
+
 ## [0.1.3](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.2...supy-wingspan-v0.1.3) (2026-07-17)
 
 
