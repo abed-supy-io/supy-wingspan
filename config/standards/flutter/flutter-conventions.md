@@ -21,7 +21,7 @@ Supy Flutter apps are **Dart 3.11 + Flutter 3.41 + bloc/flutter_bloc + go_router
 
 ### Navigation (go_router)
 
-5. **Navigate with `context.go('/path')` using the page's `path` constant.** Never `pushNamed`, `goNamed`, `push`, or `context.push(...)`, and never pass data via `extra` — pass IDs in the path/query and re-fetch. Named routes and `extra` payloads are banned.
+5. **Navigate with `context.push('/path')` using the page's `path` constant; reserve `context.go('/path')` for the main shell pages** — the top-level shell/tab destinations (bottom-nav roots). Use `push` when drilling into detail and sub-pages so the back stack is preserved; use `go` only when switching between the main shell destinations. Never `pushNamed`, `goNamed`, or `context.goNamed`, and never pass data via `extra` — pass IDs in the path/query and re-fetch. Named routes and `extra` payloads are banned.
 6. **Every page exposes `static const path` and `static const name`** and is registered once in the `go_router` config. Route strings are declared on the page, not scattered at call sites.
 7. **Auth and role guards live in the router `redirect`** — not in `initState`, not in widgets. An unauthenticated or under-privileged user is redirected before the page builds.
 
@@ -145,7 +145,7 @@ result.fold(
 );
 ```
 
-### Good — page with `static const path` and `context.go`
+### Good — page with `static const path` and `context.push`
 
 ```dart
 class TasksPage extends StatelessWidget {
@@ -157,8 +157,8 @@ class TasksPage extends StatelessWidget {
   Widget build(BuildContext context) => const _TasksView();
 }
 
-// navigating elsewhere — hardcoded path, no goNamed / extra
-onTap: () => context.go(TaskDetailPage.path.replaceFirst(':id', task.id)),
+// drilling into a detail page — push, hardcoded path, no goNamed / extra
+onTap: () => context.push(TaskDetailPage.path.replaceFirst(':id', task.id)),
 ```
 
 ### Good — Profile A: sealed Failure hierarchy
@@ -278,7 +278,7 @@ These are auto-reject in review — each maps to the fix on its right:
 - A `Cubit` → convert to a `Bloc` with explicit sealed events.
 - An event or state that isn't a typed class (untyped `bool`/`String` state flags) → sealed event hierarchy + `freezed` state union.
 - A BLoC registered as `registerLazySingleton` (or a repo/usecase as `registerFactory`) → factory for BLoCs, singleton for the rest.
-- `pushNamed` / `goNamed` / `context.push` / navigation via `extra` → `context.go('/path')` with the page's `path` constant; pass IDs in the path/query.
+- `pushNamed` / `goNamed` / navigation via `extra` → `context.push('/path')` (or `context.go` for a main shell/tab destination) with the page's `path` constant; pass IDs in the path/query.
 - A page missing `static const path` / `name`, or a route string written at the call site → declare it on the page.
 - An auth/role check in `initState` or a widget → move it to the `go_router` `redirect`.
 - `riverpod` / `provider` used for dependency injection → `get_it`.
@@ -304,7 +304,7 @@ These are auto-reject in review — each maps to the fix on its right:
 
 ## Source
 
-- `supy-checklists` CLAUDE.md — the enforced Flutter rulebook and **Profile A** error handling: BLoC-not-Cubit state management, `go_router` `context.go` navigation, `get_it` DI split, `dio` interceptor order, `dartz` `Either`/sealed `Failure` handling, `UseCase`/`Params` base, `hive` cache policies, the `SupyColors`/`ColorTokens`/spacing/`SupyRadius`/`SupyTypography` design system, `freezed`/`json_serializable` codegen, `mocktail`/`bloc_test`/`pumpApp` testing (≥80%), dev/staging/production flavors + `FlavorConfig`, `flutter_secure_storage` + sanitized Sentry, and Conventional Commits
+- `supy-checklists` CLAUDE.md — the enforced Flutter rulebook and **Profile A** error handling: BLoC-not-Cubit state management, `go_router` `context.push`/`context.go` navigation, `get_it` DI split, `dio` interceptor order, `dartz` `Either`/sealed `Failure` handling, `UseCase`/`Params` base, `hive` cache policies, the `SupyColors`/`ColorTokens`/spacing/`SupyRadius`/`SupyTypography` design system, `freezed`/`json_serializable` codegen, `mocktail`/`bloc_test`/`pumpApp` testing (≥80%), dev/staging/production flavors + `FlavorConfig`, `flutter_secure_storage` + sanitized Sentry, and Conventional Commits
 - `supy-mobile` — **Profile B** error handling: bare `Future<T>` repositories/usecases, central `throwAppException()` → typed `AppException`, and the `PageState<T>` sealed presentation union resolved with `when`/`whenOrNull`/`maybeWhen`
 - `supy-scanner` — **plugin sub-profile** testing bar: ≥70% lcov (Dart) + Robolectric/XCTest native tests (rule 21); full plugin rules P1–P6 in [architecture.md](architecture.md#profiles)
 - `supy-flutter-packages` — **melos-packages sub-profile** testing bar: ≥85% per package via `very_good_coverage` (rule 21); full melos rules M1–M5 in [architecture.md](architecture.md#profiles)

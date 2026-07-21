@@ -1,6 +1,6 @@
 ---
 name: supy-flutter-feature
-description: '[flutter] How to write Flutter code in a supy mobile repo the Supy way — Clean Architecture layers, Bloc (never Cubit), go_router context.go, get_it DI, dartz Either/Failure, design tokens. Use whenever writing or editing Dart/Flutter code under lib/ in a flutter supy repo.'
+description: '[flutter] How to write Flutter code in a supy mobile repo the Supy way — Clean Architecture layers, Bloc (never Cubit), go_router context.push, get_it DI, dartz Either/Failure, design tokens. Use whenever writing or editing Dart/Flutter code under lib/ in a flutter supy repo.'
 ---
 
 ## When this applies
@@ -22,7 +22,7 @@ If either is unreadable, print a warning and continue using the rules below as a
 
 1. **Clean Architecture, dependencies point inward.** Presentation → Domain ← Data. The domain is pure Dart (no `package:flutter`, no Dio, no JSON); presentation never touches `data/`; data implements the domain's interfaces. Cross-feature code lives in `lib/shared/`, primitives in `lib/core/`.
 2. **Always `Bloc`, never `Cubit`.** Every feature concern is a `Bloc` with a sealed event contract and a `freezed` (or sealed) state. Repositories and usecases return `Future<Either<Failure, T>>` — the domain **never throws**.
-3. **Everything comes from a token or the container.** Navigate with `context.go` and the page's `path` constant (never `pushNamed`/`extra`); resolve dependencies through `get_it` (singletons for services/repos/usecases/datasources, factory for BLoCs); style with design tokens (never `Color(0xFF…)`/`Colors.*`/raw spacing/inline `TextStyle`).
+3. **Everything comes from a token or the container.** Navigate with `context.push` and the page's `path` constant — `context.go` only for main shell/tab destinations (never `pushNamed`/`goNamed`/`extra`); resolve dependencies through `get_it` (singletons for services/repos/usecases/datasources, factory for BLoCs); style with design tokens (never `Color(0xFF…)`/`Colors.*`/raw spacing/inline `TextStyle`).
 
 Everything below is the concrete shape these rules take.
 
@@ -127,7 +127,7 @@ Provide the BLoC at the owning feature widget with `BlocProvider(create: (_) => 
 
 ## Navigation (go_router)
 
-Each page exposes `static const path` / `static const name`, is registered once in the router, and is reached with `context.go`. No `pushNamed`/`goNamed`/`push`/`extra`; pass IDs in the path. Auth/role guards live in the router `redirect`.
+Each page exposes `static const path` / `static const name`, is registered once in the router, and is reached with `context.push` (`context.go` only for the main shell/tab destinations). No `pushNamed`/`goNamed`/`extra`; pass IDs in the path. Auth/role guards live in the router `redirect`.
 
 ```dart
 class TasksPage extends StatelessWidget {
@@ -138,8 +138,8 @@ class TasksPage extends StatelessWidget {
   Widget build(BuildContext context) => const _TasksView();
 }
 
-// navigating with an id — hardcoded path, no goNamed / extra
-onTap: () => context.go('/tasks/${task.id}'),
+// drilling into a detail page — push, hardcoded path, no goNamed / extra
+onTap: () => context.push('/tasks/${task.id}'),
 ```
 
 ## Dependency injection (get_it)
@@ -180,7 +180,7 @@ Tokens live in `flutter_secure_storage`; the auth interceptor attaches the beare
 - `Bloc` with sealed events + `freezed` state — no `Cubit`?
 - Repos/usecases return `Either<Failure, T>`, domain never throws, consumer `fold`s both branches?
 - Usecase extends `UseCase<T, Params>`, `Params extends Equatable`?
-- Navigation is `context.go` + `path` constant — no `pushNamed`/`extra`?
+- Navigation is `context.push` (`context.go` for shell tabs) + `path` constant — no `pushNamed`/`goNamed`/`extra`?
 - DI split correct — singletons for services/repos/usecases/datasources, factory for BLoCs?
 - No `Color(0xFF…)`/`Colors.*`/raw spacing/inline `TextStyle` — tokens throughout?
 - Tests use `mocktail` + `bloc_test`, mock the boundary (not the class under test), ≥80% coverage?
