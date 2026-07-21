@@ -9,6 +9,9 @@ and Flutter delivery skills (Figma-to-code, release readiness, SDK upgrades, cod
 a consistency-baseline generator, and thin orchestration wrappers over `superpowers`. Each repo
 only surfaces the skills for its own stack, so backend and Flutter devs never see each other's.
 
+> **New here? Start with [`docs/HOW-TO-USE.md`](docs/HOW-TO-USE.md)** — the everyday guide to
+> using the plugin for a new feature, a bug fix, a hotfix, or a feature that spans several repos.
+
 ## Status
 
 v0.1.1. Published at [`abed-supy-io/supy-wingspan`](https://github.com/abed-supy-io/supy-wingspan) (public).
