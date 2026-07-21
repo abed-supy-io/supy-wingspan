@@ -83,6 +83,10 @@ Rules 10–12 have a **Profile A** variant (`dartz`/`Either`) and a **Profile B*
 
 24. **Conventional Commits.** Subject line is imperative mood, **≤50 characters**, with **no trailing period**. Body (if any) explains the why.
 
+### File length
+
+25. **Keep files small and focused — one primary declaration per file.** A widget, page, BLoC, repository, or class file should own a single responsibility; **files stay under ~300 lines** as a soft cap. When a file grows past that, it's a signal to split — extract sub-widgets into their own files under `widgets/`, give each event/state/`Failure`/`AppException` variant its own declaration, and pull unrelated helpers out. Long files hide responsibilities and make review, reuse, and testing harder.
+
 ## Examples
 
 ### Good — BLoC with sealed events and freezed state
@@ -301,6 +305,7 @@ These are auto-reject in review — each maps to the fix on its right:
 - Mocking the class under test → mock the datasource/repository boundary only.
 - A token, credential, or PII in a log or Sentry breadcrumb → sanitize; secrets live in `flutter_secure_storage`.
 - A hardcoded environment value (base URL, DSN) in feature code → read it from `FlavorConfig`.
+- A single file running well past ~300 lines, or packing multiple widgets/unrelated classes → split by responsibility; extract sub-widgets into `widgets/`, one primary declaration per file.
 
 ## Source
 
