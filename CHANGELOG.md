@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.8](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.7...supy-wingspan-v0.1.8) (2026-07-21)
+
+
+### Features
+
+* **flutter:** add file-length rule to conventions ([95d0980](https://github.com/abed-supy-io/supy-wingspan/commit/95d0980be0310ae6337e258b8c30aadb21dc53bb))
+* **flutter:** add file-length rule to conventions ([21fb45f](https://github.com/abed-supy-io/supy-wingspan/commit/21fb45f5ab9dd37738e8a26608dd4de2baf3fbd6))
+
+
+### Bug Fixes
+
+* **flutter:** default navigation to context.push, reserve context.go for main shell pages ([f59ea6c](https://github.com/abed-supy-io/supy-wingspan/commit/f59ea6c16466ede22ca5ebb6cfe0343dd73894a3))
+* **flutter:** default navigation to context.push, reserve context.go for main shell pages ([14ca369](https://github.com/abed-supy-io/supy-wingspan/commit/14ca36972cdc968739da73aa21d6c3b94738d031))
+
 ## [0.1.7](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.6...supy-wingspan-v0.1.7) (2026-07-21)
 
 
