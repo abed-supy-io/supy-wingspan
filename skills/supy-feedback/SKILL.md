@@ -25,8 +25,11 @@ REPO_NAME=$( [ -n "$REPO_ROOT" ] && basename "$REPO_ROOT" || echo "unknown" )
 ```
 
 Determine the stack of the current repo. Prefer the stack named in the
-SessionStart hook line if one is in context. Otherwise apply this minimal
-heuristic (the same order as `skills/shared/references/stack-detection.md`):
+SessionStart hook line if one is in context. Otherwise apply this quick,
+best-effort subset as a fallback for provenance only — it is NOT the same
+order, and not the same stack list, as the canonical detection in
+`skills/shared/references/stack-detection.md` (which is authoritative and also
+covers `ai-agents`, `k8s-config`, and `other`/`nx`):
 
 - `pubspec.yaml` at root → `flutter`
 - `nx.json` + `package.json` with `@angular/core` → `angular-nx`
@@ -38,12 +41,19 @@ heuristic (the same order as `skills/shared/references/stack-detection.md`):
 Capture a triggering example (a `path:line` or short snippet) only if one is
 already present in the conversation. Never invent one.
 
+Caution: the feedback text and the triggering example flow verbatim into the
+PR body. Never paste secrets, tokens, API keys, or connection strings into
+either — redact them first if one appears.
+
 ## Step 2 — Clone the standards repo fresh
 
-Clone into the scratchpad so you read the authoritative source of truth:
+Clone into the scratchpad so you read the authoritative source of truth, using
+a fixed, absolute path (not `$$`) so a stale clone from a previous run can't
+linger and so the path is stable across separate tool calls:
 
 ```bash
-WORK="${TMPDIR:-/tmp}/supy-feedback-$$/supy-wingspan"
+WORK="${TMPDIR:-/tmp}/supy-feedback/supy-wingspan"
+rm -rf "$WORK"
 mkdir -p "$(dirname "$WORK")"
 gh repo clone abed-supy-io/supy-wingspan "$WORK" -- --depth 1
 ```
@@ -57,6 +67,18 @@ SRC="$WORK"; DEGRADED=0
 # clone failed (no gh, not authenticated, no network)
 SRC="${CLAUDE_PLUGIN_ROOT}"; DEGRADED=1
 ```
+
+Important: each `bash` command block you run is a **fresh shell** — shell
+variables set in one block (`WORK`, `SRC`, `DEGRADED`) do not persist into a
+later, separately-invoked block. Because `WORK` is now a fixed path
+(`${TMPDIR:-/tmp}/supy-feedback/supy-wingspan`), later steps (notably Step 6)
+can safely reconstruct it verbatim instead of relying on the variable. Never
+run `git -C "$WORK"` or `git -C "$SRC"` in a block where those variables were
+not just set in that same block — either re-set them at the top of the block,
+substitute the concrete resolved path, or run the whole Step 5/Step 6 sequence
+as a single bash block. A `git -C` with an empty/unset path silently falls
+back to the user's own repo, breaking the "operate on the clone" and
+confirm-before-push guarantees.
 
 If the clone fails, do not stop the whole flow. Set `DEGRADED=1` and continue
 through Steps 3–5 exactly as written but reading against `SRC`
@@ -85,8 +107,15 @@ Rules:
 
 ## Step 4 — Draft the edit
 
-Apply the minimal change under `SRC`, matching the voice and Markdown structure
-of the surrounding standard. Do not reformat unrelated lines.
+Draft the minimal change against `SRC`, matching the voice and Markdown
+structure of the surrounding standard. Do not reformat unrelated lines.
+
+On a clean clone (`DEGRADED=0`), write the edit into the file(s) under `SRC`
+(the clone). On the **degraded path** (`DEGRADED=1`), `SRC` is
+`${CLAUDE_PLUGIN_ROOT}`, which is read-only: compute and show the edit — do
+not write it into the plugin cache. Hold it in memory/output only, to be
+printed as the proposed diff in Step 6's degradation path ("the change you
+would have made").
 
 ## Step 5 — Confirm with the user (gate)
 
@@ -113,9 +142,12 @@ Choose the commit type by the nature of the change, validated against
 - `feat` — a new or stricter enforceable rule.
 - `docs` — clarification or wording only.
 
-Then, inside the clone:
+Then, inside the clone. Run this as a **single bash block** (per the Step 2
+note, shell variables don't survive across separate tool calls) — re-set
+`WORK` to the fixed path from Step 2 at the top if this runs in a new shell:
 
 ```bash
+WORK="${TMPDIR:-/tmp}/supy-feedback/supy-wingspan"
 SLUG="<short-kebab-summary>"
 git -C "$WORK" checkout -b "feedback/$SLUG"
 git -C "$WORK" add -A
@@ -152,11 +184,15 @@ the PR step needs a working, authenticated `gh`. Example message:
 
 ```text
 supy-feedback: could not open a PR (gh unavailable or clone/push failed).
-Target file: config/standards/<file>
+Target file: config/standards/<file-1>
+Target file: config/standards/<file-2>
 Proposed change:
 <diff>
 Apply this in supy-wingspan and open a PR manually, or fix gh auth and re-run.
 ```
+
+Print one `Target file:` line per changed file (omit the second line when
+there is only one).
 
 ## Error handling summary
 
