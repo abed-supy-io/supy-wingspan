@@ -106,6 +106,16 @@ Rules:
 - If no file is an obvious home, ask the user which area (standard / skill /
   agent) it belongs to rather than guessing.
 
+Then, before drafting anything, **check the target file(s) for the rule already
+being present** (dedup). Read the section the feedback concerns and decide:
+
+- If the standard **already states this rule**, do not draft a redundant edit.
+  Tell the user it is already covered — name the file and quote the section or
+  line that covers it — and stop. No diff, no branch, no PR.
+- If the feedback would **strengthen, narrow, correct, or add nuance to** an
+  existing rule (not merely restate it), that is a real change — continue to
+  Step 4 and make the change against that existing section.
+
 ## Step 4 — Draft the edit
 
 Draft the minimal change against `SRC`, matching the voice and Markdown
@@ -135,6 +145,20 @@ without pushing and leave no branch behind.
 
 If `DEGRADED=1`, skip straight to the degradation path below (no branch, no
 push). Otherwise (`SRC` is the clone) open the PR as follows.
+
+First, **check for an existing open PR so you don't file a duplicate**:
+
+```bash
+gh pr list --repo abed-supy-io/supy-wingspan --state open \
+  --search "<distinctive words from the feedback / the target file path>"
+```
+
+If a matching open PR already proposes this change, do not open a second one:
+show the user its title and URL, and ask whether to **amend that PR** (push
+onto its existing branch) or **open a new one anyway**. Only continue to the
+branch/commit/push below once the user has confirmed there is no duplicate — or
+has chosen to open a new PR regardless. (This check needs `gh`; on the degraded
+path it is skipped along with the rest of Step 6.)
 
 Choose the commit type by the nature of the change, validated against
 `config/standards/commit-conventions.md`:
@@ -202,5 +226,7 @@ there is only one).
 | Feedback text empty and unclear | Ask the user to state it in one sentence; stop until answered. |
 | `gh` unavailable / not authenticated / no network | Degradation path: print the diff, no crash. |
 | Feedback maps to no obvious file | Ask which area (standard / skill / agent). |
+| Rule already stated in the standard | Report it's already covered (file + section); stop — no diff, no PR. |
+| An open PR already proposes this change | Surface its title/URL; ask whether to amend it or open a new PR; don't blindly duplicate. |
 | Not in a git repo | Provenance degrades (repo/stack = `unknown`); feedback still flows. |
 | User declines the diff | Stop; leave no branch. |
