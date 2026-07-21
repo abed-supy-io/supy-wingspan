@@ -122,6 +122,7 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 |---|---|
 | `/supy-brainstorm [idea]` | Idea → design. Wraps `superpowers:brainstorming` with Supy stack context; falls back to a one-question-at-a-time clarification. |
 | `/supy-plan [feature]` | Design → phased implementation plan. Wraps `superpowers:writing-plans`; fallback writes a domain→application→infrastructure→testing task list to `docs/superpowers/plans/`. |
+| `/supy-feature [feature] [in <folder>]` | Plans one feature across several open Supy repos from a single prompt — scans a parent folder, detects each repo's stack, proposes the affected repos (you confirm), then writes a per-repo plan into each. Plan-only; never edits code or opens PRs. |
 | `/supy-build [plan]` | Plan → implementation, task by task. Wraps `superpowers:executing-plans` / `subagent-driven-development`; fallback runs the plan with **local-only** commits (never pushes). |
 | `/supy-review [base-ref]` | Reviews the current branch diff. Detects the stack and dispatches the matching review subagents in parallel, then consolidates a severity-grouped report. |
 | `/supy-onboard [focus]` | Onboards or refreshes the repo's Supy AI setup. Wraps `supy-baseline` and adds a section-level `CLAUDE.md` drift check against the stack template; pass `drift only` to report without regenerating. |
@@ -145,6 +146,9 @@ skill in repos of its stack:
 | `fix-failing-github-actions` | any | Finds failing GitHub Actions checks, fixes the root cause, and loops until every check is green. |
 | `supy-impl-spec` | any | Turns a Jira ticket into a full implementation specification before code is written. |
 | `supy-spike-spec` | any | Turns a Jira ticket into a spike/research spec — questions, options, PoC scope — saved to `docs/specs/`. |
+| `supy-feature-fanout` | any | Behind `/supy-feature`. Plans one feature across several open repos: scans the parent folder, detects each repo's stack, proposes the affected set (you confirm), then writes a per-repo plan into each. Plan-only — never edits code or opens PRs. |
+| `supy-feedback` | any | Turns feedback about a Supy engineering standard into a reviewed PR against supy-wingspan — maps it to the right `config/standards` file (standards-first), shows the diff, then opens a `gh` PR with provenance. One PR per feedback. |
+| `supy-kg` | any | Connects to Supy's architecture knowledge graph through the Cortex MCP — finds services, events, flows, endpoints, and cross-repo usage. |
 | `supy-clean-architecture` | nestjs-nx | How-to for backend Clean/Hexagonal + DDD + CQRS. |
 | `supy-scaffold-domain` | nestjs-nx | Scaffolds a full DDD bounded context via the Plop `g:domain` generator. |
 | `supy-scaffold-handler` | nestjs-nx | Scaffolds a NestJS NATS handler (RPC or JetStream event) with DTO + test stub. |
