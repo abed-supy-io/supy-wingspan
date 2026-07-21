@@ -1,6 +1,6 @@
 ---
 name: supy-impl-spec
-description: Turns a Jira ticket into a full implementation specification — architecture, testing strategy, and implementation details — ready for developers to build from. Use when asked to draft/write a technical or implementation spec for a Jira ticket or ticket URL, before code is written.
+description: '[any] Turns a Jira ticket into a full implementation specification — architecture, testing strategy, and implementation details — ready for developers to build from. Use when asked to draft/write a technical or implementation spec for a Jira ticket or ticket URL, before code is written.'
 ---
 
 ## Your role

@@ -1,6 +1,6 @@
 ---
 name: supy-flutter-upgrade
-description: Bumps Flutter and Dart SDK versions across every pubspec.yaml, .fvmrc, and GitHub Actions workflow in a Supy Flutter repo, then runs pub get, format, analyze, and fix, and checks the target release's notes for breaking changes. Flutter-specific. Use when upgrading Flutter/Dart versions, or when the user asks to "upgrade Flutter" or "update the Flutter version".
+description: '[flutter] Bumps Flutter and Dart SDK versions across every pubspec.yaml, .fvmrc, and GitHub Actions workflow in a Supy Flutter repo, then runs pub get, format, analyze, and fix, and checks the target release''s notes for breaking changes. Flutter-specific. Use when upgrading Flutter/Dart versions, or when the user asks to "upgrade Flutter" or "update the Flutter version".'
 ---
 
 ## When this applies

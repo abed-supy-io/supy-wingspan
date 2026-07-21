@@ -1,6 +1,6 @@
 ---
 name: supy-baseline
-description: Generate or refresh the canonical Supy CLAUDE.md and report missing AI setup (Cortex MCP, .claude settings) for the current supy repo. Use when a repo lacks standardized AI configuration.
+description: '[any] Generate or refresh the canonical Supy CLAUDE.md and report missing AI setup (Cortex MCP, .claude settings) for the current supy repo. Use when a repo lacks standardized AI configuration.'
 ---
 
 ## Step 1 — Resolve repo root and stack

@@ -1,6 +1,6 @@
 ---
 name: supy-clean-architecture
-description: How to write NestJS backend code in a supy service repo the Supy way — Clean/Hexagonal Architecture + DDD + CQRS: aggregates with methods + this.assign/this.addEvent, value objects with state machines, factories, repository interfaces, interactors that persist atomically then side-effect, NATS controllers. Use whenever writing or editing code under libs/ in a nestjs-nx supy repo.
+description: '[backend] How to write NestJS backend code in a supy service repo the Supy way — Clean/Hexagonal Architecture + DDD + CQRS: aggregates with methods + this.assign/this.addEvent, value objects with state machines, factories, repository interfaces, interactors that persist atomically then side-effect, NATS controllers. Use whenever writing or editing code under libs/ in a nestjs-nx supy repo.'
 ---
 
 ## When this applies

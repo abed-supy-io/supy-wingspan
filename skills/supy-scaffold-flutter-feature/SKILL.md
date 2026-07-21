@@ -1,6 +1,6 @@
 ---
 name: supy-scaffold-flutter-feature
-description: Scaffold a complete Clean Architecture feature (domain + data + presentation + tests) in a supy Flutter repo from bundled stubs, then fill it in the Supy way and print the manual wiring (get_it registration, go_router route, barrel export). Use when adding a new feature to a flutter supy repo.
+description: '[flutter] Scaffold a complete Clean Architecture feature (domain + data + presentation + tests) in a supy Flutter repo from bundled stubs, then fill it in the Supy way and print the manual wiring (get_it registration, go_router route, barrel export). Use when adding a new feature to a flutter supy repo.'
 ---
 
 ## Creating a brand-new project (not a feature)

@@ -1,6 +1,6 @@
 ---
 name: supy-figma-to-tickets
-description: Read a Figma design file via the Figma MCP and turn its screens, components, and flows into dependency-ordered GitHub issues or Jira tickets, each deep-linked back to the Dev Mode node it came from. Confirms scope, ticket breakdown, and labels with the user before creating anything. Use when a Figma design needs to become a set of trackable, developer-ready tickets, in any repo and any stack.
+description: '[any] Read a Figma design file via the Figma MCP and turn its screens, components, and flows into dependency-ordered GitHub issues or Jira tickets, each deep-linked back to the Dev Mode node it came from. Confirms scope, ticket breakdown, and labels with the user before creating anything. Use when a Figma design needs to become a set of trackable, developer-ready tickets, in any repo and any stack.'
 ---
 
 ## Step 1 — Resolve the Figma URL and ticket destination

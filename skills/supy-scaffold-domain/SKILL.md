@@ -1,6 +1,6 @@
 ---
 name: supy-scaffold-domain
-description: Scaffold a complete Clean-Architecture/DDD bounded context in a supy backend repo (five tagged libs — api, logic, domain/model, domain/service, data — with aggregate, value objects, state VO, factory, events, repository, schema, transformers, interactor, controller) using the Plop g:domain generator, then fill it in the Supy way. Use when adding a new domain/bounded-context to a nestjs-nx supy repo.
+description: '[backend] Scaffold a complete Clean-Architecture/DDD bounded context in a supy backend repo (five tagged libs — api, logic, domain/model, domain/service, data — with aggregate, value objects, state VO, factory, events, repository, schema, transformers, interactor, controller) using the Plop g:domain generator, then fill it in the Supy way. Use when adding a new domain/bounded-context to a nestjs-nx supy repo.'
 ---
 
 ## Step 0 — Scaffold first, never hand-create

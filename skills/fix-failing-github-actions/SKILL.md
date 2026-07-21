@@ -1,6 +1,6 @@
 ---
 name: fix-failing-github-actions
-description: Finds failing GitHub Actions checks for the current branch or PR, fixes the root cause, commits and pushes using Supy conventions, then re-checks after a short wait — looping until every check is green. Use when asked to fix failing CI, fix status checks, fix GitHub Actions, or get the branch green. Stack-agnostic — works in any repo/CI.
+description: '[any] Finds failing GitHub Actions checks for the current branch or PR, fixes the root cause, commits and pushes using Supy conventions, then re-checks after a short wait — looping until every check is green. Use when asked to fix failing CI, fix status checks, fix GitHub Actions, or get the branch green. Stack-agnostic — works in any repo/CI.'
 ---
 
 ## When this applies

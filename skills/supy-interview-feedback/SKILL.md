@@ -1,6 +1,6 @@
 ---
 name: supy-interview-feedback
-description: Evaluates a candidate's Flutter take-home / code-assessment project against Supy's Flutter architecture, BLoC, and engineering standards, then writes a scored INTERVIEW_FEEDBACK.md with a hiring recommendation. Use when asked to review, grade, or give interview feedback on a candidate's Flutter project or code test.
+description: '[flutter] Evaluates a candidate''s Flutter take-home / code-assessment project against Supy''s Flutter architecture, BLoC, and engineering standards, then writes a scored INTERVIEW_FEEDBACK.md with a hiring recommendation. Use when asked to review, grade, or give interview feedback on a candidate''s Flutter project or code test.'
 ---
 
 # Interview Feedback

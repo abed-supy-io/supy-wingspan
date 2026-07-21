@@ -1,6 +1,6 @@
 ---
 name: supy-spike-spec
-description: Turn a Jira ticket into a spike/research specification — research questions, options to evaluate, PoC scope, and success criteria — saved to docs/specs/. Use when a ticket needs technical investigation or a proof of concept before implementation can be planned, on any supy-* repo.
+description: '[any] Turn a Jira ticket into a spike/research specification — research questions, options to evaluate, PoC scope, and success criteria — saved to docs/specs/. Use when a ticket needs technical investigation or a proof of concept before implementation can be planned, on any supy-* repo.'
 ---
 
 ## Step 1 — Read project context

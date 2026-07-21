@@ -1,6 +1,6 @@
 ---
 name: supy-code-assessment
-description: Performs a structured, critical, whole-project audit of a Flutter codebase against Supy's Flutter standards (Clean Architecture, BLoC, go_router, get_it, error handling, design tokens, testing) and writes a CODE_ASSESSMENT.md report of architectural risks, scalability/testability gaps, and a refactoring estimate. Flutter/Dart-specific — does not apply to other stacks. Use when asked to assess, audit, or evaluate the health or Supy-compliance of an existing Flutter project, or to produce a CODE_ASSESSMENT.md. For reviewing a single Flutter diff/PR instead of a whole project, use the supy-flutter-reviewer agent.
+description: '[flutter] Performs a structured, critical, whole-project audit of a Flutter codebase against Supy''s Flutter standards (Clean Architecture, BLoC, go_router, get_it, error handling, design tokens, testing) and writes a CODE_ASSESSMENT.md report of architectural risks, scalability/testability gaps, and a refactoring estimate. Flutter/Dart-specific — does not apply to other stacks. Use when asked to assess, audit, or evaluate the health or Supy-compliance of an existing Flutter project, or to produce a CODE_ASSESSMENT.md. For reviewing a single Flutter diff/PR instead of a whole project, use the supy-flutter-reviewer agent.'
 ---
 
 ## Your role

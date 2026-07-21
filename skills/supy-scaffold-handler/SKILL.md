@@ -1,6 +1,6 @@
 ---
 name: supy-scaffold-handler
-description: Scaffold a new NestJS NATS message/event handler in a supy backend repo following Supy Nx/NestJS conventions (handler + DTO + test). Use when adding a new NATS pattern to a service.
+description: '[backend] Scaffold a new NestJS NATS message/event handler in a supy backend repo following Supy Nx/NestJS conventions (handler + DTO + test). Use when adding a new NATS pattern to a service.'
 ---
 
 ## Step 1 — Read the governing standards

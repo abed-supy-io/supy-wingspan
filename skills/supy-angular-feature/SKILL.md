@@ -1,6 +1,6 @@
 ---
 name: supy-angular-feature
-description: How to write Angular code in a supy frontend repo the Supy way — OnPush components, inject(), signal inputs/outputs, NGXS state with Immer produce, URI-token services, lazy routes. Use whenever writing or editing Angular code under apps/ or libs/ in an angular-nx supy repo.
+description: '[frontend] How to write Angular code in a supy frontend repo the Supy way — OnPush components, inject(), signal inputs/outputs, NGXS state with Immer produce, URI-token services, lazy routes. Use whenever writing or editing Angular code under apps/ or libs/ in an angular-nx supy repo.'
 ---
 
 ## When this applies

@@ -1,6 +1,6 @@
 ---
 name: supy-analyze-native-codebase
-description: Analyze an iOS (Swift/Objective-C) and/or Android (Kotlin/Java) codebase to generate a comprehensive Flutter migration manifest, PRD, risk register, and per-feature reports. Flutter/mobile-specific. Use when planning a native-to-Flutter migration, auditing a native mobile codebase for migration readiness, or generating a migration roadmap for a Supy mobile app.
+description: '[flutter] Analyze an iOS (Swift/Objective-C) and/or Android (Kotlin/Java) codebase to generate a comprehensive Flutter migration manifest, PRD, risk register, and per-feature reports. Flutter/mobile-specific. Use when planning a native-to-Flutter migration, auditing a native mobile codebase for migration readiness, or generating a migration roadmap for a Supy mobile app.'
 ---
 
 ## When this applies

@@ -1,6 +1,6 @@
 ---
 name: supy-app-release-readiness
-description: Audits a Flutter app for release readiness across all detected platforms (Android, iOS, web, macOS, Linux, Windows). Launches the six platform-specific readiness agents in parallel, then synthesizes a unified actionable release todo list. Flutter-specific — only applies to Flutter mobile repos. Use when the user wants to prepare their Flutter app for release or store submission.
+description: '[flutter] Audits a Flutter app for release readiness across all detected platforms (Android, iOS, web, macOS, Linux, Windows). Launches the six platform-specific readiness agents in parallel, then synthesizes a unified actionable release todo list. Flutter-specific — only applies to Flutter mobile repos. Use when the user wants to prepare their Flutter app for release or store submission.'
 ---
 
 ## Setup

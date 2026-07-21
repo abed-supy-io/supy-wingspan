@@ -47,7 +47,7 @@ procedure, the pilot exercise checklist, and known gaps.
 
 ## Usage
 
-The plugin exposes **6 slash commands** and **29 skills**. Commands are typed
+The plugin exposes **7 slash commands** and **30 skills**. Commands are typed
 directly (`/name`); skills are invoked in natural language ("run the supy-commit
 skill") — they are not slash commands.
 
@@ -63,6 +63,7 @@ writes only the Universal + this-repo's-stack skills into each repo's `CLAUDE.md
 |---|---|
 | `/supy-brainstorm [idea]` | Turns a rough idea into a design, wrapping `superpowers:brainstorming` with Supy stack context. Falls back to a built-in one-question-at-a-time clarification (purpose → constraints → success criteria) when `superpowers` is absent. |
 | `/supy-plan [feature]` | Produces a phased implementation plan from a feature/task description, wrapping `superpowers:writing-plans`. Fallback writes a domain → application → infrastructure → testing task list to `docs/superpowers/plans/`. |
+| `/supy-feature [feature]` | Plans **one feature across several open repos** from a single prompt. Scans the parent folder for git repos, detects each one's stack, proposes which repos the feature touches (you confirm), then writes a per-repo plan into each affected repo under `docs/superpowers/plans/` — each grounded in that repo's standards, all naming the shared cross-repo contract identically. Plan-only: never edits code, branches, commits, or opens PRs. |
 | `/supy-build [plan]` | Executes a plan task-by-task, wrapping `superpowers:executing-plans` / `subagent-driven-development`. Fallback runs the plan with **local-only** commits (never pushes). |
 | `/supy-onboard [focus]` | Onboards or refreshes a repo's Supy AI setup — a thin wrapper over the `supy-baseline` skill, plus a section-level CLAUDE.md drift check against the stack's template. Reports drift before offering regeneration. |
 | `/supy-release [action]` | Reports the release-please state of this plugin repo: pending release PR, unreleased commits since the last tag, the version bump they imply, and consumer impact. Read-only unless passed `ship`, which merges the pending release PR after confirmation. Degrades to a local-git-only report when `gh` is unavailable. |
@@ -84,6 +85,7 @@ writes only the Universal + this-repo's-stack skills into each repo's `CLAUDE.md
 | `fix-failing-github-actions` | Finds the failing GitHub Actions checks for the branch/PR, pulls the run logs, fixes the root cause, commits + pushes (via supy-commit / supy-create-pr), then re-checks after a short wait — looping until every check is green. |
 | `supy-impl-spec` | Turns a Jira/GitHub ticket into a full implementation spec — architecture, testing strategy, implementation details — under `docs/specs/`, ready to build from. |
 | `supy-spike-spec` | Turns a ticket into a spike/research spec — research questions, options to evaluate, PoC scope, success criteria — under `docs/specs/`, for work that needs investigation before it can be planned. |
+| `supy-feature-fanout` | Behind `/supy-feature`. Plans one feature across several open repos: scans the parent folder, detects each repo's stack, proposes the affected set (you confirm), then writes a per-repo plan (grounded in that repo's standards) into each. Plan-only — never edits code or opens PRs. |
 
 #### Backend — NestJS on Nx (`nestjs-nx`)
 
@@ -161,6 +163,87 @@ repo's stack, into each generated `CLAUDE.md`, so the guidance persists even wit
 "run the supy-commit skill"                           # conventional commit + trailer
 ```
 
+### Examples
+
+Worked, step-by-step walkthroughs live under [`docs/`](docs/). Start here:
+
+- **[`docs/SKILLS-IN-A-SESSION.md`](docs/SKILLS-IN-A-SESSION.md)** — how each skill plays
+  out in a live session (what you type, what happens), incl. `/supy-plan` and the everyday
+  build → review → commit → PR loop.
+- **[`docs/CROSS-REPO-FEATURE-WALKTHROUGH.md`](docs/CROSS-REPO-FEATURE-WALKTHROUGH.md)** — one
+  feature ("admin force-logout") driven from zero to an open PR in **four** repos
+  (backend + firebase-functions + frontend + flutter), one PR each.
+- **[`docs/CTO-DEMO.md`](docs/CTO-DEMO.md)** — a 10-minute, copy-paste demo that proves the
+  two headline behaviors (auto-detect the stack; surface only that stack's skills) with real
+  hook output.
+
+#### Example 1 — one skill in a session (`/supy-plan`)
+
+```text
+/supy-plan add an admin force-logout endpoint that revokes all sessions for a user
+```
+
+→ loads the backend standards, reads existing aggregates via Cortex (if connected), and
+writes a phased plan (domain → interactor → infrastructure → testing, each task naming its Nx
+library) to `docs/superpowers/plans/admin-force-logout.md`, with a **Supy Standards
+Alignment** section declaring the new NATS event and expected commit types.
+
+#### Example 2 — the everyday loop (any repo)
+
+```text
+implement phase 1 of the plan          # you write code the Supy way
+review my changes before I commit      # → /supy-review: stack reviewers in parallel
+commit this                            # → /supy-commit: feat(auth): add force-logout endpoint …
+open a PR                              # → /supy-create-pr: conventional title + evidence body
+```
+
+#### Example 3 — the stack filter (why backend never sees Flutter skills)
+
+```text
+On the FLUTTER repo:   "implement the figma design"  → nudge: supy-figma-implement-design
+On the BACKEND repo:   "implement the figma design"  → (silent)
+```
+
+And the `/supy` menu now prefixes each skill with its stack, so it's obvious at a glance:
+
+```text
+[flutter]  supy-flutter-feature     How to write Flutter code in a supy mobile repo…
+[backend]  supy-clean-architecture  How to write NestJS backend code in a supy service repo…
+[any]      supy-commit              Stage-aware conventional commit per Supy commitlint…
+```
+
+#### Example 4 — one feature across many open repos (`/supy-feature`)
+
+You have several `supy-*` repos checked out under one folder and a feature that spans several
+of them. From any one of them:
+
+```text
+/supy-feature add an admin force-logout that revokes all sessions for a user
+```
+
+→ scans the parent folder, detects each repo's stack, and **proposes** the affected set:
+
+```text
+  ✓ supy-backend   (nestjs-nx) — owns the domain; endpoint + emits user.sessions-revoked
+  ✓ supy-frontend  (angular-nx) — admin UI to trigger it
+  ✓ supy-retailer  (flutter)    — client reacts to the event
+  ✗ supy-cli       (ts-cli)     — no CLI surface — skipping
+  Confirm? (yes / edit the set)
+```
+
+→ after you confirm, it writes a per-repo plan into each ✓ repo (same feature slug, same
+shared contract named identically), then prints the next command per repo:
+
+```text
+cd supy-backend  && /supy-build docs/superpowers/plans/admin-force-logout.md
+cd supy-frontend && /supy-build docs/superpowers/plans/admin-force-logout.md
+cd supy-retailer && /supy-build docs/superpowers/plans/admin-force-logout.md
+```
+
+It is **plan-only** — you review each plan, then build/review/commit/PR in each repo.
+See the full walkthrough in
+[`docs/CROSS-REPO-FEATURE-WALKTHROUGH.md`](docs/CROSS-REPO-FEATURE-WALKTHROUGH.md).
+
 ### Cortex MCP (optional)
 
 When the Cortex MCP server is connected, the review agents and `supy-baseline` use it
@@ -172,7 +255,7 @@ repo's `CLAUDE.md` and the mined standards under `config/standards/` — nothing
 ## Components
 
 - `agents/` — **17 subagents**: 11 review subagents — backend (architecture, NATS events, tests, security), Angular (frontend), Flutter (mobile), Firebase Functions, TypeScript CLI, AI-agents monorepo, and the two stack-agnostic reviewers (commit/PR conventions + secrets) that run on every stack — plus 6 Flutter release-readiness agents under `agents/app-readiness/` (Android/iOS/web/macOS/Linux/Windows), launched in parallel by `supy-app-release-readiness`
-- `skills/` — **29 skills**, grouped by stack (see [Usage](#skills)): 11 Universal (review, baseline, commit, create-pr, rebase, hotfix, debrief, fix-failing-github-actions, impl-spec, spike-spec, kg), 3 backend, 2 frontend, 10 Flutter/mobile, and one each for firebase-functions, ts-cli, ai-agents. Every repo sees the Universal set plus only its own stack's skills
+- `skills/` — **30 skills**, grouped by stack (see [Usage](#skills)): 12 Universal (review, baseline, commit, create-pr, rebase, hotfix, debrief, fix-failing-github-actions, impl-spec, spike-spec, feature-fanout, kg), 3 backend, 2 frontend, 10 Flutter/mobile, and one each for firebase-functions, ts-cli, ai-agents. Every repo sees the Universal set plus only its own stack's skills
 - `commands/` — orchestration wrappers over superpowers
 - `hooks/` — stack detection on session open (nestjs-nx / angular-nx / nx / flutter / firebase-functions / ts-cli / ai-agents / k8s-config / generic) + a UserPromptSubmit skill router that nudges toward the matching workflow skill
 - `config/standards/` — mined Supy standards, source of truth for the agents. Three cross-cutting standards at root (`commit-conventions.md`, `secrets-and-config.md`, `ci-coverage-baseline.md`) plus per-stack rulebooks: backend at root + `backend/` for module boundaries, `frontend/`, `flutter/`, `firebase-functions/`, `ts-cli/`, `ai-agents/` (k8s-config has no standards subdir — it's governed by the root `secrets-and-config.md`)
