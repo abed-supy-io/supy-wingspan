@@ -48,17 +48,28 @@ mkdir -p "$(dirname "$WORK")"
 gh repo clone abed-supy-io/supy-wingspan "$WORK" -- --depth 1
 ```
 
-If the clone fails (no `gh`, not authenticated, no network), do not stop the
-whole flow — jump to the degradation path in Step 6 using the read-only plugin
-cache at `${CLAUDE_PLUGIN_ROOT}` for mapping instead.
+`SRC` is the directory the rest of the steps read and diff against. On a clean
+clone it is the clone; on the **degraded path** it is the read-only plugin cache:
+
+```bash
+# clone succeeded
+SRC="$WORK"; DEGRADED=0
+# clone failed (no gh, not authenticated, no network)
+SRC="${CLAUDE_PLUGIN_ROOT}"; DEGRADED=1
+```
+
+If the clone fails, do not stop the whole flow. Set `DEGRADED=1` and continue
+through Steps 3–5 exactly as written but reading against `SRC`
+(`${CLAUDE_PLUGIN_ROOT}`) — you still map the feedback, draft the change, and
+show the user the diff. Only Step 6 differs: when `DEGRADED=1` you take the
+degradation path (print the diff, no push) instead of opening the PR.
 
 ## Step 3 — Map the feedback to the target file(s)
 
-Read the standards in the clone (or `${CLAUDE_PLUGIN_ROOT}` on the degraded
-path) and decide which file the feedback changes:
+Read the standards under `SRC` and decide which file the feedback changes:
 
 ```bash
-ls "$WORK/config/standards"
+ls "$SRC/config/standards"
 ```
 
 Rules:
@@ -74,7 +85,7 @@ Rules:
 
 ## Step 4 — Draft the edit
 
-Apply the minimal change in the clone, matching the voice and Markdown structure
+Apply the minimal change under `SRC`, matching the voice and Markdown structure
 of the surrounding standard. Do not reformat unrelated lines.
 
 ## Step 5 — Confirm with the user (gate)
@@ -82,13 +93,18 @@ of the surrounding standard. Do not reformat unrelated lines.
 Show the user:
 
 1. The target file path(s).
-2. The exact diff (`git -C "$WORK" diff`).
+2. The exact diff — `git -C "$SRC" diff` when `SRC` is a git checkout. On the
+   degraded path the plugin cache may not be a git repo; if `git diff` is
+   unavailable there, show the before/after of the edited region instead.
 
 Wait for explicit approval. The user may redirect the target file or reword the
 change — apply their adjustments and re-show the diff. If they decline, stop
 without pushing and leave no branch behind.
 
 ## Step 6 — Land the PR
+
+If `DEGRADED=1`, skip straight to the degradation path below (no branch, no
+push). Otherwise (`SRC` is the clone) open the PR as follows.
 
 Choose the commit type by the nature of the change, validated against
 `config/standards/commit-conventions.md`:
