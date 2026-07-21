@@ -28,8 +28,9 @@ Determine the stack of the current repo. Prefer the stack named in the
 SessionStart hook line if one is in context. Otherwise apply this quick,
 best-effort subset as a fallback for provenance only — it is NOT the same
 order, and not the same stack list, as the canonical detection in
-`skills/shared/references/stack-detection.md` (which is authoritative and also
-covers `ai-agents`, `k8s-config`, and `other`/`nx`):
+`skills/shared/references/stack-detection.md` (which is authoritative, covers
+more stacks such as `ai-agents`, and emits `other` — not `unknown` — as its
+fallback):
 
 - `pubspec.yaml` at root → `flutter`
 - `nx.json` + `package.json` with `@angular/core` → `angular-nx`
