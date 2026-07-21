@@ -47,7 +47,7 @@ jobs:
       - name: Shellcheck all shell scripts
         run: |
           shopt -s nullglob
-          shellcheck hooks/*.sh scripts/*.sh skills/*/scripts/*.sh .githooks/*
+          shellcheck hooks/*.sh scripts/*.sh skills/*/scripts/*.sh evals/*.sh .githooks/*
 
   manifests:
     name: JSON manifests
@@ -117,6 +117,16 @@ jobs:
       - uses: actions/checkout@v7
       - name: Run skill-router fixture tests
         run: bash scripts/test-skill-router.sh
+
+  eval-fixtures:
+    name: Eval fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate behavioral-eval fixture structure
+        # Deterministic, no API key. The behavioral scorer (run-secrets-eval.sh)
+        # calls an LLM and is run locally/nightly, not gated here.
+        run: bash evals/validate-fixtures.sh
 
   links:
     name: Markdown links
