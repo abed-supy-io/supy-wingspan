@@ -106,6 +106,16 @@ Rules:
 - If no file is an obvious home, ask the user which area (standard / skill /
   agent) it belongs to rather than guessing.
 
+Then, before drafting anything, **check the target file(s) for the rule already
+being present** (dedup). Read the section the feedback concerns and decide:
+
+- If the standard **already states this rule**, do not draft a redundant edit.
+  Tell the user it is already covered — name the file and quote the section or
+  line that covers it — and stop. No diff, no branch, no PR.
+- If the feedback would **strengthen, narrow, correct, or add nuance to** an
+  existing rule (not merely restate it), that is a real change — continue to
+  Step 4 and make the change against that existing section.
+
 ## Step 4 — Draft the edit
 
 Draft the minimal change against `SRC`, matching the voice and Markdown
@@ -135,6 +145,42 @@ without pushing and leave no branch behind.
 
 If `DEGRADED=1`, skip straight to the degradation path below (no branch, no
 push). Otherwise (`SRC` is the clone) open the PR as follows.
+
+First, **check for an existing open PR so you don't file a duplicate**:
+
+```bash
+gh pr list --repo abed-supy-io/supy-wingspan --state open \
+  --search "<distinctive words from the feedback / the target file path>"
+```
+
+If a matching open PR already proposes this change, do not open a second one:
+show the user its title and URL, and ask whether to **amend that PR** or
+**open a new one anyway**.
+
+- **Amend** — check out that PR's branch in the clone, apply your edit on top,
+  and push; no new `pr create`. `gh pr checkout` operates on the current
+  directory's repo, so run it with the clone as the working directory. Run as a
+  single bash block (per the Step 2 note):
+
+  ```bash
+  WORK="${TMPDIR:-/tmp}/supy-feedback/supy-wingspan"
+  cd "$WORK" || exit 1
+  gh pr checkout <pr-number>
+  # re-apply the Step 4 edit against the checked-out branch, then:
+  git add -A
+  git commit -m "<type>(<scope>): <subject>
+
+  <one-line body>
+
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+  git push
+  ```
+
+- **Open a new one anyway** — continue to the branch/commit/push flow below.
+
+Only take one of these once the user has confirmed there is no duplicate — or
+has chosen how to proceed. (This check needs `gh`; on the degraded path it is
+skipped along with the rest of Step 6.)
 
 Choose the commit type by the nature of the change, validated against
 `config/standards/commit-conventions.md`:
@@ -202,5 +248,7 @@ there is only one).
 | Feedback text empty and unclear | Ask the user to state it in one sentence; stop until answered. |
 | `gh` unavailable / not authenticated / no network | Degradation path: print the diff, no crash. |
 | Feedback maps to no obvious file | Ask which area (standard / skill / agent). |
+| Rule already stated in the standard | Report it's already covered (file + section); stop — no diff, no branch, no PR. |
+| An open PR already proposes this change | Surface its title/URL; ask whether to amend it or open a new PR; don't blindly duplicate. |
 | Not in a git repo | Provenance degrades (repo/stack = `unknown`); feedback still flows. |
 | User declines the diff | Stop; leave no branch. |
