@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.4...supy-wingspan-v0.1.5) (2026-07-21)
+
+
+### Features
+
+* implement eval harness with fixture validation and behavioral s… ([b934289](https://github.com/abed-supy-io/supy-wingspan/commit/b934289c93e5d6fc8f519aa05d874a999bffff55))
+* implement eval harness with fixture validation and behavioral scoring ([94ba08a](https://github.com/abed-supy-io/supy-wingspan/commit/94ba08a0e42a01339d4eac6e1c5c1fb6da752c18))
+
 ## [0.1.4](https://github.com/abed-supy-io/supy-wingspan/compare/supy-wingspan-v0.1.3...supy-wingspan-v0.1.4) (2026-07-21)
 
 
