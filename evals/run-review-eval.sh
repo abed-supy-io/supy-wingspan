@@ -41,12 +41,14 @@ score_findings() {
   done < <(jq -r '.findings[]? | [(.file|split("/")|last), .line] | @tsv' <<<"$exp_json")
 
   local -a act_files=() act_lines=()
-  while IFS= read -r tok; do
+  local line tok
+  while IFS= read -r line; do
+    tok="$(grep -oE '[A-Za-z0-9._/-]+:[0-9]+' <<<"$line" | head -n1)"
     [ -z "$tok" ] && continue
     local af="${tok%:*}" al="${tok##*:}"
     act_files+=("$(basename "$af")")
     act_lines+=("$al")
-  done < <(grep -oE '[A-Za-z0-9._/-]+:[0-9]+' <<<"$out_text")
+  done <<<"$out_text"
 
   local n_exp=${#exp_files[@]} n_act=${#act_files[@]}
   local -a used=()
@@ -54,6 +56,7 @@ score_findings() {
   for ((i = 0; i < n_act; i++)); do used[i]=0; done
 
   local tp=0 fp=0 fn=0 e a hit dist
+  # Greedy matching: first eligible actual finding claims an expected. Not globally optimal, but deterministic and sufficient for the fixtures we test.
   for ((e = 0; e < n_exp; e++)); do
     hit=0
     for ((a = 0; a < n_act; a++)); do
