@@ -1,0 +1,12 @@
+diff --git a/src/application/scripts/deactivate-stale-vendors.script.ts b/src/application/scripts/deactivate-stale-vendors.script.ts
+index 2b3c4d5..6e7f8a9 100644
+--- a/src/application/scripts/deactivate-stale-vendors.script.ts
++++ b/src/application/scripts/deactivate-stale-vendors.script.ts
+@@ -13,6 +13,6 @@ export class DeactivateStaleVendorsScript implements IScript {
+   async execute(context: ScriptContext): Promise<void> {
+     const repo = context.resolve('vendorRepository');
+     const stale = await repo.findStale();
+-    return;
++    await repo.deactivateMany(stale.map((v) => v.id));
+   }
+ }

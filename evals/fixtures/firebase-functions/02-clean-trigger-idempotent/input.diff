@@ -1,0 +1,19 @@
+diff --git a/functions/src/data/repositories/order-summary.repository.ts b/functions/src/data/repositories/order-summary.repository.ts
+index 1a2b3c4..5d6e7f8 100644
+--- a/functions/src/data/repositories/order-summary.repository.ts
++++ b/functions/src/data/repositories/order-summary.repository.ts
+@@ -10,7 +10,14 @@ export class OrderSummaryRepository {
+   constructor(private readonly db: Firestore) {}
+
+   async findById(orderId: string): Promise<OrderSummary | null> {
+     const doc = await this.db.collection('order-summaries').doc(orderId).get();
+     return doc.exists ? (doc.data() as OrderSummary) : null;
+   }
++
++  async syncSummary(orderId: string, summary: OrderSummary): Promise<void> {
++    await this.db
++      .collection('order-summaries')
++      .doc(orderId)
++      .set(summary, { merge: true });
++  }
+ }

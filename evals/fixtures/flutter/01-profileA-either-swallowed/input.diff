@@ -1,0 +1,25 @@
+diff --git a/lib/features/orders/presentation/bloc/orders_bloc.dart b/lib/features/orders/presentation/bloc/orders_bloc.dart
+index 1a2b3c4..5d6e7f8 100644
+--- a/lib/features/orders/presentation/bloc/orders_bloc.dart
++++ b/lib/features/orders/presentation/bloc/orders_bloc.dart
+@@ -1,18 +1,20 @@
+ import 'package:bloc/bloc.dart';
+ import 'package:dartz/dartz.dart';
+
+ import '../../domain/usecases/get_orders.dart';
+ import 'orders_event.dart';
+ import 'orders_state.dart';
+
+ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
+   OrdersBloc({required GetOrders getOrders})
+       : _getOrders = getOrders,
+         super(const OrdersState.initial()) {
+     on<OrdersRequested>((event, emit) async {
+       emit(const OrdersState.loading());
++      final result = await _getOrders(const NoParams());
++      emit(OrdersState.loaded(result.getOrElse(() => const [])));
+     });
+   }
+
+   final GetOrders _getOrders;
+ }

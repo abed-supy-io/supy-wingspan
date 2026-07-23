@@ -1,0 +1,33 @@
+diff --git a/lib/features/invoices/data/repositories/invoices_repository_impl.dart b/lib/features/invoices/data/repositories/invoices_repository_impl.dart
+index 2c3d4e5..6f7a8b9 100644
+--- a/lib/features/invoices/data/repositories/invoices_repository_impl.dart
++++ b/lib/features/invoices/data/repositories/invoices_repository_impl.dart
+@@ -1,19 +1,28 @@
+ import '../datasources/invoices_remote_data_source.dart';
+ import '../../domain/entities/invoice.dart';
+ import '../../domain/repositories/invoices_repository.dart';
+
+ class InvoicesRepositoryImpl implements InvoicesRepository {
+   InvoicesRepositoryImpl(this._remote);
+
+   final InvoicesRemoteDataSource _remote;
+
+   @override
+   Future<List<Invoice>> getInvoices() async {
+     try {
+       final res = await _remote.fetchInvoices();
+       return res.map((e) => e.toEntity()).toList();
+     } catch (e, s) {
+       throwAppException(e, s);
+     }
+   }
++
++  @override
++  Future<void> deleteInvoice(String id) async {
++    try {
++      await _remote.deleteInvoice(id);
++    } catch (e) {
++      return;
++    }
++  }
+ }

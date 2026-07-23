@@ -1,0 +1,6 @@
+{
+  "reviewer": "supy-firebase-functions-reviewer",
+  "description": "A repository method reconciles the order-summary document by its stable orderId key using set with merge, so redelivery of the triggering event on retry is a safe no-op. Must produce a clean PASS.",
+  "verdict": "pass",
+  "findings": []
+}

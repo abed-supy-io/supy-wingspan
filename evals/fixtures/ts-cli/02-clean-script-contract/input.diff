@@ -1,0 +1,12 @@
+diff --git a/src/application/scripts/replace-catalog-skus.script.ts b/src/application/scripts/replace-catalog-skus.script.ts
+index 3c4d5e6..7f8a9b0 100644
+--- a/src/application/scripts/replace-catalog-skus.script.ts
++++ b/src/application/scripts/replace-catalog-skus.script.ts
+@@ -14,5 +14,7 @@ export class ReplaceCatalogSkusScript implements IScript {
+   async execute(context: ScriptContext): Promise<void> {
++    await context.confirmProduction('catalog', 'replace-catalog-skus');
+     const repo = context.resolve('productRepository');
+     const products = await repo.findAll();
++    await batchArray(products, 500, (batch) => repo.replaceSkus(batch));
+   }
+ }

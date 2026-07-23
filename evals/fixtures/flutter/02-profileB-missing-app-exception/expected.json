@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-flutter-reviewer",
+  "description": "Profile B (no dartz) repository adds a new method whose catch block swallows the error with a bare return instead of rethrowing via throwAppException — the failure never reaches the caller as a typed AppException.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "lib/features/invoices/data/repositories/invoices_repository_impl.dart",
+      "line": 24,
+      "severity": "high",
+      "rule_contains": "rule 11"
+    }
+  ]
+}

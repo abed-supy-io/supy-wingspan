@@ -103,6 +103,14 @@ for dir in "$fixtures_root"/*/*/; do
   fi
 done
 
+# --- Check S: every stack-distinctive dimension has at least one fixture. ---
+REQUIRED_DIMS=(secrets architecture angular flutter firebase-functions ts-cli ai-agents)
+for d in "${REQUIRED_DIMS[@]}"; do
+  if ! compgen -G "$fixtures_root/$d/*/expected.json" >/dev/null; then
+    err "no fixtures for required dimension: $d"
+  fi
+done
+
 if [ "$fail" -ne 0 ]; then
   echo ""
   echo "Fixture validation failed."

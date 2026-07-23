@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-flutter-reviewer",
+  "description": "Profile A (dartz present) bloc resolves the usecase's Either result with getOrElse and discards the Left branch, instead of folding both branches — the domain failure becomes invisible to the UI.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "lib/features/orders/presentation/bloc/orders_bloc.dart",
+      "line": 15,
+      "severity": "high",
+      "rule_contains": "rule 10"
+    }
+  ]
+}

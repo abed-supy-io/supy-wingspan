@@ -1,0 +1,22 @@
+diff --git a/functions/src/index.ts b/functions/src/index.ts
+index 8e1f2a3..3c4d5e6 100644
+--- a/functions/src/index.ts
++++ b/functions/src/index.ts
+@@ -1,11 +1,17 @@
+ import { onCall } from 'firebase-functions/v2/https';
+ import { container } from './container';
+ import { mapCallableInput } from './mappers/callable-input.mapper';
+ import { requireAdmin } from './auth/require-admin';
+
+ // @admin
+ export const setAdminClaim = onCall(async (request) => {
+   requireAdmin(request.auth);
+   const interactor = container.resolve('setAdminClaimInteractor');
+   return interactor.execute(mapCallableInput(request));
+ });
++
++// @admin
++export const deactivateUser = onCall(async (request) => {
++  const interactor = container.resolve('deactivateUserInteractor');
++  return interactor.execute(mapCallableInput(request));
++});

@@ -1,0 +1,13 @@
+diff --git a/cortex/mcp/tools/inject-entity.tool.ts b/cortex/mcp/tools/inject-entity.tool.ts
+index 4d5e6f7..8a9b0c1 100644
+--- a/cortex/mcp/tools/inject-entity.tool.ts
++++ b/cortex/mcp/tools/inject-entity.tool.ts
+@@ -6,3 +6,8 @@ server.tool('search_entities', async (input) => {
+   requireScope('kg:read')(input);
+   return pool.query('SELECT * FROM entities WHERE name = $1', [input.name]);
+ });
++
++server.tool('inject_entity', async (input) => {
++  const pgUrl = process.env.PG_URL;
++  return pool.query('INSERT INTO entities (name, body) VALUES ($1, $2)', [input.name, input.body]);
++});

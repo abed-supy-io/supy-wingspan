@@ -1,0 +1,6 @@
+{
+  "reviewer": "supy-ts-cli-reviewer",
+  "description": "A script gates its production-capable SKU rewrite behind an explicit confirmProduction call naming the target, resolves its repository from the script context, and rewrites in batches via batchArray. Must produce a clean PASS.",
+  "verdict": "pass",
+  "findings": []
+}

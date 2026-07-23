@@ -1,0 +1,6 @@
+{
+  "reviewer": "supy-angular-reviewer",
+  "description": "A presentational component adds a signal output() alongside its existing signal input — OnPush, signal I/O only, zero injected domain state. Must produce a clean PASS.",
+  "verdict": "pass",
+  "findings": []
+}

@@ -1,0 +1,18 @@
+diff --git a/cortex/kg/consumers/entity-sync.consumer.ts b/cortex/kg/consumers/entity-sync.consumer.ts
+index 5e6f7a8..9b0c1d2 100644
+--- a/cortex/kg/consumers/entity-sync.consumer.ts
++++ b/cortex/kg/consumers/entity-sync.consumer.ts
+@@ -6,4 +6,12 @@
+ export const entitySyncWorker = new Worker('entity-sync', async (job) => {
+   const { entityId, payload } = job.data;
+-  await pool.query('INSERT INTO entities (id, body) VALUES ($1, $2)', [entityId, payload]);
++  try {
++    await pool.query(
++      'INSERT INTO entities (id, body) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET body = $2',
++      [entityId, payload],
++    );
++  } catch (err) {
++    logger.error('entity-sync failed', { entityId, err });
++    throw err;
++  }
+ }, { connection: getRedis() });

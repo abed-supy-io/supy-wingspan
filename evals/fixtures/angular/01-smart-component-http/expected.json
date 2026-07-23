@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-angular-reviewer",
+  "description": "A presentational (dumb) component injects HttpClient directly and issues its own request, instead of staying signal-inputs-only and delegating fetching to a smart component/service — a smart/dumb split violation.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "libs/orders/src/lib/components/order-summary-card/order-summary-card.component.ts",
+      "line": 12,
+      "severity": "high",
+      "rule_contains": "rule 6"
+    }
+  ]
+}
