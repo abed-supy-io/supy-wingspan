@@ -1,0 +1,8 @@
+{
+  "reviewer": "supy-architecture-reviewer",
+  "description": "Application-layer service imports from the controller layer — a layer-direction (dependency-inversion) violation.",
+  "verdict": "issues",
+  "findings": [
+    { "file": "libs/inventory/application/src/lib/stock.service.ts", "line": 2, "severity": "high", "rule_contains": "layer" }
+  ]
+}

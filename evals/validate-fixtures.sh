@@ -93,6 +93,14 @@ for dir in "$fixtures_root"/*/*/; do
   if [ "$invalid" -ne 0 ]; then
     err "$name: $invalid finding(s) malformed (need file:string, line:int>=1, severity:high|med|low, rule_contains:present)"
   fi
+
+  # --- Check R: fixture names a real reviewer agent. ---
+  reviewer="$(jq -r '.reviewer // ""' "$exp_file")"
+  if [ -z "$reviewer" ]; then
+    err "$name: expected.json has no 'reviewer'"
+  elif [ ! -f "agents/$reviewer.md" ]; then
+    err "$name: reviewer '$reviewer' has no agents/$reviewer.md"
+  fi
 done
 
 if [ "$fail" -ne 0 ]; then
