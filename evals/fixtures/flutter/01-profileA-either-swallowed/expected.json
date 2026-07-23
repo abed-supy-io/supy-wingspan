@@ -7,7 +7,7 @@
       "file": "lib/features/orders/presentation/bloc/orders_bloc.dart",
       "line": 15,
       "severity": "high",
-      "rule_contains": "rule 10"
+      "rule_contains": "rule 12"
     }
   ]
 }
