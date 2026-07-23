@@ -146,6 +146,53 @@ cell is seeded `⏳` until that run happens, then refined further by the flagshi
 | `ts-cli` | `supy-ts-cli-reviewer` | 2 | ⏳ | ⏳ | ⏳ | ⏳ |
 | `ai-agents` | `supy-ai-agents-reviewer` | 2 | ⏳ | ⏳ | ⏳ | ⏳ |
 
+## Live-proof runs (flagship)
+
+The fixture scorecard above is an offline, deterministic proxy. The authoritative proof is a real
+`/supy-review` run against a real Supy repo — the **flagship** rows (1–3) of the
+[per-stack pilot tracker](#per-stack-pilot-tracker): `supy-service-inventory` (nestjs-nx),
+`supy-frontend` (angular-nx), `supy-mobile` (flutter Profile B). The step-by-step procedure for each
+is [`pilots/RUNBOOK.md`](pilots/RUNBOOK.md) (Pilots 1, 2, 3) — this section does not restate it, it
+only records the outcome. Fill each field below by copying the run's
+[`pilots/RESULTS-TEMPLATE.md`](pilots/RESULTS-TEMPLATE.md) into
+`docs/pilots/results/<repo>.md` and transcribing the matching values here. Every field is
+`⏳` until a human runs the plugin against the live repo — **do not fill any of these in from
+memory, inference, or the fixture scorecard; only a live run may populate them.**
+
+### `supy-service-inventory` (nestjs-nx)
+
+- Plugin commit SHA (supy-wingspan, short): ⏳
+- SessionStart line observed (verbatim): ⏳
+- Reviewer set dispatched: ⏳
+- Review-report header (verbatim): ⏳
+- Token/turn count (in / out · turns) — authoritative baseline: ⏳
+- Fixture-vs-live delta (did the live run surface anything the `architecture` /
+  `secrets` fixtures didn't, or vice versa?): _(pending live run)_
+
+### `supy-frontend` (angular-nx)
+
+- Plugin commit SHA (supy-wingspan, short): ⏳
+- SessionStart line observed (verbatim): ⏳
+- Reviewer set dispatched: ⏳
+- Review-report header (verbatim): ⏳
+- Token/turn count (in / out · turns) — authoritative baseline: ⏳
+- Fixture-vs-live delta (did the live run surface anything the `angular` /
+  `secrets` fixtures didn't, or vice versa?): _(pending live run)_
+
+### `supy-mobile` (flutter Profile B)
+
+- Plugin commit SHA (supy-wingspan, short): ⏳
+- SessionStart line observed (verbatim): ⏳
+- Reviewer set dispatched: ⏳
+- Review-report header (verbatim): ⏳
+- Token/turn count (in / out · turns) — authoritative baseline: ⏳
+- Fixture-vs-live delta (did the live run surface anything the `flutter` /
+  `secrets` fixtures didn't, or vice versa?): _(pending live run)_
+
+Once all three are filled and triaged per [`pilots/TRIAGE.md`](pilots/TRIAGE.md#fixture-scorecard-triage),
+tick rows 1–3 of the per-stack pilot tracker and record the token counts in the tracker's **Token
+baseline** column.
+
 ## Graceful degradation
 
 ### `/supy-brainstorm` and `/supy-plan` when `superpowers` is absent
