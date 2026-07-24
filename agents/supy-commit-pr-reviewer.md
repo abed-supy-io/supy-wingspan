@@ -79,4 +79,21 @@ Return findings in **exactly** this shape (Task 4's `supy-review` skill parses t
 
 For commit findings, use the short commit SHA as the `<file>` field (e.g., `a1b2c3d:1`). If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., an invalid
+commit type — append a minimal ` ```diff ` block after the bullet showing the corrected header
+line. Omit the block when the fix is non-mechanical or ambiguous (e.g., which scope best describes
+a multi-domain change).
+
+Example:
+
+```text
+## supy-commit-pr-reviewer — ISSUES FOUND
+- **[severity: high]** a1b2c3d:1 — commit type `bug` is not a valid Conventional Commits type → use `fix` (rule: commit-conventions.md#rules rule 2)
+```
+
+```diff
+- bug(recipe): correct wastage rounding
++ fix(recipe): correct wastage rounding
+```
+
 **Never invent rules.** Every finding must cite a rule anchor from `${CLAUDE_PLUGIN_ROOT}/config/standards/commit-conventions.md` (e.g., `commit-conventions.md#rules rule 2`, `commit-conventions.md#red-flags`).

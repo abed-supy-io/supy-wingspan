@@ -152,4 +152,21 @@ Return findings in **exactly** this shape (Task 4's `supy-review` skill parses t
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., a layer/import
+boundary violation with an unambiguous replacement import — append a minimal ` ```diff ` block
+after the bullet that applies the fix. Omit the block when the fix is non-mechanical or ambiguous
+(e.g., which factory method to introduce, how to restructure an aggregate).
+
+Example:
+
+```text
+## supy-architecture-reviewer — ISSUES FOUND
+- **[severity: high]** libs/ledger/api/src/ledger.rpc.controller.ts:3 — api layer directly imports data layer `@supy/transfer/data` → import `ITransferRepository` from `@supy/transfer/domain/model` and inject via DI (rule: architecture.md#rules rule 3)
+```
+
+```diff
+- import { TransferRepository } from '@supy/transfer/data';
++ import { ITransferRepository } from '@supy/transfer/domain/model';
+```
+
 **Never invent rules.** Every finding must cite a rule anchor from `${CLAUDE_PLUGIN_ROOT}/config/standards/architecture.md` (e.g., `architecture.md#rules rule 3`, `architecture.md#ddd-building-blocks rule 5`, `architecture.md#red-flags`).

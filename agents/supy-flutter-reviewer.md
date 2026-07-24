@@ -243,4 +243,21 @@ Return findings in **exactly** this shape (the `supy-review` skill parses this f
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., a raw color
+literal that maps 1:1 to a design token — append a minimal ` ```diff ` block after the bullet that
+applies the fix. Omit the block when the fix is non-mechanical or ambiguous (e.g., converting a
+`Cubit` to a `Bloc` with new sealed events).
+
+Example:
+
+```text
+## supy-flutter-reviewer — ISSUES FOUND
+- **[severity: low]** lib/features/tasks/presentation/pages/task_detail_page.dart:2 — raw `Color(0xFF1A1A1A)` literal → use `context.colors` / `context.supyColors` (rule: flutter-conventions.md#rules rule 18)
+```
+
+```diff
+- color: Color(0xFF1A1A1A),
++ color: context.colors.surfaceDark,
+```
+
 **Never invent rules.** Every finding must cite a rule anchor from one of the two governing standards files (e.g., `flutter-conventions.md#rules rule 1`, `architecture.md#red-flags`).

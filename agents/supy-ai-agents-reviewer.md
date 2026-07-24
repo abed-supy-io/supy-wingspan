@@ -137,3 +137,22 @@ Return exactly this shape:
 - **Never invent rules.** Every finding maps to a numbered rule in the
   governing standard. If something looks wrong but no rule covers it, leave it
   out (or, if it is a repo-wide backlog item, note it once at `low`).
+
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., an ad-hoc Redis
+connection literal that should go through the shared cluster helper — append a minimal
+` ```diff ` block after the bullet that applies the fix. Never emit a secret value — a
+literal-secret finding's diff replaces the line with a Secret-Manager/`.env.example` *reference*
+and cites `path:line`. Omit the block when the fix is non-mechanical or ambiguous (e.g., how to
+add an auth scope check).
+
+Example:
+
+```text
+## supy-ai-agents-reviewer — ISSUES FOUND
+- **[severity: med]** cortex/kg/worker.ts:9 — `new Redis({ host: 'redis', port: 6379 })` bypasses the shared cluster helper → use `getRedis()` (rule: ai-agents/architecture.md#rules rule 5)
+```
+
+```diff
+- const redis = new Redis({ host: 'redis', port: 6379 });
++ const redis = getRedis();
+```

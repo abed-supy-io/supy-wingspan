@@ -138,6 +138,25 @@ Return findings in **exactly** this shape (the `supy-review` skill parses this f
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., a layer/import
+boundary violation where a command imports infrastructure directly instead of resolving a script —
+append a minimal ` ```diff ` block after the bullet that applies the fix. Never emit a secret value
+— a literal-secret finding's diff replaces the line with a Secret-Manager *reference* and cites
+`path:line`. Omit the block when the fix is non-mechanical or ambiguous (e.g., how to structure the
+production-confirmation prompt).
+
+Example:
+
+```text
+## supy-ts-cli-reviewer — ISSUES FOUND
+- **[severity: med]** src/presentation/commands/replace-skus.command.ts:4 — `mongoose.connect` and query run inline in a commander action callback → resolve an application-layer script and delegate; keep DB access in infrastructure/application (rule: architecture.md#rules rule 1)
+```
+
+```diff
+- const conn = await mongoose.connect(mongoUri);
++ const result = await context.resolveScript('replace-catalog-skus').execute(context);
+```
+
 **Never reproduce a secret value** — cite the file path and line only.
 
 **Never invent rules.** Every finding must cite a rule anchor from

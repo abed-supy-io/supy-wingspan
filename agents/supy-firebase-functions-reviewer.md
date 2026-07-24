@@ -134,6 +134,24 @@ Return findings in **exactly** this shape (the `supy-review` skill parses this f
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., a layer/import
+boundary violation with an unambiguous replacement — append a minimal ` ```diff ` block after the
+bullet that applies the fix. Never emit a secret value — a literal-secret finding's diff replaces
+the line with a Secret-Manager *reference* and cites `path:line`. Omit the block when the fix is
+non-mechanical or ambiguous (e.g., how to wire the Awilix scope).
+
+Example:
+
+```text
+## supy-firebase-functions-reviewer — ISSUES FOUND
+- **[severity: med]** functions/src/index.ts:2 — export imports the data-layer repository directly instead of resolving an interactor → import from the app interactor and resolve via Awilix (rule: architecture.md#rules rule 1)
+```
+
+```diff
+- import { OrdersRepository } from '../data/orders.repository';
++ import { syncOrdersInteractor } from '../app/sync-orders.interactor';
+```
+
 **Never reproduce a secret value** — cite the file path and line only.
 
 **Never invent rules.** Every finding must cite a rule anchor from
