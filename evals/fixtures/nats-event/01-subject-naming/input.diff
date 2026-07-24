@@ -1,0 +1,15 @@
+diff --git a/libs/inventory/api/src/transfer.nats.controller.ts b/libs/inventory/api/src/transfer.nats.controller.ts
+index 3333333..4444444 100644
+--- a/libs/inventory/api/src/transfer.nats.controller.ts
++++ b/libs/inventory/api/src/transfer.nats.controller.ts
+@@ -12,2 +12,10 @@ export class TransferNatsController {
+   }
++
++  @EventPattern('inventory.transfer.transferSubmitted')
++  async handleTransferSubmittedLegacy(
++    @Payload(new StrictValidationPipe(TransferSubmittedPayload, options))
++    payload: TransferSubmittedPayload,
++  ) {
++    await this.transferSubmittedLegacyListener.execute(payload.data);
++  }
+ }

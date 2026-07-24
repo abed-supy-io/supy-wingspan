@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-nats-event-reviewer",
+  "description": "A new @EventPattern handler is registered on a subject whose event-name segment is camelCase (`transferSubmitted`) instead of kebab-case — violates the all-kebab-case NATS subject rule.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "libs/inventory/api/src/transfer.nats.controller.ts",
+      "line": 14,
+      "severity": "med",
+      "rule_contains": "rule 3"
+    }
+  ]
+}

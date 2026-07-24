@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-commit-pr-reviewer",
+  "description": "A commit subject uses the invalid Conventional Commits type `bug` instead of `fix` for what is clearly a bug fix — rejected by commitlint.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "9f86d08",
+      "line": 1,
+      "severity": "high",
+      "rule_contains": "rule 2"
+    }
+  ]
+}

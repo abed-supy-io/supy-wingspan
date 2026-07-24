@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-security-reviewer",
+  "description": "A vendor-deactivation interactor gates the destructive action with a hardcoded role string comparison instead of a Cerbos authorization check — bypasses the policy engine and hardcodes a role name outside the canonical Cerbos-defined set.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "libs/vendor/logic/src/lib/interactors/deactivate-vendor.interactor.ts",
+      "line": 11,
+      "severity": "high",
+      "rule_contains": "rule 8"
+    }
+  ]
+}

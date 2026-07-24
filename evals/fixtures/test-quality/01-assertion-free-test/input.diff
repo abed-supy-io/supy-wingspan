@@ -1,0 +1,27 @@
+diff --git a/libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.spec.ts b/libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.spec.ts
+new file mode 100644
+index 0000000..5555555
+--- /dev/null
++++ b/libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.spec.ts
+@@ -0,0 +1,21 @@
++import { Test } from '@nestjs/testing';
++import { AdjustWastageInteractor } from './adjust-wastage.interactor';
++import { WastageRepositoryMock } from '@supy/wastage/mocks';
++
++describe('AdjustWastageInteractor', () => {
++  let interactor: AdjustWastageInteractor;
++
++  beforeEach(async () => {
++    const module = await Test.createTestingModule({
++      providers: [AdjustWastageInteractor, WastageRepositoryMock],
++    }).compile();
++    interactor = module.get(AdjustWastageInteractor);
++  });
++
++  afterEach(() => jest.resetAllMocks());
++
++  it('adjusts the wastage quantity', async () => {
++    await interactor.execute({ id: '1', quantity: 5 });
++    expect(true).toBe(true);
++  });
++});

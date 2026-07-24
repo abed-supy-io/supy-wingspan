@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-test-quality-reviewer",
+  "description": "A new interactor spec exercises the interactor but its only assertion is the tautology `expect(true).toBe(true)` — no assertion on the domain outcome, so the test does not satisfy the coverage rule despite existing.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.spec.ts",
+      "line": 19,
+      "severity": "med",
+      "rule_contains": "rule 19"
+    }
+  ]
+}

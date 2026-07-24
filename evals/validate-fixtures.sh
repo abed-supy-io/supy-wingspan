@@ -103,11 +103,14 @@ for dir in "$fixtures_root"/*/*/; do
   fi
 done
 
-# --- Check S: every stack-distinctive dimension has at least one fixture. ---
-REQUIRED_DIMS=(secrets architecture angular flutter firebase-functions ts-cli ai-agents)
-for d in "${REQUIRED_DIMS[@]}"; do
-  if ! compgen -G "$fixtures_root/$d/*/expected.json" >/dev/null; then
-    err "no fixtures for required dimension: $d"
+# --- Check S+: every reviewer agent is exercised by >=1 fixture. ---
+# Derived from the agent set itself (agents/supy-*-reviewer.md) so this check
+# cannot drift from the real reviewers — replaces R1's static REQUIRED_DIMS
+# list, which enumerated dimensions by hand and could silently go stale.
+for agent_file in agents/supy-*-reviewer.md; do
+  rv="$(basename "$agent_file" .md)"
+  if ! grep -rl "\"reviewer\"[[:space:]]*:[[:space:]]*\"$rv\"" "$fixtures_root"/*/*/expected.json >/dev/null 2>&1; then
+    err "no fixture exercises reviewer: $rv"
   fi
 done
 
