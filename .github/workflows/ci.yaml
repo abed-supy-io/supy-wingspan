@@ -136,6 +136,16 @@ jobs:
         # calls an LLM and is run locally/nightly, not gated here.
         run: bash evals/validate-fixtures.sh
 
+  enforcement:
+    name: Enforcement gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check review teeth (verification protocol + severity log)
+        run: bash scripts/check-review-teeth.sh
+      - name: Check template pre-commit/commit-msg hooks
+        run: bash scripts/check-template-hooks.sh
+
   links:
     name: Markdown links
     runs-on: ubuntu-latest

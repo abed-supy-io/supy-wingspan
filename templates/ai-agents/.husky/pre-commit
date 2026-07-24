@@ -7,8 +7,16 @@
 # 1. BLOCK committed secrets / connection strings / OAuth secrets (secrets-and-config.md#rules rule 5).
 #    Non-negotiable, runs first, scans the whole staged tree (polyglot: JS/TS/Python/TOML/YAML).
 #    Requires gitleaks on PATH: `brew install gitleaks`.
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks not found — install with 'brew install gitleaks' (secret scan is non-negotiable)." >&2
+  exit 1
+fi
 gitleaks protect --staged --redact --no-banner
 
 # 2. Lint + format only what's staged (fast). Routes .ts/.js through ESLint+Prettier and .py through
 #    Ruff via lint-staged config (see package.scripts.json).
 npx lint-staged
+
+# 3. Coverage bar on affected projects (config/standards/ci-coverage-baseline.md rule 5 — a
+#    measured-but-ungated coverage number is not a gate).
+npx nx affected -t test --coverage --uncommitted

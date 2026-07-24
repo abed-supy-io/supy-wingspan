@@ -1,8 +1,20 @@
 #!/usr/bin/env sh
 # Local guardrail mirroring CI — catch issues before the commit exists.
 
-# 1. Lint + format only staged files (fast).
+# 1. BLOCK committed secrets / connection strings (secrets-and-config.md#rules rule 5).
+#    Non-negotiable, runs first. Requires gitleaks on PATH: `brew install gitleaks`.
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks not found — install with 'brew install gitleaks' (secret scan is non-negotiable)." >&2
+  exit 1
+fi
+gitleaks protect --staged --redact --no-banner
+
+# 2. Lint + format only staged files (fast).
 npx lint-staged
 
-# 2. Module boundaries + Angular rules on affected projects.
+# 3. Module boundaries + Angular rules on affected projects.
 npx nx affected -t lint --uncommitted
+
+# 4. Coverage bar on affected projects (config/standards/ci-coverage-baseline.md rule 5 — a
+#    measured-but-ungated coverage number is not a gate).
+npx nx affected -t test --coverage --uncommitted
