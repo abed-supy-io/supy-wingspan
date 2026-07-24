@@ -92,8 +92,8 @@ paths" sections) versus a shallow how-to.
    cross-references its counterpart in its own body. This task does not merge anything — that
    is Task 2's registry work; overlap flags above are informational only.
 3. **`supy-baseline` is a references-extraction candidate but not actioned here.**
-   At 645 lines / 448 body lines it is more than 4x the next-largest skill's body
-   (`supy-analyze-native-codebase` at 276) and has no `references/` split, unlike the three
+   At 645 lines / 448 body lines it is roughly 1.6x the next-largest skill's body
+   (`supy-scaffold-handler` at 280) and has no `references/` split, unlike the three
    skills that already extract long material (`supy-analyze-native-codebase`,
    `supy-figma-implement-design`, `supy-interview-feedback`). It passes the hygiene gate (it is
    not a stub — the opposite problem) and was left untouched: extracting its template content
