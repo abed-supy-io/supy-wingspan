@@ -1,6 +1,6 @@
 ---
 name: supy-rebase
-description: '[any] Safely rebase the current branch onto its integration base (auto-detected default branch). Snapshots a safety ref, fetches the latest base, rebases, and walks conflicts one commit at a time — never force-pushing without explicit confirmation. Use to bring a feature branch up to date before review or merge on any supy-* repo.'
+description: '[any] Safely rebase the current branch onto its integration base (auto-detected default branch). Snapshots a safety ref, fetches the latest base, rebases, and walks conflicts one commit at a time — never force-pushing without explicit confirmation. Use when a feature branch needs to be brought up to date before review or merge on any supy-* repo.'
 ---
 
 ## Step 1 — Resolve the branch context

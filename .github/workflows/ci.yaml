@@ -70,6 +70,14 @@ jobs:
       - name: Validate skill structure
         run: bash scripts/validate-skills.sh
 
+  skill-hygiene:
+    name: Skill hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check skill hygiene (triggering cue + non-stub body)
+        run: bash scripts/check-skill-hygiene.sh
+
   agents:
     name: Agent structure
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 ---
 name: supy-kg
-description: '[any] Connect to Supy''s architecture knowledge graph through the Cortex MCP — find services, events, flows, endpoints, and cross-repo usage'
+description: '[any] Connect to Supy''s architecture knowledge graph through the Cortex MCP — find services, events, flows, endpoints, and cross-repo usage. Use when you need cross-repo architecture context that a local grep cannot answer.'
 user-invocable: true
 allowed-tools:
   - mcp__claude_ai_Cortex__search_entities

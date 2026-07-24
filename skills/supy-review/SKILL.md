@@ -1,6 +1,6 @@
 ---
 name: supy-review
-description: '[any] Review the current Supy diff/PR against Supy standards using the stack-appropriate review subagents in parallel, then consolidate findings by severity. Backend (nestjs-nx) dispatches six reviewers; frontend (angular-nx), mobile (flutter), the standalone Firebase Functions backend (firebase-functions), the standalone commander.js CLI (ts-cli), and the polyglot AI-agents monorepo (ai-agents) dispatch their stack reviewer plus the commit/PR reviewer; Kubernetes config (k8s-config) dispatches the secrets reviewer. The stack-agnostic commit/PR and secrets reviewers run on every stack. Use before committing or opening a PR on a supy-* repo.'
+description: '[any] Review the current Supy diff/PR against Supy standards using the stack-appropriate review subagents in parallel, then consolidate findings by severity. Backend (nestjs-nx) dispatches six reviewers; frontend (angular-nx), mobile (flutter), the standalone Firebase Functions backend (firebase-functions), the standalone commander.js CLI (ts-cli), and the polyglot AI-agents monorepo (ai-agents) dispatch their stack reviewer plus the commit/PR reviewer; Kubernetes config (k8s-config) dispatches the secrets reviewer. The stack-agnostic commit/PR and secrets reviewers run on every stack. Use when about to commit or open a PR on a supy-* repo.'
 ---
 
 ## Step 1 — Resolve the diff range

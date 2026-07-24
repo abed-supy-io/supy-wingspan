@@ -1,6 +1,6 @@
 ---
 name: supy-create-pr
-description: '[any] Build a conventional PR title and description from branch commits and diff, enforce Supy commit-type rules, and either open the PR via gh or output a ready-to-paste title+body for manual creation. Use after supy-review passes on any supy repo (backend, frontend, or Flutter/mobile).'
+description: '[any] Build a conventional PR title and description from branch commits and diff, enforce Supy commit-type rules, and either open the PR via gh or output a ready-to-paste title+body for manual creation. Use when opening a PR, after supy-review passes, on any supy repo (backend, frontend, or Flutter/mobile).'
 ---
 
 ## Step 1 — Read the governing standard
