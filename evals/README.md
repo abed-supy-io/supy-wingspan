@@ -49,8 +49,10 @@ API key, like the other `validate-*.sh` scripts. It asserts:
 
 - **Check R** — every fixture's `expected.json` names a `reviewer` that resolves to a real
   `agents/<reviewer>.md`.
-- **Check S** — every dimension listed in `REQUIRED_DIMS` (inside the script) has at least one
-  fixture, so a stack's coverage can't silently regress to zero.
+- **Check S+** — every reviewer agent under `agents/supy-*-reviewer.md` is exercised by at least
+  one fixture whose `expected.json` names it in `reviewer`, so a stack's coverage can't silently
+  regress to zero. Coverage is derived from the agent set itself, not a hand-maintained list, so it
+  can't drift out of sync with the real reviewers.
 
 Beyond those two checks it also validates fixture shape (diff present and non-empty, `expected.json`
 valid, verdict/findings invariant holds, each finding well-formed).
@@ -98,15 +100,16 @@ in `.env.example`, which the standard explicitly allows and a naive grep-based s
 2. Add `evals/fixtures/<dim>/<fixture>/{input.diff,expected.json}` cases, with `expected.json.reviewer`
    pointing at the agent from step 1. Include at least one clean `pass` fixture so precision is
    measured, not just recall.
-3. Extend `REQUIRED_DIMS` in `evals/validate-fixtures.sh` with the new dimension name, so Check S
-   keeps guarding it.
+3. No separate registration step — Check S+ derives required coverage from `agents/supy-*-reviewer.md`
+   directly, so once a fixture's `expected.json.reviewer` names the new agent, coverage is enforced
+   automatically.
 
 No new runner script is needed — `run-review-eval.sh <dim>` picks up any dimension whose fixtures
 exist under `evals/fixtures/`, driven entirely by each fixture's `reviewer` field. The parsing
 assumes the shared Output Contract (`## <name> — PASS | ISSUES FOUND` then
 `- **[severity: …]** file:line — … (rule: …)`), which every review agent already follows.
 
-Current dimensions and their reviewers:
+Current dimensions and their reviewers (11 reviewers, 23 fixtures total):
 
 | Dimension | Reviewer | Fixtures |
 |---|---|---|
@@ -117,3 +120,7 @@ Current dimensions and their reviewers:
 | `firebase-functions` | `supy-firebase-functions-reviewer` | 2 |
 | `ts-cli` | `supy-ts-cli-reviewer` | 2 |
 | `ai-agents` | `supy-ai-agents-reviewer` | 2 |
+| `nats-event` | `supy-nats-event-reviewer` | 1 |
+| `test-quality` | `supy-test-quality-reviewer` | 1 |
+| `security` | `supy-security-reviewer` | 1 |
+| `commit-pr` | `supy-commit-pr-reviewer` | 1 |
