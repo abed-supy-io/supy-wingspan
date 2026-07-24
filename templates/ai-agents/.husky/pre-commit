@@ -17,6 +17,7 @@ gitleaks protect --staged --redact --no-banner
 #    Ruff via lint-staged config (see package.scripts.json).
 npx lint-staged
 
-# 3. Coverage bar on affected projects (config/standards/ci-coverage-baseline.md rule 5 — a
-#    measured-but-ungated coverage number is not a gate).
+# 3. Coverage — fast local feedback: run affected tests with coverage collection.
+#    The hard floor is enforced by CI / each project's Jest coverageThreshold, not this
+#    hook (config/standards/ci-coverage-baseline.md rule 5; rule 7 keeps pre-commit fast).
 npx nx affected -t test --coverage --uncommitted

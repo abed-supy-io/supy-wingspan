@@ -15,6 +15,7 @@ npx lint-staged
 # 3. Module boundaries + Angular rules on affected projects.
 npx nx affected -t lint --uncommitted
 
-# 4. Coverage bar on affected projects (config/standards/ci-coverage-baseline.md rule 5 — a
-#    measured-but-ungated coverage number is not a gate).
+# 4. Coverage — fast local feedback: run affected tests with coverage collection.
+#    The hard floor is enforced by CI / each project's Jest coverageThreshold, not this
+#    hook (config/standards/ci-coverage-baseline.md rule 5; rule 7 keeps pre-commit fast).
 npx nx affected -t test --coverage --uncommitted

@@ -25,6 +25,7 @@ fi
 #    Bloc-not-Cubit, unawaited_futures as errors, strict casts/inference).
 flutter analyze || exit 1
 
-# 4. Coverage bar (config/standards/ci-coverage-baseline.md rule 5 — Flutter apps must clear
-#    an 80% floor; a measured-but-ungated coverage number is not a gate).
+# 4. Coverage — fast local feedback: run the suite with coverage collection.
+#    The hard >=80% floor is a CI gate (lcov parse), not this hook
+#    (config/standards/ci-coverage-baseline.md rule 5; rule 7 keeps pre-commit fast).
 flutter test --coverage || exit 1

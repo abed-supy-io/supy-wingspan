@@ -46,11 +46,19 @@ for entry in "${STACKS[@]}"; do
     grep -q "commitlint --edit" "$msg" || { err "$stack: commit-msg does not invoke commitlint"; stack_fail=1; }
   else
     grep -qF "$commit_ref" "$msg" || { err "$stack: commit-msg missing reference to $commit_ref"; stack_fail=1; }
-    missing_types=""
-    for t in $commit_types; do
-      grep -qw "$t" "$msg" || missing_types="$missing_types $t"
-    done
-    [ -z "$missing_types" ] || { err "$stack: commit-msg missing conventional-commit type(s):$missing_types"; stack_fail=1; }
+    # Anchor the type-presence check on the line that actually defines the validation
+    # regex, not the whole file — a type surviving only in a comment must not false-pass.
+    regex_line=$(grep "type_regex=" "$msg")
+    if [ -z "$regex_line" ]; then
+      err "$stack: commit-msg has no type_regex= line to anchor the type-presence check on"
+      stack_fail=1
+    else
+      missing_types=""
+      for t in $commit_types; do
+        echo "$regex_line" | grep -qw "$t" || missing_types="$missing_types $t"
+      done
+      [ -z "$missing_types" ] || { err "$stack: commit-msg missing conventional-commit type(s):$missing_types"; stack_fail=1; }
+    fi
     grep -q "exit 1" "$msg" || { err "$stack: commit-msg does not exit non-zero on a bad type"; stack_fail=1; }
   fi
 
