@@ -1,0 +1,17 @@
+diff --git a/libs/orders/src/lib/components/order-status-badge/order-status-badge.component.ts b/libs/orders/src/lib/components/order-status-badge/order-status-badge.component.ts
+index 4b2c6d1..9e0f1a2 100644
+--- a/libs/orders/src/lib/components/order-status-badge/order-status-badge.component.ts
++++ b/libs/orders/src/lib/components/order-status-badge/order-status-badge.component.ts
+@@ -1,4 +1,4 @@
+-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
++import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+ import { OrderStatus } from '@supy/orders/domain';
+
+ @Component({
+@@ -8,4 +8,6 @@
+ })
+ export class OrderStatusBadgeComponent {
+   readonly status = input.required<OrderStatus>();
++  readonly statusClick = output<OrderStatus>();
++
+ }

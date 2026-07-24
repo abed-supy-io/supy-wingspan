@@ -50,7 +50,7 @@ procedure, the pilot exercise checklist, and known gaps.
 
 ## Usage
 
-The plugin exposes **8 slash commands** and **31 skills**. Commands are typed
+The plugin exposes **8 slash commands** and **33 skills**. Commands are typed
 directly (`/name`); skills are invoked in natural language ("run the supy-commit
 skill") — they are not slash commands.
 
@@ -92,6 +92,8 @@ writes only the Universal + this-repo's-stack skills into each repo's `CLAUDE.md
 | `supy-feature-fanout` | Behind `/supy-feature`. Plans one feature across several open repos: scans the parent folder, detects each repo's stack, proposes the affected set (you confirm), then writes a per-repo plan (grounded in that repo's standards) into each. Plan-only — never edits code or opens PRs. |
 | `supy-feedback` | Turns feedback about a Supy engineering standard into a reviewed PR against `supy-wingspan` — clones the standards repo fresh, maps the feedback to the right `config/standards` file (standards-first), shows the diff, then opens a `gh` PR with provenance (source repo, stack, triggering example). One PR per feedback; degrades to a printed diff when `gh` is unavailable. |
 | `supy-kg` | Connects to Supy's architecture knowledge graph through the Cortex MCP — finds services, events, flows, endpoints, and cross-repo usage. Read-only; requires the Cortex MCP to be connected. |
+| `supy-coverage-report` | Render coverage bars for the repo against its `ci-coverage-baseline` floor. |
+| `supy-remine-standards` | Deliberate periodic sweep of the live repos that proposes a reviewable `config/standards` diff. |
 
 #### Backend — NestJS on Nx (`nestjs-nx`)
 
@@ -261,7 +263,7 @@ repo's `CLAUDE.md` and the mined standards under `config/standards/` — nothing
 ## Components
 
 - `agents/` — **17 subagents**: 11 review subagents — backend (architecture, NATS events, tests, security), Angular (frontend), Flutter (mobile), Firebase Functions, TypeScript CLI, AI-agents monorepo, and the two stack-agnostic reviewers (commit/PR conventions + secrets) that run on every stack — plus 6 Flutter release-readiness agents under `agents/app-readiness/` (Android/iOS/web/macOS/Linux/Windows), launched in parallel by `supy-app-release-readiness`
-- `skills/` — **31 skills**, grouped by stack (see [Usage](#skills)): 13 Universal (review, baseline, commit, create-pr, rebase, hotfix, debrief, fix-failing-github-actions, impl-spec, spike-spec, feature-fanout, feedback, kg), 3 backend, 2 frontend, 10 Flutter/mobile, and one each for firebase-functions, ts-cli, ai-agents. Every repo sees the Universal set plus only its own stack's skills
+- `skills/` — **33 skills**, grouped by stack (see [Usage](#skills)): 15 Universal (review, baseline, commit, create-pr, rebase, hotfix, debrief, fix-failing-github-actions, impl-spec, spike-spec, feature-fanout, feedback, kg, coverage-report, remine-standards), 3 backend, 2 frontend, 10 Flutter/mobile, and one each for firebase-functions, ts-cli, ai-agents. Every repo sees the Universal set plus only its own stack's skills
 - `commands/` — orchestration wrappers over superpowers
 - `hooks/` — stack detection on session open (nestjs-nx / angular-nx / nx / flutter / firebase-functions / ts-cli / ai-agents / k8s-config / generic) + a UserPromptSubmit skill router that nudges toward the matching workflow skill
 - `config/standards/` — mined Supy standards, source of truth for the agents. Three cross-cutting standards at root (`commit-conventions.md`, `secrets-and-config.md`, `ci-coverage-baseline.md`) plus per-stack rulebooks: backend at root + `backend/` for module boundaries, `frontend/`, `flutter/`, `firebase-functions/`, `ts-cli/`, `ai-agents/` (k8s-config has no standards subdir — it's governed by the root `secrets-and-config.md`)

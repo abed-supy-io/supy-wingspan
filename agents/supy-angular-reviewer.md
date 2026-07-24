@@ -135,4 +135,21 @@ Return findings in **exactly** this shape (the `supy-review` skill parses this f
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., a missing
+`OnPush` change-detection strategy — append a minimal ` ```diff ` block after the bullet that
+applies the fix. Omit the block when the fix is non-mechanical or ambiguous (e.g., how to restructure
+a smart/dumb split).
+
+Example:
+
+```text
+## supy-angular-reviewer — ISSUES FOUND
+- **[severity: high]** libs/orders/src/lib/components/order-list/order-list.component.ts:1 — component has no OnPush change detection → add `changeDetection: ChangeDetectionStrategy.OnPush` (rule: angular-conventions.md#rules rule 1)
+```
+
+```diff
+- @Component({ selector: 'app-order-list' })
++ @Component({ selector: 'app-order-list', changeDetection: ChangeDetectionStrategy.OnPush })
+```
+
 **Never invent rules.** Every finding must cite a rule anchor from one of the two governing standards files (e.g., `angular-conventions.md#rules rule 1`, `module-boundaries.md#red-flags`).

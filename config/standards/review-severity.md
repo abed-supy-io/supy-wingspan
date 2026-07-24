@@ -37,3 +37,14 @@ reviewer feels.
 - Grading by effort ("one-line fix → low") instead of impact.
 - A `low` used to smuggle in a personal style preference no standard backs.
 - A secret finding graded below `high`, or one that echoes the secret value.
+
+## Calibration log
+
+Every row below must cite the R1 triage entry (`docs/pilots/TRIAGE.md` /
+`docs/pilots/results/<repo>.md`) whose TP/FP observation motivated the change. No merge,
+split, or severity change is recorded here without a rationale traceable to R1 data — the
+concrete rows are **populate from R1 triage at execution time**.
+
+| Date | Rule/anchor | Change | Traced to (R1 triage entry) |
+|---|---|---|---|
+| _(none yet)_ | _(none yet)_ | _(none yet — populate from R1 triage at execution time)_ | _(none yet)_ |

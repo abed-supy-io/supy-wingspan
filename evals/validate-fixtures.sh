@@ -93,6 +93,25 @@ for dir in "$fixtures_root"/*/*/; do
   if [ "$invalid" -ne 0 ]; then
     err "$name: $invalid finding(s) malformed (need file:string, line:int>=1, severity:high|med|low, rule_contains:present)"
   fi
+
+  # --- Check R: fixture names a real reviewer agent. ---
+  reviewer="$(jq -r '.reviewer // ""' "$exp_file")"
+  if [ -z "$reviewer" ]; then
+    err "$name: expected.json has no 'reviewer'"
+  elif [ ! -f "agents/$reviewer.md" ]; then
+    err "$name: reviewer '$reviewer' has no agents/$reviewer.md"
+  fi
+done
+
+# --- Check S+: every reviewer agent is exercised by >=1 fixture. ---
+# Derived from the agent set itself (agents/supy-*-reviewer.md) so this check
+# cannot drift from the real reviewers — replaces R1's static REQUIRED_DIMS
+# list, which enumerated dimensions by hand and could silently go stale.
+for agent_file in agents/supy-*-reviewer.md; do
+  rv="$(basename "$agent_file" .md)"
+  if ! grep -rl "\"reviewer\"[[:space:]]*:[[:space:]]*\"$rv\"" "$fixtures_root"/*/*/expected.json >/dev/null 2>&1; then
+    err "no fixture exercises reviewer: $rv"
+  fi
 done
 
 if [ "$fail" -ne 0 ]; then

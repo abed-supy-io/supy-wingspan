@@ -69,4 +69,23 @@ Return findings in **exactly** this shape (Task 4's `supy-review` skill parses t
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., a `describe`
+block missing `jest.resetAllMocks()` in `afterEach` — append a minimal ` ```diff ` block after the
+bullet that applies the fix. Omit the block when the fix is non-mechanical or ambiguous (e.g., which
+domain assertion to add to a tautological spec).
+
+Example:
+
+```text
+## supy-test-quality-reviewer — ISSUES FOUND
+- **[severity: med]** libs/transfer/logic/src/lib/interactors/submit-transfer.interactor.spec.ts:6 — `describe` block has no `jest.resetAllMocks()` in `afterEach`, risking cross-test contamination → add the reset hook (rule: nx-nestjs-patterns.md#rules rule 16)
+```
+
+```diff
+  describe('SubmitTransferInteractor', () => {
++   afterEach(() => {
++     jest.resetAllMocks();
++   });
+```
+
 **Never invent rules.** Every finding must cite a rule anchor from `${CLAUDE_PLUGIN_ROOT}/config/standards/nx-nestjs-patterns.md` or `${CLAUDE_PLUGIN_ROOT}/config/standards/architecture.md` (e.g., `nx-nestjs-patterns.md#rules rule 15`, `nx-nestjs-patterns.md#red-flags`).

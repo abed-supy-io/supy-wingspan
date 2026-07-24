@@ -1,6 +1,6 @@
 ---
 name: supy-review
-description: '[any] Review the current Supy diff/PR against Supy standards using the stack-appropriate review subagents in parallel, then consolidate findings by severity. Backend (nestjs-nx) dispatches six reviewers; frontend (angular-nx), mobile (flutter), the standalone Firebase Functions backend (firebase-functions), the standalone commander.js CLI (ts-cli), and the polyglot AI-agents monorepo (ai-agents) dispatch their stack reviewer plus the commit/PR reviewer; Kubernetes config (k8s-config) dispatches the secrets reviewer. The stack-agnostic commit/PR and secrets reviewers run on every stack. Use before committing or opening a PR on a supy-* repo.'
+description: '[any] Review the current Supy diff/PR against Supy standards using the stack-appropriate review subagents in parallel, then consolidate findings by severity. Backend (nestjs-nx) dispatches six reviewers; frontend (angular-nx), mobile (flutter), the standalone Firebase Functions backend (firebase-functions), the standalone commander.js CLI (ts-cli), and the polyglot AI-agents monorepo (ai-agents) dispatch their stack reviewer plus the commit/PR reviewer; Kubernetes config (k8s-config) dispatches the secrets reviewer. The stack-agnostic commit/PR and secrets reviewers run on every stack. Use when about to commit or open a PR on a supy-* repo.'
 ---
 
 ## Step 1 — Resolve the diff range
@@ -84,7 +84,31 @@ If an agent errors, times out, or returns output that does not match the fixed s
 
 ---
 
-## Step 4 — Consolidate into the severity-grouped report
+## Step 4 — Gated adversarial verification
+
+Before consolidating, run the gated verification protocol defined in the shared reference:
+
+```bash
+cat "${CLAUDE_PLUGIN_ROOT}/skills/shared/references/adversarial-verification.md"
+```
+
+Apply it to the findings collected in Step 3, once each finding carries its severity:
+
+1. **Gate:** only findings that are **high-severity** (per `config/standards/review-severity.md`)
+   or that the reviewer flagged **low-confidence** enter verification. Every other finding
+   (confident medium/low) skips straight to Step 5 — this is not a blanket second pass over
+   everything, and it must never become one.
+2. **Refute:** for each gated finding, run the single skeptic read from the reference — try to
+   prove the finding wrong from the diff plus its cited standard anchor. A finding survives
+   only if it cannot be refuted; otherwise drop it or fold it into a smaller, accurate finding.
+3. **Budget guard:** if token/time budget is under pressure, skip the refutation attempt for a
+   gated finding and label it `unverified` instead of blocking the review — never spend a
+   blanket multiplier to force verification through. Proceed to Step 5 with whatever findings
+   were verified, refuted, or marked `unverified`.
+
+---
+
+## Step 5 — Consolidate into the severity-grouped report
 
 Parse every finding bullet from all dispatched agents' outputs. Classify each bullet by its severity token (`high`, `med`, or `low`). Build the consolidated report in this exact structure:
 
@@ -130,3 +154,5 @@ Rules for building the report:
 **Empty diff / not a git repo:** Detected in Step 1. Print the message and stop before dispatching.
 
 **Per-reviewer skip:** If an individual agent errors or returns malformed output, list it under `## Skipped` with a one-line reason (e.g., `supy-nats-event-reviewer — agent error: timeout`). Continue consolidating findings from the remaining agents.
+
+**Verification under budget pressure:** If Step 4's skeptic pass cannot be run for a gated finding (token/time budget), degrade to labelling that finding `unverified` per `${CLAUDE_PLUGIN_ROOT}/skills/shared/references/adversarial-verification.md` — never block the whole review to force verification through.

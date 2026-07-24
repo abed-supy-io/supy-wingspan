@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# Enforce Conventional Commits (config/standards/commit-conventions.md) without commitlint —
+# Flutter repos have no npm/Node toolchain available in this hook. Install as a plain git hook
+# alongside hooks/pre-commit:
+#   git config core.hooksPath hooks
+#
+# Allowed types, per config/standards/commit-conventions.md rule 1:
+#   build chore ci docs feat fix perf refactor revert style test
+
+commit_msg_file="$1"
+first_line=$(head -n1 "$commit_msg_file")
+
+# type(optional-scope): subject   e.g. "feat(auth): add token refresh"
+type_regex='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-zA-Z0-9,_-]+\))?: .+'
+
+if ! echo "$first_line" | grep -qE "$type_regex"; then
+  echo "commit-msg: '$first_line' does not follow Conventional Commits." >&2
+  echo "commit-msg: expected 'type(scope): subject' with type one of:" >&2
+  echo "commit-msg:   build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test" >&2
+  echo "commit-msg: see config/standards/commit-conventions.md" >&2
+  exit 1
+fi

@@ -1,0 +1,22 @@
+diff --git a/libs/orders/src/lib/components/order-summary-card/order-summary-card.component.ts b/libs/orders/src/lib/components/order-summary-card/order-summary-card.component.ts
+index 3a1b2c3..7d8e9f0 100644
+--- a/libs/orders/src/lib/components/order-summary-card/order-summary-card.component.ts
++++ b/libs/orders/src/lib/components/order-summary-card/order-summary-card.component.ts
+@@ -1,11 +1,17 @@
+ import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
++import { HttpClient } from '@angular/common/http';
+ import { OrderSummary } from '@supy/orders/domain';
+
+ @Component({
+   selector: 'app-order-summary-card',
+   changeDetection: ChangeDetectionStrategy.OnPush,
+   template: `<div>{{ order().reference }}</div>`,
+ })
+ export class OrderSummaryCardComponent {
+   readonly order = input.required<OrderSummary>();
++  readonly #http = inject(HttpClient);
++
++  refresh(): void {
++    this.#http.get(`/api/orders/${this.order().id}`).subscribe();
++  }
+ }

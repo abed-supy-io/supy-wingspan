@@ -1,0 +1,6 @@
+{
+  "reviewer": "supy-ai-agents-reviewer",
+  "description": "A BullMQ consumer upserts on the entity's stable id (ON CONFLICT DO UPDATE) inside a try/catch that logs only the entityId, never the payload, and rethrows after logging. Must produce a clean PASS.",
+  "verdict": "pass",
+  "findings": []
+}

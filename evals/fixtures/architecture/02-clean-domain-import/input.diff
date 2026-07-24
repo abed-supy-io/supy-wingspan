@@ -1,0 +1,17 @@
+diff --git a/libs/inventory/application/src/lib/replenishment.service.ts b/libs/inventory/application/src/lib/replenishment.service.ts
+index 3333333..4444444 100644
+--- a/libs/inventory/application/src/lib/replenishment.service.ts
++++ b/libs/inventory/application/src/lib/replenishment.service.ts
+@@ -1,7 +1,12 @@
+ import { Injectable } from '@nestjs/common';
+ import { StockRepository } from '../../../domain/src/lib/stock.repository';
++import { ReplenishmentPolicy } from '../../../domain/src/lib/replenishment-policy';
+
+ @Injectable()
+ export class ReplenishmentService {
+   constructor(private readonly stockRepository: StockRepository) {}
++
++  isDue(policy: ReplenishmentPolicy): boolean {
++    return policy.isDue();
++  }
+ }

@@ -1,0 +1,12 @@
+diff --git a/libs/vendor/logic/src/lib/interactors/deactivate-vendor.interactor.ts b/libs/vendor/logic/src/lib/interactors/deactivate-vendor.interactor.ts
+index 6666666..7777777 100644
+--- a/libs/vendor/logic/src/lib/interactors/deactivate-vendor.interactor.ts
++++ b/libs/vendor/logic/src/lib/interactors/deactivate-vendor.interactor.ts
+@@ -10,4 +10,7 @@ export class DeactivateVendorInteractor {
+   async execute(input: DeactivateVendorInput): Promise<void> {
++    if (input.principal.role !== 'admin') {
++      throw new ForbiddenException('admin role required');
++    }
+     await this.vendorRepository.deactivate(input.vendorId);
+   }
+ }

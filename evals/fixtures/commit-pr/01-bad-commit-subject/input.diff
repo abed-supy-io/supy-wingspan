@@ -1,0 +1,21 @@
+From 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b Mon Sep 17 00:00:00 2001
+From: Jane Dev <jane.dev@supy.io>
+Date: Wed, 22 Jul 2026 10:00:00 +0000
+Subject: [PATCH] bug(wastage): allow negative adjustment quantities
+
+---
+ libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.ts b/libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.ts
+index 8888888..9999999 100644
+--- a/libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.ts
++++ b/libs/wastage/logic/src/lib/interactors/adjust-wastage.interactor.ts
+@@ -12,4 +12,4 @@ export class AdjustWastageInteractor {
+   async execute(input: AdjustWastageInput): Promise<void> {
+-    if (input.quantity <= 0) {
++    if (input.quantity < 0) {
+       throw new InvalidQuantityError();
+     }
+--
+2.43.0

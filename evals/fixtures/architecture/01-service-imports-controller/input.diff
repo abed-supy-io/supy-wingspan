@@ -1,0 +1,10 @@
+diff --git a/libs/inventory/application/src/lib/stock.service.ts b/libs/inventory/application/src/lib/stock.service.ts
+index 1111111..2222222 100644
+--- a/libs/inventory/application/src/lib/stock.service.ts
++++ b/libs/inventory/application/src/lib/stock.service.ts
+@@ -1,4 +1,5 @@
+ import { Injectable } from '@nestjs/common';
++import { StockController } from '../../../controllers/src/lib/stock.controller';
+ import { StockRepository } from '../../../domain/src/lib/stock.repository';
+
+ @Injectable()

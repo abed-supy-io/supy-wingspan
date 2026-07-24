@@ -75,4 +75,21 @@ Return findings in **exactly** this shape (Task 4's `supy-review` skill parses t
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., a hardcoded
+role string in application code — append a minimal ` ```diff ` block after the bullet that applies
+the fix. Omit the block when the fix is non-mechanical or ambiguous (e.g., whether a new resource
+policy is needed in `supy-cerbos-policies`, or how to model a new capability).
+
+Example:
+
+```text
+## supy-security-reviewer — ISSUES FOUND
+- **[severity: high]** libs/transfer/api/src/transfer.rpc.controller.ts:9 — inline hardcoded role check `user.role === 'admin'` bypasses Cerbos → replace with a Cerbos authorization check before the business logic runs (rule: security-cerbos.md#rules rule 8)
+```
+
+```diff
+- if (user.role === 'admin') {
++ if (await this.cerbos.isAllowed({ principal, resource, action: 'approve' })) {
+```
+
 **Never invent rules.** Every finding must cite a rule anchor from `${CLAUDE_PLUGIN_ROOT}/config/standards/security-cerbos.md` (e.g., `security-cerbos.md#rules rule 7`, `security-cerbos.md#red-flags`, `security-cerbos.md#runtime-integration rule 2`, `security-cerbos.md#target-state`).

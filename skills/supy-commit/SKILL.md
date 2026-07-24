@@ -1,6 +1,6 @@
 ---
 name: supy-commit
-description: '[any] Stage-aware conventional commit per Supy commitlint. Reads commit-conventions.md, inspects staged diff, proposes a compliant commit message (correct type, scope, subject), shows it for confirmation, and commits only after the user approves. Use on any supy repo (backend, frontend, or Flutter/mobile) before pushing.'
+description: '[any] Stage-aware conventional commit per Supy commitlint. Reads commit-conventions.md, inspects staged diff, proposes a compliant commit message (correct type, scope, subject), shows it for confirmation, and commits only after the user approves. Use when committing staged changes on any supy repo (backend, frontend, or Flutter/mobile) before pushing.'
 ---
 
 ## Step 1 — Read the governing standard

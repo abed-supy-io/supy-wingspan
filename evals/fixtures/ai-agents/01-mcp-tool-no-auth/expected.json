@@ -1,0 +1,19 @@
+{
+  "reviewer": "supy-ai-agents-reviewer",
+  "description": "A new mutating MCP tool is registered with no auth/scope guard, and it reads the Postgres connection detail directly from process.env instead of the config singleton.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "cortex/mcp/tools/inject-entity.tool.ts",
+      "line": 10,
+      "severity": "high",
+      "rule_contains": "rule 2"
+    },
+    {
+      "file": "cortex/mcp/tools/inject-entity.tool.ts",
+      "line": 11,
+      "severity": "low",
+      "rule_contains": "rule 3"
+    }
+  ]
+}

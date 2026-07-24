@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-firebase-functions-reviewer",
+  "description": "A new callable is marked with the @admin auth marker but never verifies the admin claim before running logic — the marker is decorative and the endpoint is effectively open.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "functions/src/index.ts",
+      "line": 14,
+      "severity": "high",
+      "rule_contains": "rule 4"
+    }
+  ]
+}

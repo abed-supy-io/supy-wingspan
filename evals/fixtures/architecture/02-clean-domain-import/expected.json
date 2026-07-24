@@ -1,0 +1,6 @@
+{
+  "reviewer": "supy-architecture-reviewer",
+  "description": "Application-layer service imports a new domain entity — the allowed layer direction (application depends on domain). Must produce a clean PASS.",
+  "verdict": "pass",
+  "findings": []
+}

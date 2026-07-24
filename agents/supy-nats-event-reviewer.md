@@ -74,4 +74,22 @@ Return findings in **exactly** this shape (Task 4's `supy-review` skill parses t
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — e.g., a controller
+class missing its exception filter decorator — append a minimal ` ```diff ` block after the bullet
+that applies the fix. Omit the block when the fix is non-mechanical or ambiguous (e.g., how to
+make a handler idempotent).
+
+Example:
+
+```text
+## supy-nats-event-reviewer — ISSUES FOUND
+- **[severity: high]** libs/transfer/api/src/transfer.nats.controller.ts:5 — `@EventPattern` controller has no `JetStreamExceptionFilter` → add `@UseFilters(JetStreamExceptionFilter)` on the class (rule: nats-event-patterns.md#rules rule 5)
+```
+
+```diff
+- @Controller()
++ @UseFilters(JetStreamExceptionFilter)
++ @Controller()
+```
+
 **Never invent rules.** Every finding must cite a rule anchor from `${CLAUDE_PLUGIN_ROOT}/config/standards/nats-event-patterns.md` (e.g., `nats-event-patterns.md#rules rule 4`, `nats-event-patterns.md#red-flags`).

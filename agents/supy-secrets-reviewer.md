@@ -92,6 +92,25 @@ deviate):
 
 If the diff is clean, output only the header line with `PASS` and no bullets.
 
+**Suggested fix (optional).** When a finding is a mechanical rule violation — most commonly a
+literal secret value — append a minimal ` ```diff ` block after the bullet that applies the fix.
+Never emit the secret value: the diff replaces the offending line with a Secret-Manager
+*reference* (e.g. a `secretRef(...)` call or an env-var-from-secret pointer) and still cites
+`path:line`. Omit the block when the fix is non-mechanical or ambiguous (e.g., choosing an
+externalization strategy, adding a CI gate).
+
+Example:
+
+```text
+## supy-secrets-reviewer — ISSUES FOUND
+- **[severity: high]** apps/api/src/config/payment.config.ts:14 — hardcoded API key literal committed to source (value not reproduced) → read it from Secret Manager (rule: secrets-and-config.md#rules rule 1)
+```
+
+```diff
+- const PAYMENT_API_KEY = 'sk_live_00000000000000000000';
++ const PAYMENT_API_KEY = secretRef('payment-api-key');
+```
+
 **Never invent rules.** Every finding must cite a rule anchor from
 `${CLAUDE_PLUGIN_ROOT}/config/standards/secrets-and-config.md` (e.g.,
 `secrets-and-config.md#rules rule 1`, `secrets-and-config.md#red-flags`). **Never include the

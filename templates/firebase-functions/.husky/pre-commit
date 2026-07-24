@@ -4,6 +4,10 @@
 
 # 1. BLOCK committed secrets (secrets-and-config.md#rules rule 5). Non-negotiable, runs first.
 #    Requires gitleaks on PATH: `brew install gitleaks`.
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks not found — install with 'brew install gitleaks' (secret scan is non-negotiable)." >&2
+  exit 1
+fi
 gitleaks protect --staged --redact --no-banner
 
 # 2. Lint + format only what's staged (fast).
@@ -11,3 +15,8 @@ npx lint-staged
 
 # 3. Type-check the Functions package (the compile guarantee TSLint never gave).
 npm --prefix functions run typecheck
+
+# 4. Coverage — fast local feedback: run the suite with coverage collection.
+#    The hard floor is enforced by CI / the Jest coverageThreshold config, not this
+#    hook (config/standards/ci-coverage-baseline.md rule 5; rule 7 keeps pre-commit fast).
+npm --prefix functions test -- --coverage

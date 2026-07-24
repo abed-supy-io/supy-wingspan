@@ -1,0 +1,6 @@
+{
+  "reviewer": "supy-flutter-reviewer",
+  "description": "Profile A bloc wires a sealed event to a UseCase call and folds both branches of the Either result into loading/error/loaded states. Must produce a clean PASS.",
+  "verdict": "pass",
+  "findings": []
+}

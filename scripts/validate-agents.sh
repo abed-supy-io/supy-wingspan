@@ -62,6 +62,10 @@ for file in agents/*.md; do
   if ! grep -qE '^#+ .*Output Contract' "$file"; then
     err "$file has no 'Output Contract' section"
   fi
+
+  if ! grep -qiE 'suggested fix' "$file"; then
+    err "$file Output Contract does not document the optional suggested-fix clause"
+  fi
 done
 
 # App-readiness agents: frontmatter + name==filename minus the '-agent' suffix.

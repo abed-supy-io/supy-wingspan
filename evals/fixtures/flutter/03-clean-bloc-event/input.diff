@@ -1,0 +1,22 @@
+diff --git a/lib/features/invoices/presentation/bloc/invoices_bloc.dart b/lib/features/invoices/presentation/bloc/invoices_bloc.dart
+index 7a8b9c0..1d2e3f4 100644
+--- a/lib/features/invoices/presentation/bloc/invoices_bloc.dart
++++ b/lib/features/invoices/presentation/bloc/invoices_bloc.dart
+@@ -8,7 +8,16 @@
+ class InvoicesBloc extends Bloc<InvoicesEvent, InvoicesState> {
+   InvoicesBloc({required GetInvoices getInvoices})
+       : _getInvoices = getInvoices,
+-        super(const InvoicesState.initial());
++        super(const InvoicesState.initial()) {
++    on<InvoicesRequested>((event, emit) async {
++      emit(const InvoicesState.loading());
++      final result = await _getInvoices(const NoParams());
++      result.fold(
++        (failure) => emit(InvoicesState.error(failure)),
++        (invoices) => emit(InvoicesState.loaded(invoices)),
++      );
++    });
++  }
+
+   final GetInvoices _getInvoices;
+ }

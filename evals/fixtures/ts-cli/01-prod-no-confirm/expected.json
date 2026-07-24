@@ -1,0 +1,13 @@
+{
+  "reviewer": "supy-ts-cli-reviewer",
+  "description": "A script whose ScriptDetails names production among its target databases now mutates vendor records via deactivateMany with no explicit confirmation gating the write, so it can run against production unattended.",
+  "verdict": "issues",
+  "findings": [
+    {
+      "file": "src/application/scripts/deactivate-stale-vendors.script.ts",
+      "line": 16,
+      "severity": "high",
+      "rule_contains": "rule 5"
+    }
+  ]
+}

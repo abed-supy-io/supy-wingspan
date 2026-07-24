@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Enforce Conventional Commits (config/standards/commit-conventions.md) on every commit.
+# Requires the repo's own commitlint config (@supy/commitlint-config/conventional or equivalent).
+npx --no-install commitlint --edit "$1"

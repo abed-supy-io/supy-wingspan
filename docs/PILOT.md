@@ -122,6 +122,77 @@ per-stack "green" bar for later phases.
 | 7 | ai-agents | `supy-ai-agents` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 | 8 | k8s-config | `supy-configmaps` | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 
+## Fixture scorecard
+
+Alongside the live per-stack token baseline above, `evals/` runs golden-fixture behavioral evals
+against each reviewer — a planted diff plus a ground-truth verdict, scored for recall and precision.
+See [`evals/README.md`](../evals/README.md) for the full harness (the `reviewer` field, running
+`run-review-eval.sh`, and how to add a dimension).
+
+The **structure** of every fixture (well-formed diff + `expected.json`, a real `reviewer`, every
+required dimension covered) is a deterministic CI gate — the `eval-fixtures` job, always green.
+The **recall / precision / token-baseline** columns below come from the LLM-driven half
+(`run-review-eval.sh`), which is not CI-gated (needs the `claude` CLI) and is run by a human; every
+cell is seeded `⏳` until that run happens, then refined further by the flagship live-repo runs
+(`supy-service-inventory`, `supy-frontend`, `supy-mobile` — the per-stack tracker above).
+
+| Dimension | Reviewer | Fixtures | Recall | Precision | Token baseline (~in/out) | Last run |
+|---|---|---|---|---|---|---|
+| `secrets` | `supy-secrets-reviewer` | 6 | ⏳ | ⏳ | ⏳ | ⏳ |
+| `architecture` | `supy-architecture-reviewer` | 2 | ⏳ | ⏳ | ⏳ | ⏳ |
+| `angular` | `supy-angular-reviewer` | 2 | ⏳ | ⏳ | ⏳ | ⏳ |
+| `flutter` | `supy-flutter-reviewer` | 3 | ⏳ | ⏳ | ⏳ | ⏳ |
+| `firebase-functions` | `supy-firebase-functions-reviewer` | 2 | ⏳ | ⏳ | ⏳ | ⏳ |
+| `ts-cli` | `supy-ts-cli-reviewer` | 2 | ⏳ | ⏳ | ⏳ | ⏳ |
+| `ai-agents` | `supy-ai-agents-reviewer` | 2 | ⏳ | ⏳ | ⏳ | ⏳ |
+
+## Live-proof runs (flagship)
+
+The fixture scorecard above is an offline, deterministic proxy. The authoritative proof is a real
+`/supy-review` run against a real Supy repo — the **flagship** rows (1–3) of the
+[per-stack pilot tracker](#per-stack-pilot-tracker): `supy-service-inventory` (nestjs-nx),
+`supy-frontend` (angular-nx), `supy-mobile` (flutter Profile B). The step-by-step procedure for each
+is [`pilots/RUNBOOK.md`](pilots/RUNBOOK.md) (Pilots 1, 2, 3) — this section does not restate it, it
+only records the outcome. Fill each field below by copying the run's
+[`pilots/RESULTS-TEMPLATE.md`](pilots/RESULTS-TEMPLATE.md) into
+`docs/pilots/results/<repo>.md` and transcribing the matching values here. Every field is
+`⏳` until a human runs the plugin against the live repo — **do not fill any of these in from
+memory, inference, or the fixture scorecard; only a live run may populate them.**
+
+### `supy-service-inventory` (nestjs-nx)
+
+- Plugin commit SHA (supy-wingspan, short): ⏳
+- SessionStart line observed (verbatim): ⏳
+- Reviewer set dispatched: ⏳
+- Review-report header (verbatim): ⏳
+- Token/turn count (in / out · turns) — authoritative baseline: ⏳
+- Fixture-vs-live delta (did the live run surface anything the `architecture` /
+  `secrets` fixtures didn't, or vice versa?): _(pending live run)_
+
+### `supy-frontend` (angular-nx)
+
+- Plugin commit SHA (supy-wingspan, short): ⏳
+- SessionStart line observed (verbatim): ⏳
+- Reviewer set dispatched: ⏳
+- Review-report header (verbatim): ⏳
+- Token/turn count (in / out · turns) — authoritative baseline: ⏳
+- Fixture-vs-live delta (did the live run surface anything the `angular` /
+  `secrets` fixtures didn't, or vice versa?): _(pending live run)_
+
+### `supy-mobile` (flutter Profile B)
+
+- Plugin commit SHA (supy-wingspan, short): ⏳
+- SessionStart line observed (verbatim): ⏳
+- Reviewer set dispatched: ⏳
+- Review-report header (verbatim): ⏳
+- Token/turn count (in / out · turns) — authoritative baseline: ⏳
+- Fixture-vs-live delta (did the live run surface anything the `flutter` /
+  `secrets` fixtures didn't, or vice versa?): _(pending live run)_
+
+Once all three are filled and triaged per [`pilots/TRIAGE.md`](pilots/TRIAGE.md#fixture-scorecard-triage),
+tick rows 1–3 of the per-stack pilot tracker and record the token counts in the tracker's **Token
+baseline** column.
+
 ## Graceful degradation
 
 ### `/supy-brainstorm` and `/supy-plan` when `superpowers` is absent
