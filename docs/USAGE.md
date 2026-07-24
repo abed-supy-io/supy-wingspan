@@ -129,7 +129,7 @@ If any of these fail, jump to [§12 Troubleshooting](#12-troubleshooting).
 | `/supy-feedback [feedback]` | Files feedback about a Supy standard as a PR against supy-wingspan (standards-first, with provenance). |
 | `/supy-release [action]` | Reports the release-please state of this plugin repo — pending release PR, unreleased commits since the last tag, implied version bump, consumer impact. Read-only unless passed `ship`, which merges the release PR after confirmation. Degrades to a local-git-only report without `gh`. |
 
-**31 skills** (invoked in natural language — *not* slash commands; say e.g.
+**33 skills** (invoked in natural language — *not* slash commands; say e.g.
 "run the supy-commit skill"). The stack column mirrors
 `skills/shared/references/skill-routing.md` — the routing hook only surfaces a
 skill in repos of its stack:
@@ -149,6 +149,8 @@ skill in repos of its stack:
 | `supy-feature-fanout` | any | Behind `/supy-feature`. Plans one feature across several open repos: scans the parent folder, detects each repo's stack, proposes the affected set (you confirm), then writes a per-repo plan into each. Plan-only — never edits code or opens PRs. |
 | `supy-feedback` | any | Turns feedback about a Supy engineering standard into a reviewed PR against supy-wingspan — maps it to the right `config/standards` file (standards-first), shows the diff, then opens a `gh` PR with provenance. One PR per feedback. |
 | `supy-kg` | any | Connects to Supy's architecture knowledge graph through the Cortex MCP — finds services, events, flows, endpoints, and cross-repo usage. |
+| `supy-coverage-report` | any | Render coverage bars for the repo against its `ci-coverage-baseline` floor (read-only). |
+| `supy-remine-standards` | any | Deliberate periodic re-mine across the live repos; proposes one reviewable `config/standards` diff. |
 | `supy-clean-architecture` | nestjs-nx | How-to for backend Clean/Hexagonal + DDD + CQRS. |
 | `supy-scaffold-domain` | nestjs-nx | Scaffolds a full DDD bounded context via the Plop `g:domain` generator. |
 | `supy-scaffold-handler` | nestjs-nx | Scaffolds a NestJS NATS handler (RPC or JetStream event) with DTO + test stub. |
@@ -378,7 +380,7 @@ supy-wingspan/
 │   ├── plugin.json         # name, version, description, keywords
 │   └── marketplace.json    # marketplace "supy" → this plugin
 ├── agents/                 # 11 review subagents (Markdown w/ frontmatter)
-├── skills/                 # 31 skills, one dir each w/ SKILL.md (+ skills/shared/)
+├── skills/                 # 33 skills, one dir each w/ SKILL.md (+ skills/shared/)
 ├── commands/               # 8 slash-command wrappers over skills/superpowers
 ├── hooks/
 │   ├── hooks.json          # wires the three hooks below to their events

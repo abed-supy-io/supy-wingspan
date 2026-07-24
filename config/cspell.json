@@ -88,6 +88,7 @@
     "kubeval",
     "kustomization",
     "kyml",
+    "lcov",
     "lerp",
     "Lightspeed",
     "lockfiles",
