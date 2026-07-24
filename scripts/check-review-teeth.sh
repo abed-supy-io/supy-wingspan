@@ -14,5 +14,10 @@ ref="skills/shared/references/adversarial-verification.md"
 grep -q "adversarial-verification.md" "$skill" || err "$skill does not link the verification reference"
 grep -qiE "high-severity|low-confidence" "$skill" || err "$skill does not state the verification gate (high/low-confidence)"
 grep -qiE "budget|degrade|unverified" "$skill" || err "$skill does not state the budget/degradation guard"
+
+# --- Check C: severity calibration log is present (R1 traceability). ---
+sev="config/standards/review-severity.md"
+grep -qi "Calibration log" "$sev" || err "$sev has no 'Calibration log' section (R1 traceability)"
+
 [ "$fail" -eq 0 ] && ok "review-teeth checks passed"
 exit "$fail"
